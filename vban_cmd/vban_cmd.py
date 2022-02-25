@@ -4,19 +4,19 @@ import socket
 from time import sleep
 import sys
 from threading import Thread
-from typing import NamedTuple
+from typing import NamedTuple, NoReturn
 
 from .errors import VMCMDErrors
 from . import kinds
 from .dataclass import (
     HEADER_SIZE,
-    MAX_PACKET_SIZE,
     VBAN_VMRT_Packet_Data,
     VBAN_VMRT_Packet_Header,
     RegisterRTHeader,
     TextRequestHeader
 )
 from .strip import InputStrip
+from .bus import OutputBus
 
 class VbanCmd(abc.ABC):
     def __init__(self, *args, **kwargs):
@@ -26,6 +26,7 @@ class VbanCmd(abc.ABC):
         self._bps = kwargs['bps']
         self._channel = kwargs['channel']
         self._delay =  kwargs['delay']
+        self._max_polls = kwargs['max_polls']
         self._bps_opts = \
         [0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400,19200, 31250, 
         38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800,921600, 
@@ -99,20 +100,42 @@ class VbanCmd(abc.ABC):
             while not data:
                 data = self._fetch_rt_packet()
             return data
-        for i in range(2):
+        for i in range(self._max_polls):
             data = fget()
         return data
 
     def set_rt(self, id_, param, val):
         cmd = f'{id_}.{param}={val}'
         if self._sendrequest_string_socket in self.ready_to_write:
-            print(f'sending {cmd} to {socket.gethostbyname(self._ip)}:{self._port}')
             self._sendrequest_string_socket.sendto(
                 self._text_header.header + cmd.encode(), (socket.gethostbyname(self._ip), self._port)
                 )
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
             sleep(self._delay)
+
+    @property
+    def type(self):
+        data = self.get_rt()
+        return data.voicemeetertype
+
+    @property
+    def version(self):
+        data = self.get_rt()
+        return data.voicemeeterversion
+
+    def show(self) -> NoReturn:
+        """ Shows Voicemeeter if it's hidden. """
+        self.set_rt('Command', 'Show', 1)
+    def hide(self) -> NoReturn:
+        """ Hides Voicemeeter if it's shown. """
+        self.set_rt('Command', 'Show', 0)
+    def shutdown(self) -> NoReturn:
+        """ Closes Voicemeeter. """
+        self.set_rt('Command', 'Shutdown', 1)
+    def restart(self) -> NoReturn:
+        """ Restarts Voicemeeter's audio engine. """
+        self.set_rt('Command', 'Restart', 1)
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self._rt_packet_socket.close()
@@ -129,7 +152,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
     def init(self, *args, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
-            'channel': 0, 'delay': 0.001,
+            'channel': 0, 'delay': 0.001, 'max_polls': 2
             }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, *args, **kwargs)
@@ -139,6 +162,9 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
         self.strip = \
         tuple(InputStrip.make((i < self.phys_in), self, i)
         for i in range(self.phys_in + self.virt_in))
+        self.bus = \
+        tuple(OutputBus.make((i < self.phys_out), self, i)
+        for i in range(self.phys_out + self.virt_out))
 
     return type(f'VbanCmd{kind.name}', (VbanCmd,), {
         '__init__': init,
