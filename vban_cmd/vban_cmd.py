@@ -94,9 +94,13 @@ class VbanCmd(abc.ABC):
             return False
 
     def get_rt(self):
-        data = False
-        while not data:
-            data = self._fetch_rt_packet()
+        def fget():
+            data = False
+            while not data:
+                data = self._fetch_rt_packet()
+            return data
+        for i in range(2):
+            data = fget()
         return data
 
     def set_rt(self, id_, param, val):
@@ -125,7 +129,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
     def init(self, *args, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
-            'channel': 0, 'delay': 0.03,
+            'channel': 0, 'delay': 0.001,
             }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, *args, **kwargs)
