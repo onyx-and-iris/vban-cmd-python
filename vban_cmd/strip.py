@@ -15,6 +15,7 @@ class InputStrip(Channel):
         PhysStrip, VirtStrip = _strip_pairs[remote.kind.id]
         InputStrip = PhysStrip if is_physical else VirtStrip
         IS_cls = type(f'Strip{remote.kind.name}', (InputStrip,), {
+            'levels': StripLevel(remote, index),
         })
         return IS_cls(remote, index, **kwargs)
 
@@ -133,6 +134,33 @@ class VirtualInputStrip(InputStrip):
         self.setter('karaoke', val)
 
 
+class StripLevel(InputStrip):
+    def __init__(self, remote, index):
+        super().__init__(remote, index)
+        self.level_map = _strip_maps[remote.kind.id]
+
+    def getter_level(self, mode=None):
+        def fget(data, i):
+            return data.inputlevels[i]
+
+        range_ = self.level_map[self.index]
+        data = self._remote.get_rt()
+        levels = tuple(fget(data, i) for i in range(*range_))
+        return levels
+
+    @property
+    def prefader(self) -> tuple:
+        return self.getter_level()
+
+    @property
+    def postfader(self) -> tuple:
+        return
+
+    @property
+    def postmute(self) -> tuple:
+        return
+
+
 def _make_strip_mixin(kind):
     """ Creates a mixin with the kind's strip layout set as class variables. """
     num_A, num_B = kind.outs
@@ -151,3 +179,11 @@ def _make_strip_pair(kind):
     return (PhysStrip, VirtStrip)
 
 _strip_pairs = {kind.id: _make_strip_pair(kind) for kind in kinds.all}
+
+def _make_strip_level_map(kind):
+    phys_in, virt_in = kind.ins
+    phys_map = tuple((i, i+2) for i in range(0, phys_in*2, 2))
+    virt_map = tuple((i, i+8) for i in range(phys_in*2, phys_in*2+virt_in*8, 8))
+    return phys_map+virt_map
+
+_strip_maps  = {kind.id: _make_strip_level_map(kind) for kind in kinds.all}

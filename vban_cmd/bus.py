@@ -14,6 +14,7 @@ class OutputBus(Channel):
         """
         OutputBus = PhysicalOutputBus if is_physical else VirtualOutputBus
         OB_cls = type(f'Bus{remote.kind.name}', (OutputBus,), {
+            'levels': BusLevel(remote, index),
         })
         return OB_cls(remote, index, *args, **kwargs)
 
@@ -91,3 +92,28 @@ class PhysicalOutputBus(OutputBus):
 
 class VirtualOutputBus(OutputBus):
     pass
+
+
+class BusLevel(OutputBus):
+    def __init__(self, remote, index):
+        super().__init__(remote, index)
+        self.level_map = _bus_maps[remote.kind.id]
+
+    def getter_level(self, mode=None):
+        def fget(data, i):
+            return data.outputlevels[i]
+
+        range_ = self.level_map[self.index]
+        data = self._remote.get_rt()
+        levels = tuple(fget(data, i) for i in range(*range_))
+        return levels
+
+    @property
+    def all(self) -> tuple:
+        return self.getter_level()
+
+def _make_bus_level_map(kind):
+    phys_out, virt_out = kind.outs
+    return tuple((i, i+8) for i in range(0, (phys_out+virt_out)*8, 8))
+
+_bus_maps = {kind.id: _make_bus_level_map(kind) for kind in kinds.all}
