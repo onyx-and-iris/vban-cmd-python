@@ -1,0 +1,2 @@
+class VMCMDErrors(Exception):
+    pass
