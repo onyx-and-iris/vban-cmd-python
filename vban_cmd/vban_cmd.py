@@ -35,6 +35,7 @@ class VbanCmd(abc.ABC):
         self._text_header = TextRequestHeader()
         self._register_rt_header = RegisterRTHeader()
         self.expected_packet = VBAN_VMRT_Packet_Header()
+        self.buff = None
 
         self._rt_register_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._rt_packet_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -94,15 +95,21 @@ class VbanCmd(abc.ABC):
                 )
             return False
 
+    @property
+    def public_packet(self):
+        self.buff = self.get_rt()
+        return self.buff
+
     def get_rt(self):
         def fget():
             data = False
             while not data:
                 data = self._fetch_rt_packet()
             return data
-        for i in range(self._max_polls):
-            data = fget()
-        return data
+        private_packet = fget()
+        if private_packet.__eq__(self.buff):
+            private_packet = fget()
+        return private_packet
 
     def set_rt(self, id_, param, val):
         cmd = f'{id_}.{param}={val}'
@@ -137,9 +144,13 @@ class VbanCmd(abc.ABC):
         """ Restarts Voicemeeter's audio engine. """
         self.set_rt('Command', 'Restart', 1)
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def close(self):
+        sleep(self._delay)
         self._rt_packet_socket.close()
         sys.exit()
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.close()
 
 
 def _make_remote(kind: NamedTuple) -> VbanCmd:

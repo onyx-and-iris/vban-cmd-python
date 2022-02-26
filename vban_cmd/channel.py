@@ -62,7 +62,7 @@ class Channel(abc.ABC):
 
     def getter(self):
         """ Returns an RT data packet. """
-        return self._remote.get_rt()
+        return self._remote.public_packet
     def setter(self, param, val):
         """ Sends a string request RT packet. """
         self._remote.set_rt(f'{self.identifier}', param, val)
