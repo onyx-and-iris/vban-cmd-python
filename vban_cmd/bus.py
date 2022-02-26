@@ -2,7 +2,6 @@ from .errors import VMCMDErrors
 from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import bus_output_prop
 
 class OutputBus(Channel):
     """ Base class for output buses. """
@@ -24,8 +23,7 @@ class OutputBus(Channel):
 
     @property
     def mute(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.busstate[self.index], 'little') & self._modes._mute == 0
+        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._mute == 0
 
     @mute.setter
     def mute(self, val: bool):
@@ -35,8 +33,7 @@ class OutputBus(Channel):
 
     @property
     def mono(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.busstate[self.index], 'little') & self._modes._mono == 0
+        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._mono == 0
 
     @mono.setter
     def mono(self, val: bool):
@@ -46,8 +43,7 @@ class OutputBus(Channel):
 
     @property
     def eq(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.busstate[self.index], 'little') & self._modes._eq == 0
+        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._eq == 0
 
     @eq.setter
     def eq(self, val: bool):
@@ -57,8 +53,7 @@ class OutputBus(Channel):
 
     @property
     def eq_ab(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.busstate[self.index], 'little') & self._modes._eqb == 0
+        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._eqb == 0
 
     @eq_ab.setter
     def eq_ab(self, val: bool):
@@ -68,8 +63,7 @@ class OutputBus(Channel):
 
     @property
     def label(self) -> str:
-        data = self.getter()
-        return data.buslabels[self.index]
+        return self.public_packet.buslabels[self.index]
 
     @label.setter
     def label(self, val: str):
@@ -77,16 +71,17 @@ class OutputBus(Channel):
             raise VMCMDErrors('label is a string parameter')
         self.setter('Label', val)
 
+    def gain(self):
+        return self.public_packet.busgain[self.index]
+
 
 class PhysicalOutputBus(OutputBus):
     @property
     def device(self) -> str:
-        data = self.getter()
         return
 
     @property
     def sr(self) -> int:
-        data = self.getter()
         return
 
 
@@ -100,12 +95,12 @@ class BusLevel(OutputBus):
         self.level_map = _bus_maps[remote.kind.id]
 
     def getter_level(self, mode=None):
-        def fget(data, i):
+        def fget(i, data):
             return data.outputlevels[i]
 
         range_ = self.level_map[self.index]
-        data = self._remote.get_rt()
-        levels = tuple(fget(data, i) for i in range(*range_))
+        data = self.public_packet
+        levels = tuple(fget(i, data) for i in range(*range_))
         return levels
 
     @property

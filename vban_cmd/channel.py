@@ -60,9 +60,6 @@ class Channel(abc.ABC):
         self.index = index
         self._modes = Modes()
 
-    def getter(self):
-        """ Returns an RT data packet. """
-        return self._remote.public_packet
     def setter(self, param, val):
         """ Sends a string request RT packet. """
         self._remote.set_rt(f'{self.identifier}', param, val)
@@ -70,3 +67,8 @@ class Channel(abc.ABC):
     @abc.abstractmethod
     def identifier(self):
         pass
+
+    @property
+    def public_packet(self):
+        """ Returns an RT data packet. """
+        return self._remote.public_packet

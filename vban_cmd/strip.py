@@ -14,7 +14,8 @@ class InputStrip(Channel):
         """
         PhysStrip, VirtStrip = _strip_pairs[remote.kind.id]
         InputStrip = PhysStrip if is_physical else VirtStrip
-        IS_cls = type(f'Strip{remote.kind.name}', (InputStrip,), {
+        GainLayerMixin = _make_gainlayer_mixin(remote, index)
+        IS_cls = type(f'Strip{remote.kind.name}', (InputStrip, GainLayerMixin), {
             'levels': StripLevel(remote, index),
         })
         return IS_cls(remote, index, **kwargs)
@@ -25,8 +26,7 @@ class InputStrip(Channel):
 
     @property
     def mono(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.stripstate[self.index], 'little') & self._modes._mono == 0
+        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._mono == 0
 
     @mono.setter
     def mono(self, val: bool):
@@ -36,8 +36,7 @@ class InputStrip(Channel):
 
     @property
     def solo(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.stripstate[self.index], 'little') & self._modes._solo == 0
+        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._solo == 0
 
     @solo.setter
     def solo(self, val: bool):
@@ -47,8 +46,7 @@ class InputStrip(Channel):
 
     @property
     def mute(self) -> bool:
-        data = self.getter()
-        return not int.from_bytes(data.stripstate[self.index], 'little') & self._modes._mute == 0
+        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._mute == 0
 
     @mute.setter
     def mute(self, val: bool):
@@ -58,7 +56,6 @@ class InputStrip(Channel):
 
     @property
     def limit(self) -> int:
-        data = self.getter()
         return
 
     @limit.setter
@@ -69,8 +66,7 @@ class InputStrip(Channel):
 
     @property
     def label(self) -> str:
-        data = self.getter()
-        return data.striplabels[self.index]
+        return self.public_packet.striplabels[self.index]
 
     @label.setter
     def label(self, val: str):
@@ -82,7 +78,6 @@ class InputStrip(Channel):
 class PhysicalInputStrip(InputStrip):
     @property
     def comp(self) -> float:
-        data = self.getter()
         return
 
     @comp.setter
@@ -91,7 +86,6 @@ class PhysicalInputStrip(InputStrip):
 
     @property
     def gate(self) -> float:
-        data = self.getter()
         return
 
     @gate.setter
@@ -100,19 +94,16 @@ class PhysicalInputStrip(InputStrip):
         
     @property
     def device(self):
-        data = self.getter()
         return
 
     @property
     def sr(self):
-        data = self.getter()
         return
 
 
 class VirtualInputStrip(InputStrip):
     @property
     def mc(self) -> bool:
-        data = self.getter()
         return
 
     @mc.setter
@@ -124,7 +115,6 @@ class VirtualInputStrip(InputStrip):
 
     @property
     def k(self) -> int:
-        data = self.getter()
         return
 
     @k.setter
@@ -140,12 +130,12 @@ class StripLevel(InputStrip):
         self.level_map = _strip_maps[remote.kind.id]
 
     def getter_level(self, mode=None):
-        def fget(data, i):
+        def fget(i, data):
             return data.inputlevels[i]
 
         range_ = self.level_map[self.index]
-        data = self._remote.get_rt()
-        levels = tuple(fget(data, i) for i in range(*range_))
+        data = self.public_packet
+        levels = tuple(fget(i, data) for i in range(*range_))
         return levels
 
     @property
@@ -160,6 +150,26 @@ class StripLevel(InputStrip):
     def postmute(self) -> tuple:
         return
 
+
+class GainLayer(InputStrip):
+    def __init__(self, remote, index, i):
+        super().__init__(remote, index)
+        self._i = i
+
+    @property
+    def gain(self):
+        return getattr(self.public_packet, f'stripgainlayer{self._i+1}')[self.index]
+
+    @gain.setter
+    def gain(self, val):
+        self.setter(f'GainLayer[{self._i}]', val)
+
+
+def _make_gainlayer_mixin(remote, index):
+    """ Creates a GainLayer mixin """
+    return type(f'GainlayerMixin', (), {
+        'gainlayer': tuple(GainLayer(remote, index, i) for i in range(8))
+    })
 
 def _make_strip_mixin(kind):
     """ Creates a mixin with the kind's strip layout set as class variables. """

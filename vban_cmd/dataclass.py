@@ -39,7 +39,7 @@ class VBAN_VMRT_Packet_Data:
     @property
     def voicemeeterversion(self) -> tuple:
         """ returns voicemeeter version as a string """
-        return tuple(reversed(tuple(int.from_bytes(self._voicemeeterVersion[i:i+1], 'little') for i in range(0, 4))))
+        return tuple(reversed(tuple(int.from_bytes(self._voicemeeterVersion[i:i+1], 'little') for i in range(4))))
     @property
     def samplerate(self) -> int:
         """ returns samplerate as an int """

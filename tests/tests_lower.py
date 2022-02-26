@@ -15,7 +15,7 @@ class TestSetAndGetParamsLower(unittest.TestCase):
     ])
     def test_it_sets_and_gets_strip_bool_params(self, index, param):
         tests.set_rt(f'Strip[{index}]', param, self.val)
-        retval = tests.get_rt()
+        retval = tests._get_rt()
         retval = not int.from_bytes(retval.stripstate[index], 'little') & tests._modes._mute == 0
         assert_equal(retval, self.val)
 
@@ -24,6 +24,6 @@ class TestSetAndGetParamsLower(unittest.TestCase):
     ])
     def test_it_sets_and_gets_strip_bool_params(self, index, param):
         tests.set_rt(f'Strip[{index}]', param, self.val)
-        retval = tests.get_rt()
+        retval = tests._get_rt()
         retval = not int.from_bytes(retval.stripstate[index], 'little') & tests._modes._mono == 0
         assert_equal(retval, self.val)

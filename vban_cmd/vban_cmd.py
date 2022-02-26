@@ -97,19 +97,17 @@ class VbanCmd(abc.ABC):
 
     @property
     def public_packet(self):
-        self.buff = self.get_rt()
+        self.buff = self._get_rt()
         return self.buff
 
-    def get_rt(self):
+    def _get_rt(self):
         def fget():
             data = False
             while not data:
                 data = self._fetch_rt_packet()
             return data
         private_packet = fget()
-        if private_packet.__eq__(self.buff):
-            private_packet = fget()
-        return private_packet
+        return private_packet if private_packet.__eq__(self.buff) else fget()
 
     def set_rt(self, id_, param, val):
         cmd = f'{id_}.{param}={val}'
@@ -119,17 +117,14 @@ class VbanCmd(abc.ABC):
                 )
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
-            sleep(self._delay)
 
     @property
     def type(self):
-        data = self.get_rt()
-        return data.voicemeetertype
+        return self.public_packet.voicemeetertype
 
     @property
     def version(self):
-        data = self.get_rt()
-        return data.voicemeeterversion
+        return self.public_packet.voicemeeterversion
 
     def show(self) -> NoReturn:
         """ Shows Voicemeeter if it's hidden. """
