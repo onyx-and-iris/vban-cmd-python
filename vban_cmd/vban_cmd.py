@@ -19,7 +19,7 @@ from .strip import InputStrip
 from .bus import OutputBus
 
 class VbanCmd(abc.ABC):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         self._ip = kwargs['ip']
         self._port = kwargs['port']
         self._streamname = kwargs['streamname']
@@ -64,7 +64,7 @@ class VbanCmd(abc.ABC):
                 sleep(10)
 
     def _fetch_rt_packet(self):
-        data, _ = self._rt_packet_socket.recvfrom(1024*2)
+        data, _ = self._rt_packet_socket.recvfrom(1024*1024*2)
         # check for packet data
         if len(data) > HEADER_SIZE:
             # check if packet is of type rt service
@@ -93,7 +93,6 @@ class VbanCmd(abc.ABC):
                     _stripLabelUTF8c60=data[452:932],
                     _busLabelUTF8c60=data[932:1412],
                 )
-            return False
 
     @property
     def public_packet(self):
@@ -155,13 +154,13 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
 
     The returned class will subclass VbanCmd.
     """
-    def init(self, *args, **kwargs):
+    def init(self, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
             'channel': 0, 'delay': 0.001, 'max_polls': 2
             }
         kwargs = defaultkwargs | kwargs
-        VbanCmd.__init__(self, *args, **kwargs)
+        VbanCmd.__init__(self, **kwargs)
         self.kind = kind
         self.phys_in, self.virt_in = kind.ins
         self.phys_out, self.virt_out = kind.outs
@@ -178,7 +177,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
 
 _remotes = {kind.id: _make_remote(kind) for kind in kinds.all}
 
-def connect(kind_id: str, *args, **kwargs):
+def connect(kind_id: str, **kwargs):
     try:
         VBANCMD_cls = _remotes[kind_id]
         return VBANCMD_cls(**kwargs)

@@ -47,11 +47,11 @@ class VBAN_VMRT_Packet_Data:
     @property
     def inputlevels(self) -> tuple:
         """ returns the entire level array across all inputs """
-        return tuple(int.from_bytes(self._inputLeveldB100[i:i+2], 'little') for i in range(0, 68, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._inputLeveldB100[i:i+2], 'little') for i in range(0, 68, 2))
     @property
     def outputlevels(self) -> tuple:
         """ returns the entire level array across all outputs """
-        return tuple(int.from_bytes(self._outputLeveldB100[i:i+2], 'little') for i in range(0, 128, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._outputLeveldB100[i:i+2], 'little') for i in range(0, 128, 2))
     @property
     def stripstate(self) -> tuple:
         """ returns tuple of strip states accessable through bit modes """
@@ -67,33 +67,33 @@ class VBAN_VMRT_Packet_Data:
     """    
     @property
     def stripgainlayer1(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer1[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer1[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer2(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer2[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer2[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer3(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer3[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer3[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer4(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer4[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer4[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer5(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer5[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer5[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer6(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer6[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer6[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer7(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer7[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer7[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def stripgainlayer8(self) -> tuple:
-        return tuple(int.from_bytes(self._stripGaindB100Layer8[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._stripGaindB100Layer8[i:i+2], 'little') for i in range(0, 16, 2))
 
     @property
     def busgain(self) -> tuple:
         """ returns tuple of bus gains """
-        return tuple(int.from_bytes(self._busGaindB100[i:i+2], 'little') for i in range(0, 16, 2))
+        return tuple(((1 << 16) - 1) - int.from_bytes(self._busGaindB100[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def striplabels(self) -> tuple:
         """ returns tuple of strip labels """

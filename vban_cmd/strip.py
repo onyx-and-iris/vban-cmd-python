@@ -131,11 +131,12 @@ class StripLevel(InputStrip):
 
     def getter_level(self, mode=None):
         def fget(i, data):
-            return data.inputlevels[i]
+            val = data.inputlevels[i]
+            return -val * 0.01
 
         range_ = self.level_map[self.index]
         data = self.public_packet
-        levels = tuple(fget(i, data) for i in range(*range_))
+        levels = tuple(round(fget(i, data), 1) for i in range(*range_))
         return levels
 
     @property
@@ -158,7 +159,15 @@ class GainLayer(InputStrip):
 
     @property
     def gain(self):
-        return getattr(self.public_packet, f'stripgainlayer{self._i+1}')[self.index]
+        def fget():
+            val = getattr(self.public_packet, f'stripgainlayer{self._i+1}')[self.index]
+            if val < 10000:
+                return -val
+            elif val == ((1 << 16) - 1):
+                return 0
+            else:
+                return ((1 << 16) - 1) - val
+        return round((fget() * 0.01), 1)
 
     @gain.setter
     def gain(self, val):

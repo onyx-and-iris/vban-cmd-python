@@ -70,7 +70,7 @@ A *kind* specifies a major Voicemeeter version. Currently this encompasses
 - `banana`
 - `potato`
 
-#### `vban_cmd.connect(kind_id, ip=ip) -> '(VMRemote)'`
+#### `vban_cmd.connect(kind_id, ip=ip) -> '(VbanCmd)'`
 Factory function for remotes.
 - `ip`: remote pc you wish to send requests to.
 
@@ -102,15 +102,13 @@ The following properties are gettable and settable:
 - `solo`: boolean
 - `mute`: boolean
 - `label`: string
+- `gainlayer`: float, -60 to 12
 - Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
 
 The following properties are settable:
-- `label`: string
-- `gain`: float, from -60.0 to 12.0
 - `comp`: float, from 0.0 to 10.0
 - `gate`: float, from 0.0 to 10.0
 - `limit`: int, from -40 to 12
-- `gainlayer`: float
 
 ### `Bus`
 The following properties are gettable and settable:
@@ -119,10 +117,17 @@ The following properties are gettable and settable:
 - `eq`: boolean
 - `eq_ab`: boolean
 - `label`: string
+- `gain`: float, -60 to 12
 
-The following properties are settable:
-- `gain`: float
+### `VbanCmd` (lower level)
+#### `vban.public_packet`
+Fetches a new RT Data Packet (some values will still be in byte form)
 
+#### `vban.set_rt(id_, param, val)`
+Sends a string request RT Packet where the command would take the form:
+```python
+f'{id_}.{param}={val}'
+```
 
 ### `Errors`
 - `errors.VMCMDErrors`: Base VMCMD error class.
