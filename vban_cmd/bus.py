@@ -72,7 +72,7 @@ class OutputBus(Channel):
         self.setter('Label', val)
 
     @property
-    def gain(self):
+    def gain(self) -> float:
         def fget():
             val = self.public_packet.busgain[self.index]
             if val < 10000:

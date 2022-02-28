@@ -158,7 +158,7 @@ class GainLayer(InputStrip):
         self._i = i
 
     @property
-    def gain(self):
+    def gain(self) -> float:
         def fget():
             val = getattr(self.public_packet, f'stripgainlayer{self._i+1}')[self.index]
             if val < 10000:
@@ -170,7 +170,7 @@ class GainLayer(InputStrip):
         return round((fget() * 0.01), 1)
 
     @gain.setter
-    def gain(self, val):
+    def gain(self, val: float):
         self.setter(f'GainLayer[{self._i}]', val)
 
 

@@ -53,6 +53,7 @@ class Modes:
     _sel: hex=0x10000000
     _monitor: hex=0x20000000
 
+
 class Channel(abc.ABC):
     """ Base class for InputStrip and OutputBus. """
     def __init__(self, remote, index):

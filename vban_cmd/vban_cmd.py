@@ -2,7 +2,6 @@ import abc
 import select
 import socket
 from time import sleep
-import sys
 from threading import Thread
 from typing import NamedTuple, NoReturn
 
@@ -40,7 +39,6 @@ class VbanCmd(abc.ABC):
             )
         self._register_rt_header = RegisterRTHeader()
         self.expected_packet = VBAN_VMRT_Packet_Header()
-        self.buff = None
 
         self._rt_register_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._rt_packet_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -52,12 +50,6 @@ class VbanCmd(abc.ABC):
         self.ready_to_read, self.ready_to_write, in_error = select.select(is_readable, is_writable, is_error, 60)
 
     def __enter__(self):
-        s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        res = s.connect_ex((self._ip, self._port))
-        s.close()
-        if res:
-            raise VMCMDErrors('Could not connect to remote Voicemeeter')
-
         self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
@@ -107,8 +99,7 @@ class VbanCmd(abc.ABC):
 
     @property
     def public_packet(self):
-        self.buff = self._get_rt()
-        return self.buff
+        return self._get_rt()
 
     def _get_rt(self):
         def fget():
@@ -116,8 +107,7 @@ class VbanCmd(abc.ABC):
             while not data:
                 data = self._fetch_rt_packet()
             return data
-        private_packet = fget()
-        return private_packet if private_packet == self.buff else fget()
+        return fget()
 
     def set_rt(self, id_, param, val):
         cmd = f'{id_}.{param}={val}'
@@ -150,9 +140,9 @@ class VbanCmd(abc.ABC):
         self.set_rt('Command', 'Restart', 1)
 
     def close(self):
-        sleep(self._delay)
+        self._rt_register_socket.close()
+        self._sendrequest_string_socket.close()
         self._rt_packet_socket.close()
-        sys.exit()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.close()

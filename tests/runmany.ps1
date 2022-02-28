@@ -19,17 +19,6 @@ Function RunTests {
 
         if ($cycle_num -eq 20) { $firstrun = $true }
 
-        (Get-Content '__init__.py') | ForEach-Object {
-                $m = [regex]::Match($_, '^(DELAY)\s=\s(\d.\d+)')
-                if ($m.captures.groups.count -gt 1) {
-                        $delay = $m.captures.groups[2]
-                }
-                $m = [regex]::Match($_, '^(MAX_POLLS)\s=\s(\d+)')
-                if ($m.captures.groups.count -gt 1) {
-                        $maxpolls = $m.captures.groups[2]
-                }
-        }
-
         1..$num | ForEach-Object { `
                 if ($Log) { "Running test $_ of ${num} runs"  | Tee-Object -FilePath $logfile -Append } 
                 else { Write-Host "Running test $_ of ${num} runs" }
@@ -60,14 +49,12 @@ Function RunTests {
                 "NOTES:" | Tee-Object -FilePath $summary_file -Append
                 }
                 "===========================================================`n" + `
-                "${num} test run with ${delay} delay and ${maxpolls} max_polls`n" + `
                 "Total failures: ${failures}`n" + `
                 "Logfile for this test run: ${log_backupfile}`n" + `
                 "===========================================================" | `
                 Tee-Object -FilePath $summary_file -Append
         } else {
                 "===========================================================",
-                "${num} test run with ${delay} delay and ${maxpolls} max_polls",
                 "Total failures: ${failures}",
                 "===========================================================" | Write-Host
         }
