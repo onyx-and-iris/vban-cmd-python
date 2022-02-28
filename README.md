@@ -134,9 +134,6 @@ The following properties are gettable and settable:
 - `gain`: float, -60 to 12
 
 ### `VbanCmd` (lower level)
-#### `vban.public_packet`
-Fetches an RT Data Packet (some values will still be in byte form).
-
 #### `vban.set_rt(id_, param, val)`
 Sends a string request RT Packet where the command would take the form:
 ```python
