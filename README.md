@@ -1,5 +1,7 @@
 # VBAN CMD
-This package offers a Python interface for the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf).
+This package offers a Python interface for the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf). It allows a client to connect to a Voicemeeter installation on a remote machine
+so long as a valid connection can be established between both systems, and VBAN is configured correctly. 
+In similar fashion to the Remote API you can set and get parameters for strips/buses.
 
 Tested against
 - Basic 1.0.8.1
@@ -25,6 +27,18 @@ With development dependencies:
 ```
 pip install -e .['development']
 ```
+
+#### Connection:
+For sending a text request (remote set) several configuration options are available:
+- `ip`: remote address
+- `streamname`: default 'Command1'
+- `port`: default 6990
+- `bps`: bitrate of stream, default 0 should be safe for most cases.
+
+pass these values as arguments to vban_cmd.connect() as show in the example below.
+
+Regarding fetching data (remote get), the code registers itself to the RT Packet Service every 10 seconds,
+with a timeout of 15 seconds (same as streamer view app).
 
 #### Use with a context manager:
 Unlike the Remote API the VBAN RT Packet service has no login limitations since receiving data requires
@@ -121,7 +135,7 @@ The following properties are gettable and settable:
 
 ### `VbanCmd` (lower level)
 #### `vban.public_packet`
-Fetches a new RT Data Packet (some values will still be in byte form)
+Fetches an RT Data Packet (some values will still be in byte form).
 
 #### `vban.set_rt(id_, param, val)`
 Sends a string request RT Packet where the command would take the form:
