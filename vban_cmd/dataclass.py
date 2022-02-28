@@ -154,14 +154,23 @@ class RegisterRTHeader:
 @dataclass
 class TextRequestHeader:
     """ VBAN-TEXT request header """
-    name='Command1'
+    name: str
+    bps_index: int
+    channel: int
     vban: bytes='VBAN'.encode()
-    sr: bytes=(0x52).to_bytes(1, 'little')
     nbs: bytes=(0).to_bytes(1, 'little')
-    nbc: bytes=(0).to_bytes(1, 'little')
     bit: bytes=(0x10).to_bytes(1, 'little')
-    streamname: bytes=name.encode() + bytes(16-len(name))
     framecounter: bytes=(0).to_bytes(4, 'little')
+
+    @property
+    def sr(self):
+        return (0x40 + self.bps_index).to_bytes(1, 'little')
+    @property
+    def nbc(self):
+        return (self.channel).to_bytes(1, 'little')
+    @property
+    def streamname(self):
+        return self.name.encode() + bytes(16-len(self.name))
 
     @property
     def header(self):

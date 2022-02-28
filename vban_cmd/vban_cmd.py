@@ -26,13 +26,18 @@ class VbanCmd(abc.ABC):
         self._bps = kwargs['bps']
         self._channel = kwargs['channel']
         self._delay =  kwargs['delay']
-        self._max_polls = kwargs['max_polls']
         self._bps_opts = \
-        [0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400,19200, 31250, 
+        [0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250, 
         38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800,921600, 
         1000000, 1500000, 2000000, 3000000]
 
-        self._text_header = TextRequestHeader()
+        if self._channel not in range(256):
+            raise VMCMDErrors('Channel must be in range 0 to 255')
+        self._text_header = TextRequestHeader(
+            name=self._streamname, 
+            bps_index=self._bps_opts.index(self._bps),
+            channel=self._channel
+            )
         self._register_rt_header = RegisterRTHeader()
         self.expected_packet = VBAN_VMRT_Packet_Header()
         self.buff = None
@@ -46,8 +51,13 @@ class VbanCmd(abc.ABC):
         is_error = []
         self.ready_to_read, self.ready_to_write, in_error = select.select(is_readable, is_writable, is_error, 60)
 
-
     def __enter__(self):
+        s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        res = s.connect_ex((self._ip, self._port))
+        s.close()
+        if res:
+            raise VMCMDErrors('Could not connect to remote Voicemeeter')
+
         self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
@@ -64,35 +74,36 @@ class VbanCmd(abc.ABC):
                 sleep(10)
 
     def _fetch_rt_packet(self):
-        data, _ = self._rt_packet_socket.recvfrom(1024*1024*2)
-        # check for packet data
-        if len(data) > HEADER_SIZE:
-            # check if packet is of type rt service
-            if self.expected_packet.header == data[:HEADER_SIZE-4]:
-                return VBAN_VMRT_Packet_Data(
-                    _voicemeeterType=data[28:29],
-                    _reserved=data[29:30],
-                    _buffersize=data[30:32],
-                    _voicemeeterVersion=data[32:36],
-                    _optionBits=data[36:40],
-                    _samplerate=data[40:44],
-                    _inputLeveldB100=data[44:112],
-                    _outputLeveldB100=data[112:240],
-                    _TransportBit=data[240:244],
-                    _stripState=data[244:276],
-                    _busState=data[276:308],
-                    _stripGaindB100Layer1=data[308:324],
-                    _stripGaindB100Layer2=data[324:340],
-                    _stripGaindB100Layer3=data[340:356],
-                    _stripGaindB100Layer4=data[356:372],
-                    _stripGaindB100Layer5=data[372:388],
-                    _stripGaindB100Layer6=data[388:404],
-                    _stripGaindB100Layer7=data[404:420],
-                    _stripGaindB100Layer8=data[420:436],
-                    _busGaindB100=data[436:452],
-                    _stripLabelUTF8c60=data[452:932],
-                    _busLabelUTF8c60=data[932:1412],
-                )
+        if self._rt_packet_socket in self.ready_to_write:
+            data, _ = self._rt_packet_socket.recvfrom(1024*1024*2)
+            # check for packet data
+            if len(data) > HEADER_SIZE:
+                # check if packet is of type rt service
+                if self.expected_packet.header == data[:HEADER_SIZE-4]:
+                    return VBAN_VMRT_Packet_Data(
+                        _voicemeeterType=data[28:29],
+                        _reserved=data[29:30],
+                        _buffersize=data[30:32],
+                        _voicemeeterVersion=data[32:36],
+                        _optionBits=data[36:40],
+                        _samplerate=data[40:44],
+                        _inputLeveldB100=data[44:112],
+                        _outputLeveldB100=data[112:240],
+                        _TransportBit=data[240:244],
+                        _stripState=data[244:276],
+                        _busState=data[276:308],
+                        _stripGaindB100Layer1=data[308:324],
+                        _stripGaindB100Layer2=data[324:340],
+                        _stripGaindB100Layer3=data[340:356],
+                        _stripGaindB100Layer4=data[356:372],
+                        _stripGaindB100Layer5=data[372:388],
+                        _stripGaindB100Layer6=data[388:404],
+                        _stripGaindB100Layer7=data[404:420],
+                        _stripGaindB100Layer8=data[420:436],
+                        _busGaindB100=data[436:452],
+                        _stripLabelUTF8c60=data[452:932],
+                        _busLabelUTF8c60=data[932:1412],
+                    )
 
     @property
     def public_packet(self):
@@ -106,7 +117,7 @@ class VbanCmd(abc.ABC):
                 data = self._fetch_rt_packet()
             return data
         private_packet = fget()
-        return private_packet if private_packet.__eq__(self.buff) else fget()
+        return private_packet if private_packet == self.buff else fget()
 
     def set_rt(self, id_, param, val):
         cmd = f'{id_}.{param}={val}'
@@ -157,7 +168,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
     def init(self, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
-            'channel': 0, 'delay': 0.001, 'max_polls': 2
+            'channel': 0, 'delay': 0.001
             }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, **kwargs)
