@@ -48,11 +48,13 @@ class VbanCmd(abc.ABC):
         is_writable = [self._rt_register_socket, self._rt_packet_socket, self._sendrequest_string_socket]
         is_error = []
         self.ready_to_read, self.ready_to_write, in_error = select.select(is_readable, is_writable, is_error, 60)
+        self._public_packet = None
 
     def __enter__(self):
         self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
+        self._public_packet = self._get_rt()
         return self
 
     def _send_register_rt(self):
@@ -99,7 +101,10 @@ class VbanCmd(abc.ABC):
 
     @property
     def public_packet(self):
-        return self._get_rt()
+        return self._public_packet or self._get_rt()
+    @public_packet.setter
+    def public_packet(self, val):
+        self._public_packet = val
 
     def _get_rt(self):
         def fget():

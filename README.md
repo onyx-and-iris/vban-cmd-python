@@ -117,6 +117,7 @@ The following properties are gettable and settable:
 - `mute`: boolean
 - `label`: string
 - `gainlayer`: float, -60 to 12
+- `gain`: float, -60 to 12
 - Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
 
 The following properties are settable:

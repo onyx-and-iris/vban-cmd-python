@@ -80,7 +80,7 @@ class InputStrip(Channel):
 
     @gain.setter
     def gain(self, val: float):
-        self.gainlayer[0].gain = val
+        self.setter('gain', val)
 
 
 class PhysicalInputStrip(InputStrip):
