@@ -3,7 +3,7 @@ This package offers a Python interface for the [Voicemeeter RT Packet Service](h
 
 It can be used standalone as well as to extend the [Voicemeeter Remote API](https://github.com/onyx-and-iris/voicemeeter-api-python) since the two interfaces have been designed to offer the same higher level classes/methods. Not everything available in the Remote API interface is available through this one.
 
-Only the TEXT service sub protocol has been implemented, for sending audio across a network with VBAN you will need to look elsewhere.
+Only the TEXT service sub protocol and RT-Packet Service have been implemented, for sending audio across a network with VBAN you will need to look elsewhere.
 
 ## Tested against
 - Basic 1.0.8.1
