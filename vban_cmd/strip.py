@@ -74,6 +74,14 @@ class InputStrip(Channel):
             raise VMCMDErrors('label is a string parameter')
         self.setter('label', val)
 
+    @property
+    def gain(self) -> float:
+        return self.gainlayer[0].gain
+
+    @gain.setter
+    def gain(self, val: float):
+        self.gainlayer[0].gain = val
+
 
 class PhysicalInputStrip(InputStrip):
     @property

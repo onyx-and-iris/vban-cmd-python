@@ -107,7 +107,6 @@ class VBAN_VMRT_Packet_Data:
 class VBAN_VMRT_Packet_Header:
     """ RT PACKET header (expected from Voicemeeter server) """
     name='Voicemeeter-RTP'
-    timeout=15
     vban: bytes='VBAN'.encode()
     format_sr: bytes=(0x60).to_bytes(1, 'little')
     format_nbs:	bytes=(0).to_bytes(1, 'little')
