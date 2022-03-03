@@ -37,6 +37,7 @@ For sending a text request (sendtext or set_rt) several configuration options ar
 - `port`: default 6990
 - `channel`: from 0 to 255
 - `bps`: bitrate of stream, default 0 should be safe for most cases.
+
 only applies to `sendtext`:
 - `delay`: default 0.001
 
