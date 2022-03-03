@@ -31,11 +31,14 @@ pip install -e .['development']
 ```
 
 #### Connection:
-For sending a text request (remote set) several configuration options are available:
+For sending a text request (sendtext or set_rt) several configuration options are available:
 - `ip`: remote address
 - `streamname`: default 'Command1'
 - `port`: default 6990
+- `channel`: from 0 to 255
 - `bps`: bitrate of stream, default 0 should be safe for most cases.
+only applies to `sendtext`:
+- `delay`: default 0.001
 
 Pass these values as arguments to vban_cmd.connect() as show in the example below.
 
@@ -98,7 +101,6 @@ Factory function for remotes.
 ### `VbanCmd` (higher level)
 #### `vban.type`
 The kind of the Voicemeeter instance.
-
 #### `vban.version`
 A tuple of the form `(v1, v2, v3, v4)`.
 
@@ -107,6 +109,13 @@ An `InputStrip` tuple, containing both physical and virtual.
 #### `vban.bus`
 An `OutputBus` tuple, containing both physical and virtual.
 
+
+#### `vban.sendtext(cmd)`
+Sends a TEXT command, for example:
+```python
+# Use ';' or ',' for delimiters.
+vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
+```
 #### `vban.show()`
 Shows Voicemeeter if it's hide. No effect otherwise.
 #### `vban.hide()`

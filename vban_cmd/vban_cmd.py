@@ -114,14 +114,18 @@ class VbanCmd(abc.ABC):
             return data
         return fget()
 
-    def set_rt(self, id_, param, val):
-        cmd = f'{id_}.{param}={val}'
+    def set_rt(self, id_, param=None, val=None):
+        cmd = id_ if not param and val else f'{id_}.{param}={val}'
         if self._sendrequest_string_socket in self.ready_to_write:
             self._sendrequest_string_socket.sendto(
                 self._text_header.header + cmd.encode(), (socket.gethostbyname(self._ip), self._port)
                 )
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
+
+    def sendtext(self, cmd):
+        self.set_rt(cmd)
+        sleep(self._delay)
 
     @property
     def type(self):
