@@ -58,7 +58,7 @@ Check examples directory for a more meaningful example.
 
 ### Example 1
 ```python
-import vban_cmd
+import vbancmd
 
 class ManyThings:
     def __init__(self, vban):
@@ -75,7 +75,7 @@ class ManyThings:
 
 
 def main():
-    with vban_cmd.connect(kind_id, ip=ip) as vban:
+    with vbancmd.connect(kind_id, ip=ip) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
@@ -118,7 +118,7 @@ Sends a TEXT command, for example:
 vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
 ```
 #### `vban.show()`
-Shows Voicemeeter if it's hide. No effect otherwise.
+Shows Voicemeeter if it's hidden. No effect otherwise.
 #### `vban.hide()`
 Hides Voicemeeter if it's shown. No effect otherwise.
 #### `vban.shutdown()`

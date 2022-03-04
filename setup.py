@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-  name='vban_cmd',
+  name='vbancmd',
   version='0.0.1',
   description='VBAN CMD Python API',
-  packages=['vban_cmd'],
+  packages=['vbancmd'],
   install_requires=[
   ],
   extras_require={

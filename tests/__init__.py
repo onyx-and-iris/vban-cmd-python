@@ -1,9 +1,8 @@
-import vban_cmd
-from vban_cmd import kinds
-from vban_cmd.channel import Modes
+import vbancmd
+from vbancmd import kinds
+from vbancmd.channel import Modes
 import socket
 from threading import Thread
-from time import sleep
 
 _kind = 'potato'
 opts = {
@@ -14,7 +13,7 @@ opts = {
     'channel': 3
 }
 
-vbanrs = {kind.id: vban_cmd.connect(_kind, **opts) for kind in kinds.all}
+vbanrs = {kind.id: vbancmd.connect(_kind, **opts) for kind in kinds.all}
 tests = vbanrs[_kind]
 
 def setup_package():
