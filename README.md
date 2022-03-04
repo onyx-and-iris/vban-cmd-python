@@ -1,9 +1,7 @@
 # VBAN CMD
-This package offers a Python interface for the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf).
+This package offers a Python interface for the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf). It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
 
-It can be used standalone as well as to extend the [Voicemeeter Remote API](https://github.com/onyx-and-iris/voicemeeter-api-python) since the two interfaces have been designed to offer the same higher level classes/methods. Not everything available in the Remote API interface is available through this one.
-
-Only the TEXT service sub protocol and RT-Packet Service have been implemented, for sending audio across a network with VBAN you will need to look elsewhere.
+For sending audio across a network with VBAN you will need to look elsewhere.
 
 ## Tested against
 - Basic 1.0.8.1
@@ -31,7 +29,7 @@ pip install -e .['development']
 ```
 
 #### Connection:
-For sending a text request (sendtext or set_rt) several configuration options are available:
+For sending a text command several configuration options are available:
 - `ip`: remote address
 - `streamname`: default 'Command1'
 - `port`: default 6990
@@ -41,20 +39,14 @@ For sending a text request (sendtext or set_rt) several configuration options ar
 only applies to `sendtext`:
 - `delay`: default 0.001
 
-Pass these values as arguments to vban_cmd.connect() as show in the example below.
-
-Regarding fetching data (remote get), the code registers itself to the RT Packet Service every 10 seconds,
-with a timeout of 15 seconds (same as streamer view app).
 
 #### Use with a context manager:
-Unlike the Remote API the VBAN RT Packet service has no login limitations since receiving data requires
-a client to simply register to the service. It is advised to use this code with a context manager.
+It is advised to use this code with a context manager.
 Parameter coverage is not as extensive for the RT Packet Service as with the Remote API so defined below are the
-classes/methods available through this package.
+classes/methods available through this interface.
 
-Ideally this interface is used along with some background service (thread) for constantly updating the RT data packets but it can be
-used directly in scripts such as Example 1.
-Check examples directory for a more meaningful example.
+Ideally, calling a background thread to poll for new RT packets ensures up-to-date parameters (see examples gui).
+For simple scripts you may refer to the example below.
 
 ### Example 1
 ```python
