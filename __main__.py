@@ -1,20 +1,27 @@
-import vban_cmd
+import vbancmd
+
+class ManyThings:
+    def __init__(self, vban):
+        self.vban = vban
+
+    def things(self):
+        # Set the mapping of the second input strip
+        self.vban.strip[1].A3 = True
+        print(f'Output A3 of Strip {self.vban.strip[1].label}: {self.vban.strip[1].A3}')
+
+    def other_things(self):
+        # Toggle mute for the leftmost output bus
+        self.vban.bus[0].mute = not self.vban.bus[0].mute
+
 
 def main():
-    with vban_cmd.connect('potato', ip=ip, port=port, streamname=streamname, bps=bps, channel=channel) as vban:
-        for param in ['A1', 'A2', 'A3', 'A4', 'A5', 'B1', 'B2', 'B3', 'mono', 'mute']:
-            setattr(vban.strip[0], param, True)
-            print(getattr(vban.strip[0], param))
-            setattr(vban.strip[0], param, False)
-            print(getattr(vban.strip[0], param))
-
+    with vbancmd.connect(kind_id, ip=ip) as vban:
+        do = ManyThings(vban)
+        do.things()
+        do.other_things()
 
 if __name__ == '__main__':
     kind_id = 'potato'
-    ip = 'ws.local'
-    port=6980
-    streamname = 'testing'
-    bps = 57600
-    channel=3
+    ip = '<ip address>'
 
     main()
