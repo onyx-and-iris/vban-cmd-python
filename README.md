@@ -111,12 +111,6 @@ An `InputStrip` tuple, containing both physical and virtual.
 An `OutputBus` tuple, containing both physical and virtual.
 
 
-#### `vban.sendtext(cmd)`
-Sends a TEXT command, for example:
-```python
-# Use ';' or ',' for delimiters.
-vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
-```
 #### `vban.show()`
 Shows Voicemeeter if it's hidden. No effect otherwise.
 #### `vban.hide()`
@@ -125,6 +119,12 @@ Hides Voicemeeter if it's shown. No effect otherwise.
 Closes Voicemeeter.
 #### `vban.restart()`
 Restarts Voicemeeter's audio engine.
+#### `vban.sendtext(cmd)`
+Sends a TEXT command, for example:
+```python
+# Use ';' or ',' for delimiters.
+vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
+```
 
 ### `Strip`
 The following properties are gettable and settable:
