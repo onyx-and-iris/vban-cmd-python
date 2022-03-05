@@ -36,10 +36,6 @@ For sending a text command several configuration options are available:
 - `channel`: from 0 to 255
 - `bps`: bitrate of stream, default 0 should be safe for most cases.
 
-only applies to `sendtext`:
-- `delay`: default 0.001
-
-
 #### Use with a context manager:
 It is advised to use this code with a context manager.
 Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
@@ -82,7 +78,7 @@ A *kind* specifies a major Voicemeeter version. Currently this encompasses
 - `banana`
 - `potato`
 
-#### `vban_cmd.connect(kind_id, ip=ip) -> '(VbanCmd)'`
+#### `vbancmd.connect(kind_id, ip=ip) -> '(VbanCmd)'`
 Factory function for remotes.
 - `ip`: remote pc you wish to send requests to.
 
