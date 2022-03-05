@@ -55,8 +55,7 @@ class App(tk.Tk):
         """ configure grid """
         self.col_row_configure()
 
-        """ initiate watchers/updaters """
-        self.refresh_public_packet()
+        """ initiate watchers """
         [self.watch_levels(i) for i in range(self.col)]
 
     @property
@@ -94,19 +93,6 @@ class App(tk.Tk):
         [child.grid_configure(padx=1, pady=1)
             for child in self.winfo_children()]
 
-
-    """ 
-    The following functions perform background tasks. Importantly the public packet is constantly updated
-    allowing the vban_cmd interface to fetch updated values.
-    """
-    def refresh_public_packet(self):
-        self.after(1, self.refresh_public_packet_step)
-
-    def refresh_public_packet_step(self):
-        """ updates public packet in the background """
-        vban.public_packet = vban._get_rt()
-        self.after(25, self.refresh_public_packet_step)
-
     def watch_levels(self, i):
         self.after(1, self.watch_levels_step, i)
 
@@ -132,7 +118,7 @@ if __name__ == "__main__":
     opts = {
         # make sure VBAN is configured on remote machine then set IP accordingly
         'ip': 'ws.local',
-        'streamname': 'Command1',
+        'streamname': 'testing',
         'port': 6990,
     }
 
