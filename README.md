@@ -18,7 +18,7 @@ git clone https://github.com/onyx-and-iris/vban-cmd-python
 cd vban-cmd-python
 ```
 
-Just the wrapper:
+Just the interface:
 ```
 pip install .
 ```
@@ -42,11 +42,7 @@ only applies to `sendtext`:
 
 #### Use with a context manager:
 It is advised to use this code with a context manager.
-Parameter coverage is not as extensive for the RT Packet Service as with the Remote API so defined below are the
-classes/methods available through this interface.
-
-Ideally, calling a background thread to poll for new RT packets ensures up-to-date parameters (see examples gui).
-For simple scripts you may refer to the example below.
+Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
 
 ### Example 1
 ```python

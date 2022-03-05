@@ -25,6 +25,8 @@ class VbanCmd(abc.ABC):
         self._bps = kwargs['bps']
         self._channel = kwargs['channel']
         self._delay =  kwargs['delay']
+        self._ratelimiter = kwargs['ratelimiter']
+        self._sync = kwargs['sync']
         self._bps_opts = \
         [0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250, 
         38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800,921600, 
@@ -49,17 +51,21 @@ class VbanCmd(abc.ABC):
         is_error = []
         self.ready_to_read, self.ready_to_write, in_error = select.select(is_readable, is_writable, is_error, 60)
         self._public_packet = None
+        self.running = True
 
     def __enter__(self):
         self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
         self._public_packet = self._get_rt()
+        if self._sync:
+            worker2 = Thread(target=self._keepupdated, daemon=True)
+            worker2.start()
         return self
 
     def _send_register_rt(self):
         if self._rt_register_socket in self.ready_to_write:
-            while True:
+            while self.running:
                 self._rt_register_socket.sendto(
                     self._register_rt_header.header + bytes(1), (socket.gethostbyname(self._ip), self._port)
                     )
@@ -101,10 +107,16 @@ class VbanCmd(abc.ABC):
 
     @property
     def public_packet(self):
-        return self._public_packet or self._get_rt()
+        return self._public_packet
     @public_packet.setter
     def public_packet(self, val):
         self._public_packet = val
+
+    def _keepupdated(self):
+        while self.running:
+            packet = self._get_rt()
+            if not packet.__eq__(self.public_packet):
+                self.public_packet = packet
 
     def _get_rt(self):
         def fget():
@@ -122,6 +134,7 @@ class VbanCmd(abc.ABC):
                 )
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
+            sleep(self._ratelimiter)
 
     def sendtext(self, cmd):
         self.set_rt(cmd)
@@ -149,6 +162,8 @@ class VbanCmd(abc.ABC):
         self.set_rt('Command', 'Restart', 1)
 
     def close(self):
+        self.running = False
+        sleep(0.2)
         self._rt_register_socket.close()
         self._sendrequest_string_socket.close()
         self._rt_packet_socket.close()
@@ -167,7 +182,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
     def init(self, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
-            'channel': 0, 'delay': 0.001
+            'channel': 0, 'delay': 0.001, 'ratelimiter': 0.035, 'sync': True
             }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, **kwargs)
