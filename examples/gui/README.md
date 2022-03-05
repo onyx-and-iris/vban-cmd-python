@@ -6,8 +6,3 @@ This is a demonstration app with very limited control, showing strips across all
 Ensure VBAN is enabled and the TEXT incoming stream is configured and ON.
 
 Set the kind_id, ip, streamname and port in the code.
-
-From current examples\gui directory 
-```python
-python .
-```
