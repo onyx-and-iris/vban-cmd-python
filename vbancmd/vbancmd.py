@@ -3,7 +3,7 @@ import select
 import socket
 from time import sleep
 from threading import Thread
-from typing import NamedTuple, NoReturn
+from typing import NamedTuple, NoReturn, Optional, Union
 
 from .errors import VMCMDErrors
 from . import kinds
@@ -54,6 +54,13 @@ class VbanCmd(abc.ABC):
         self.running = True
 
     def __enter__(self):
+        """
+        Start listening for RT Packets
+
+        Start background threads: 
+        register to RT service
+        keep public packet updated.
+        """
         self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
@@ -64,8 +71,8 @@ class VbanCmd(abc.ABC):
         return self
 
     def _send_register_rt(self):
-        if self._rt_register_socket in self.ready_to_write:
-            while self.running:
+        while self.running:
+            if self._rt_register_socket in self.ready_to_write:
                 self._rt_register_socket.sendto(
                     self._register_rt_header.header + bytes(1), (socket.gethostbyname(self._ip), self._port)
                     )
@@ -73,7 +80,8 @@ class VbanCmd(abc.ABC):
                 self._register_rt_header.framecounter = count.to_bytes(4, 'little')
                 sleep(10)
 
-    def _fetch_rt_packet(self):
+    def _fetch_rt_packet(self) -> Optional[VBAN_VMRT_Packet_Data]:
+        """ Returns only a valid RT Data Packet. May Return None """
         if self._rt_packet_socket in self.ready_to_write:
             data, _ = self._rt_packet_socket.recvfrom(1024*1024*2)
             # check for packet data
@@ -112,13 +120,21 @@ class VbanCmd(abc.ABC):
     def public_packet(self, val):
         self._public_packet = val
 
-    def _keepupdated(self):
-        while self.running:
-            packet = self._get_rt()
-            if not packet.__eq__(self.public_packet):
-                self.public_packet = packet
+    def _keepupdated(self) -> NoReturn:
+        """ 
+        Continously update public packet in background.
 
-    def _get_rt(self):
+        This function to be run in its own thread.
+
+        Update public packet only if new private packet is found.
+        """
+        while self.running:
+            private_packet = self._get_rt()
+            if not private_packet.__eq__(self.public_packet):
+                self.public_packet = private_packet
+
+    def _get_rt(self) -> VBAN_VMRT_Packet_Data:
+        """ Attempt to fetch data packet until a valid one found """
         def fget():
             data = False
             while not data:
@@ -126,7 +142,10 @@ class VbanCmd(abc.ABC):
             return data
         return fget()
 
-    def set_rt(self, id_, param=None, val=None):
+    def set_rt(self, id_: str, param: Optional[str]=None, val: Optional[Union[int, float]]=None):
+        """ 
+        Sends a string request command over a network.
+        """
         cmd = id_ if not param and val else f'{id_}.{param}={val}'
         if self._sendrequest_string_socket in self.ready_to_write:
             self._sendrequest_string_socket.sendto(
@@ -137,15 +156,20 @@ class VbanCmd(abc.ABC):
             sleep(self._ratelimiter)
 
     def sendtext(self, cmd):
+        """ 
+        Sends a multiple parameter string over a network.
+        """
         self.set_rt(cmd)
         sleep(self._delay)
 
     @property
     def type(self):
+        """ Returns the type of Voicemeeter installation. """
         return self.public_packet.voicemeetertype
 
     @property
     def version(self):
+        """ Returns Voicemeeter's version as a tuple """
         return self.public_packet.voicemeeterversion
 
     def show(self) -> NoReturn:
@@ -162,6 +186,7 @@ class VbanCmd(abc.ABC):
         self.set_rt('Command', 'Restart', 1)
 
     def close(self):
+        """ sets thread flag, closes sockets """
         self.running = False
         sleep(0.2)
         self._rt_register_socket.close()
@@ -203,6 +228,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
 _remotes = {kind.id: _make_remote(kind) for kind in kinds.all}
 
 def connect(kind_id: str, **kwargs):
+    """ Connect to Voicemeeter and sets its strip layout. """
     try:
         VBANCMD_cls = _remotes[kind_id]
         return VBANCMD_cls(**kwargs)
