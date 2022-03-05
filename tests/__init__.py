@@ -21,8 +21,9 @@ def setup_package():
     tests._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), tests._port))
     tests.worker = Thread(target=tests._send_register_rt, daemon=True)
     tests.worker.start()
+    tests._public_packet = tests._get_rt()
+    tests.worker2 = Thread(target=tests._keepupdated, daemon=True)
+    tests.worker2.start()
 
 def teardown_package():
-    tests._rt_packet_socket.close()
-    tests._rt_register_socket.close()
-    tests._sendrequest_string_socket.close()
+    tests.close()
