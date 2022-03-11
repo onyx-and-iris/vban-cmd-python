@@ -73,3 +73,10 @@ class Channel(abc.ABC):
     def public_packet(self):
         """ Returns an RT data packet. """
         return self._remote.public_packet
+
+    def apply(self, mapping):
+        """ Sets all parameters of a dict for the strip. """
+        for key, val in mapping.items():
+            if not hasattr(self, key):
+                raise VMCMDErrors(f'Invalid {self.identifier} attribute: {key}')
+            setattr(self, key, val)

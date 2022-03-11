@@ -1,6 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/onyx-and-iris/vban-cmd-python/blob/dev/LICENSE)
 # VBAN CMD
-This package offers a Python interface for [Voicemeeter VBAN TEXT](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=19) as well as the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=27) which allows a client to send and receive parameter values over a network.
+This package offers a Python interface for [Voicemeeter VBAN TEXT](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=19) as well as the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=27) which allows a client to send and receive parameter values over a local network.
 
 It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
 
@@ -30,14 +30,6 @@ With development dependencies:
 ```
 pip install -e .['development']
 ```
-
-#### Connection:
-For sending a text command several configuration options are available:
-- `ip`: remote address
-- `streamname`: default 'Command1'
-- `port`: default 6990
-- `channel`: from 0 to 255
-- `bps`: bitrate of stream, default 0 should be safe for most cases.
 
 #### Use with a context manager:
 It is advised to use this code with a context manager.
@@ -81,9 +73,13 @@ A *kind* specifies a major Voicemeeter version. Currently this encompasses
 - `banana`
 - `potato`
 
-#### `vbancmd.connect(kind_id, ip=ip) -> '(VbanCmd)'`
-Factory function for remotes.
+#### `vbancmd.connect(kind_id, **kwargs) -> '(VbanCmd)'`
+Factory function for remotes. Keyword arguments include:
 - `ip`: remote pc you wish to send requests to.
+- `streamname`: default 'Command1'
+- `port`: default 6990
+- `channel`: from 0 to 255
+- `bps`: bitrate of stream, default 0 should be safe for most cases.
 
 
 ### `VbanCmd` (higher level)
@@ -106,12 +102,17 @@ Hides Voicemeeter if it's shown. No effect otherwise.
 Closes Voicemeeter.
 #### `vban.restart()`
 Restarts Voicemeeter's audio engine.
-#### `vban.sendtext(cmd)`
-Sends a TEXT command, for example:
+
+#### `vban.apply(mapping)`
+Updates values through a dict.  
+Example:
 ```python
-# Use ';' or ',' for delimiters.
-vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
+vban.apply({
+    'strip-2': dict(A1=True, B1=True, gain=-6.0),
+    'bus-2': dict(mute=True),
+})
 ```
+
 
 ### `Strip`
 The following properties are gettable and settable:
@@ -148,6 +149,13 @@ f'{id_}.{param}={val}'
 Used for updating the RT data packet, used internally by the Interface.
 ```python
 vban.public_packet = vban._get_rt()
+```
+
+#### `vban.sendtext(cmd)`
+Sends a multi parameter TEXT string command, for example:
+```python
+# Use ';' or ',' for delimiters.
+vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
 ```
 
 ### `Errors`

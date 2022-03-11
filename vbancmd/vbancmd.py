@@ -74,7 +74,7 @@ class VbanCmd(abc.ABC):
         while self.running:
             if self._rt_register_socket in self.ready_to_write:
                 self._rt_register_socket.sendto(
-                    self._register_rt_header.header + bytes(1), (socket.gethostbyname(self._ip), self._port)
+                    self._register_rt_header.header, (socket.gethostbyname(self._ip), self._port)
                     )
                 count = int.from_bytes(self._register_rt_header.framecounter, 'little') + 1
                 self._register_rt_header.framecounter = count.to_bytes(4, 'little')
@@ -184,6 +184,19 @@ class VbanCmd(abc.ABC):
     def restart(self) -> NoReturn:
         """ Restarts Voicemeeter's audio engine. """
         self.set_rt('Command', 'Restart', 1)
+
+    def apply(self, mapping: dict):
+        """ Sets all parameters of a di """
+        for key, submapping in mapping.items():
+            obj, index = key.split('-')
+
+            if obj in ('strip'):
+                target = self.strip[int(index)]
+            elif obj in ('bus'):
+                target = self.bus[int(index)]
+            else:
+                raise ValueError(obj)
+            target.apply(submapping)
 
     def close(self):
         """ sets thread flag, closes sockets """
