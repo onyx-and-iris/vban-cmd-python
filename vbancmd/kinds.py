@@ -7,7 +7,7 @@ from .errors import VMCMDErrors
 Represents a major version of Voicemeeter and describes
 its strip layout.
 """
-VMKind = namedtuple('VMKind', ['id', 'name', 'outs', 'ins', 'executable', 'vban'])
+VMKind = namedtuple('VMKind', ['id', 'name', 'ins', 'outs', 'executable', 'vban'])
 
 bits = 64 if sys.maxsize > 2**32 else 32
 os = platform.system()
