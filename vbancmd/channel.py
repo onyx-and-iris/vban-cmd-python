@@ -10,17 +10,17 @@ class Modes:
     _mono: hex=0x00000004
     _mutec: hex=0x00000008
 
-    _mixdown: hex=0x00000010
+    _amix: hex=0x00000010
     _repeat: hex=0x00000020
-    _mixdownb: hex=0x00000030
+    _bmix: hex=0x00000030
     _composite: hex=0x00000040
-    _upmixtv: hex=0x00000050
-    _updmix2: hex=0x00000060
-    _upmix4: hex=0x00000070
-    _upmix6: hex=0x00000080
-    _center: hex=0x00000090
-    _lfe: hex=0x000000A0
-    _rear: hex=0x000000B0
+    _tvmix: hex=0x00000050
+    _upmix21: hex=0x00000060
+    _upmix41: hex=0x00000070
+    _upmix61: hex=0x00000080
+    _centeronly: hex=0x00000090
+    _lfeonly: hex=0x000000A0
+    _rearonly: hex=0x000000B0
 
     _mask: hex=0x000000F0
 

@@ -2,6 +2,7 @@ from .errors import VMCMDErrors
 from . import channel
 from .channel import Channel
 from . import kinds
+from .meta import bus_mode_prop
 
 class OutputBus(Channel):
     """ Base class for output buses. """
@@ -11,9 +12,11 @@ class OutputBus(Channel):
         Factory function for output busses.
         Returns a physical/virtual bus of a kind.
         """
+        BusModeMixin = _make_bus_mode_mixin(cls)
         OutputBus = PhysicalOutputBus if is_physical else VirtualOutputBus
         OB_cls = type(f'Bus{remote.kind.name}', (OutputBus,), {
             'levels': BusLevel(remote, index),
+            'mode': BusModeMixin(remote, index),
         })
         return OB_cls(remote, index, *args, **kwargs)
 
@@ -126,3 +129,11 @@ def _make_bus_level_map(kind):
     return tuple((i, i+8) for i in range(0, (phys_out+virt_out)*8, 8))
 
 _bus_maps = {kind.id: _make_bus_level_map(kind) for kind in kinds.all}
+
+def _make_bus_mode_mixin(cls):
+    """ Creates a mixin of Bus Modes. """
+    return type('BusModeMixin', (cls,), {
+        **{f'{mode.lower()}': bus_mode_prop(f'mode.{mode}') for mode in
+        ['normal', 'Amix', 'Bmix', 'Repeat', 'Composite', 'TVMix', 'UpMix21',
+        'UpMix41', 'UpMix61', 'CenterOnly', 'LFEOnly', 'RearOnly']},
+    })
