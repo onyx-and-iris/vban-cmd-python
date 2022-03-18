@@ -29,6 +29,17 @@ class TestSetAndGetBoolHigher(unittest.TestCase):
         self.assertTrue(isinstance(retval, bool))
         assert_equal(retval, self.val)
 
+    """ bus mode tests, physical and virtual """
+    @parameterized.expand([
+    (0, 'amix'), (0, 'tvmix'), (2, 'composite'), (2, 'upmix41'), 
+    (7, 'upmix21'), (7, 'rearonly'), (6, 'lfeonly'), (6, 'repeat')
+    ])
+    def test_it_sets_and_gets_bus_mode_bool_params(self, index, param):
+        setattr(tests.bus[index].mode, param, self.val)
+        retval = getattr(tests.bus[index].mode, param)
+        self.assertTrue(isinstance(retval, bool))
+        assert_equal(retval, self.val)
+
 
 #@nottest
 @parameterized_class([

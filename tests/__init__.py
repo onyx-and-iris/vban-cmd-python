@@ -10,7 +10,6 @@ opts = {
     'streamname': 'testing',
     'port': 6990,
     'bps': 0,
-    'channel': 3
 }
 
 vbanrs = {kind.id: vbancmd.connect(_kind, **opts) for kind in kinds.all}
