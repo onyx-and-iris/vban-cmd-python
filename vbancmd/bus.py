@@ -133,7 +133,7 @@ _bus_maps = {kind.id: _make_bus_level_map(kind) for kind in kinds.all}
 def _make_bus_mode_mixin(cls):
     """ Creates a mixin of Bus Modes. """
     return type('BusModeMixin', (cls,), {
-        **{f'{mode.lower()}': bus_mode_prop(f'mode.{mode}') for mode in
+        **{f'{mode.lower()}': bus_mode_prop(mode) for mode in
         ['normal', 'Amix', 'Bmix', 'Repeat', 'Composite', 'TVMix', 'UpMix21',
         'UpMix41', 'UpMix61', 'CenterOnly', 'LFEOnly', 'RearOnly']},
     })

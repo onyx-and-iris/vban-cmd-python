@@ -5,53 +5,54 @@ from dataclasses import dataclass
 @dataclass
 class Modes:
     """ Channel Modes """
-    _mute: hex=0x00000001
-    _solo: hex=0x00000002
-    _mono: hex=0x00000004
-    _mutec: hex=0x00000008
+    _mute:      hex=0x00000001
+    _solo:      hex=0x00000002
+    _mono:      hex=0x00000004
+    _mutec:     hex=0x00000008
 
-    _amix: hex=0x00000010
-    _repeat: hex=0x00000020
-    _bmix: hex=0x00000030
+    _normal:    hex=0x00000000
+    _amix:      hex=0x00000010
+    _repeat:    hex=0x00000020
+    _bmix:      hex=0x00000030
     _composite: hex=0x00000040
-    _tvmix: hex=0x00000050
-    _upmix21: hex=0x00000060
-    _upmix41: hex=0x00000070
-    _upmix61: hex=0x00000080
-    _centeronly: hex=0x00000090
-    _lfeonly: hex=0x000000A0
-    _rearonly: hex=0x000000B0
+    _tvmix:     hex=0x00000050
+    _upmix21:   hex=0x00000060
+    _upmix41:   hex=0x00000070
+    _upmix61:   hex=0x00000080
+    _centeronly:hex=0x00000090
+    _lfeonly:   hex=0x000000A0
+    _rearonly:  hex=0x000000B0
 
-    _mask: hex=0x000000F0
+    _mask:      hex=0x000000F0
 
-    _eq: hex=0x00000100
-    _cross: hex=0x00000200
-    _eqb: hex=0x00000800
+    _eq:        hex=0x00000100
+    _cross:     hex=0x00000200
+    _eqb:       hex=0x00000800
 
-    _busa: hex=0x00001000
-    _busa1: hex=0x00001000
-    _busa2: hex=0x00002000
-    _busa3: hex=0x00004000
-    _busa4: hex=0x00008000
-    _busa5: hex=0x00080000
+    _busa:      hex=0x00001000
+    _busa1:     hex=0x00001000
+    _busa2:     hex=0x00002000
+    _busa3:     hex=0x00004000
+    _busa4:     hex=0x00008000
+    _busa5:     hex=0x00080000
 
-    _busb: hex=0x00010000
-    _busb1: hex=0x00010000
-    _busb2: hex=0x00020000
-    _busb3: hex=0x00040000
+    _busb:      hex=0x00010000
+    _busb1:     hex=0x00010000
+    _busb2:     hex=0x00020000
+    _busb3:     hex=0x00040000
 
-    _pan0: hex=0x00000000
-    _pancolor: hex=0x00100000
-    _panmod: hex=0x00200000
-    _panmask: hex=0x00F00000
+    _pan0:      hex=0x00000000
+    _pancolor:  hex=0x00100000
+    _panmod:    hex=0x00200000
+    _panmask:   hex=0x00F00000
 
-    _postfx_r: hex=0x01000000
-    _postfx_d: hex=0x02000000
-    _postfx1: hex=0x04000000
-    _postfx2: hex=0x08000000
+    _postfx_r:  hex=0x01000000
+    _postfx_d:  hex=0x02000000
+    _postfx1:   hex=0x04000000
+    _postfx2:   hex=0x08000000
 
-    _sel: hex=0x10000000
-    _monitor: hex=0x20000000
+    _sel:       hex=0x10000000
+    _monitor:   hex=0x20000000
 
 
 class Channel(abc.ABC):
