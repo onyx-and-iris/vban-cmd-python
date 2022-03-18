@@ -120,14 +120,25 @@ The following properties are gettable and settable:
 - `solo`: boolean
 - `mute`: boolean
 - `label`: string
-- `gainlayer`: float, -60 to 12
 - `gain`: float, -60 to 12
 - Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
+
 
 The following properties are settable:
 - `comp`: float, from 0.0 to 10.0
 - `gate`: float, from 0.0 to 10.0
 - `limit`: int, from -40 to 12
+
+#### `gainlayer`
+- `gainlayer[j].gain`: float, -60 to 12
+
+for example:
+```python
+# set and get the value of the second input strip, fourth gainlayer
+vban.strip[1].gainlayer[3].gain = -6.3
+print(vban.strip[1].gainlayer[3].gain)
+```
+Gainlayers defined for Potato version only.
 
 ### `Bus`
 The following properties are gettable and settable:
@@ -137,6 +148,17 @@ The following properties are gettable and settable:
 - `eq_ab`: boolean
 - `label`: string
 - `gain`: float, -60 to 12
+
+#### `mode`
+Bus modes are gettable and settable
+- `normal`, `amix`, `bmix`, `repeat`, `composite`, `tvmix`, `upmix21`,
+- `upmix41`, `upmix61`, `centeronly`, `lfeonly`, `rearonly`
+
+for example:
+```python
+# set leftmost bus mode to tvmix
+vban.bus[0].mode.tvmix = True
+```
 
 ### `VbanCmd` (lower level)
 #### `vban.set_rt(id_, param, val)`
