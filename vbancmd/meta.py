@@ -12,7 +12,7 @@ def strip_output_prop(param):
     return property(fget, fset)
 
 def bus_mode_prop(param):
-    """ A strip output prop. """
+    """ A bus mode prop. """
     def fget(self):
         data = self.public_packet
         modes = {
