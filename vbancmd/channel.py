@@ -54,6 +54,14 @@ class Modes:
     _sel:       hex=0x10000000
     _monitor:   hex=0x20000000
 
+    @property
+    def modevals(self):
+        return (val for val in [
+            self._normal, self._amix, self._repeat, self._bmix, self._composite,
+            self._tvmix, self._upmix21, self._upmix41, self._upmix61, self._centeronly,
+            self._lfeonly, self._rearonly,
+        ])
+
 
 class Channel(abc.ABC):
     """ Base class for InputStrip and OutputBus. """
