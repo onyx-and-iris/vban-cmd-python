@@ -32,7 +32,6 @@ pip install -e .['development']
 ```
 
 #### Use with a context manager:
-It is advised to use this code with a context manager.
 Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
 
 ### Example 1
@@ -64,6 +63,31 @@ if __name__ == '__main__':
     ip = '<ip address>'
 
     main()
+```
+
+#### Or perform setup/teardown independently:
+for example:
+
+### Example 2
+```python
+import vbancmd
+
+kind_id = 'potato'
+ip = '<ip address>'
+
+vban = vbancmd.connect(kind_id, ip=ip)
+
+# call login() at the start of your code
+vban.login()
+
+# Toggle mute for leftmost input strip
+vban.strip[0].mute = not vban.strip[0].mute
+
+# Toggle eq for leftmost output bus
+vban.bus[0].eq = not vban.bus[0].eq
+
+# call logout() at the end of your code
+vban.logout()
 ```
 
 ## API
