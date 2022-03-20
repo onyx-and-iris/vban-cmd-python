@@ -2,7 +2,7 @@ from .errors import VMCMDErrors
 from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import bus_mode_prop
+from .meta import bus_mode_prop, bus_bool_prop
 
 class OutputBus(Channel):
     """ Base class for output buses. """
@@ -24,55 +24,27 @@ class OutputBus(Channel):
     def identifier(self):
         return f'Bus[{self.index}]'
 
-    @property
-    def mute(self) -> bool:
-        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._mute == 0
+    mute = bus_bool_prop('mute')
 
-    @mute.setter
-    def mute(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('mute is a boolean parameter')
-        self.setter('mute', 1 if val else 0)
+    mono = bus_bool_prop('mono')
 
-    @property
-    def mono(self) -> bool:
-        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._mono == 0
+    eq = bus_bool_prop('eq.On')
 
-    @mono.setter
-    def mono(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('mono is a boolean parameter')
-        self.setter('mono', 1 if val else 0)
-
-    @property
-    def eq(self) -> bool:
-        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._eq == 0
-
-    @eq.setter
-    def eq(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise ('eq is a boolean parameter')
-        self.setter('eq.On', 1 if val else 0)
-
-    @property
-    def eq_ab(self) -> bool:
-        return not int.from_bytes(self.public_packet.busstate[self.index], 'little') & self._modes._eqb == 0
-
-    @eq_ab.setter
-    def eq_ab(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('eq_ab is a boolean parameter')
-        self.setter('eq.ab', 1 if val else 0)
+    eq_ab = bus_bool_prop('eq.ab')
 
     @property
     def label(self) -> str:
-        return self.public_packet.buslabels[self.index]
+        val = self.getter('label')
+        if val is None:
+            val = self.public_packet.buslabels[self.index]
+            self._remote.cache[f'{self.identifier}.label'] = [val, False]
+        return val
 
     @label.setter
     def label(self, val: str):
         if not isinstance(val, str):
             raise VMCMDErrors('label is a string parameter')
-        self.setter('Label', val)
+        self.setter('label', val)
 
     @property
     def gain(self) -> float:
@@ -84,7 +56,12 @@ class OutputBus(Channel):
                 return 0
             else:
                 return ((1 << 16) - 1) - val
-        return round((fget() * 0.01), 1)
+        val = self.getter('gain')
+        if val is None:
+            val = round((fget() * 0.01), 1)
+            self._remote.cache[f'{self.identifier}.gain'] = [val, False]
+        return round(val, 1)
+        
 
     @gain.setter
     def gain(self, val: float):

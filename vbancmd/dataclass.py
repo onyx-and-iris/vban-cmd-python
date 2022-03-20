@@ -31,6 +31,18 @@ class VBAN_VMRT_Packet_Data:
     _stripLabelUTF8c60: bytes
     _busLabelUTF8c60: bytes
 
+    def isdirty(self, other):
+        """ defines the dirty flag """
+        if \
+        self._stripState == other._stripState and \
+        self._busState == other._busState and \
+        self._stripLabelUTF8c60 == other._stripLabelUTF8c60 and \
+        self._busLabelUTF8c60 == other._busLabelUTF8c60 and \
+        self._stripGaindB100Layer1 == other._stripGaindB100Layer1 and \
+        self._busGaindB100 == other._busGaindB100:
+            return False
+        return True
+
     @property
     def voicemeetertype(self) -> str:
         """ returns voicemeeter type as a string """

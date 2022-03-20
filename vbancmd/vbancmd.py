@@ -26,7 +26,6 @@ class VbanCmd(abc.ABC):
         self._channel = kwargs['channel']
         self._delay =  kwargs['delay']
         self._ratelimiter = kwargs['ratelimiter']
-        self._sync = kwargs['sync']
         self._bps_opts = \
         [0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250, 
         38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800,921600, 
@@ -52,25 +51,19 @@ class VbanCmd(abc.ABC):
         self.ready_to_read, self.ready_to_write, in_error = select.select(is_readable, is_writable, is_error, 60)
         self._public_packet = None
         self.running = True
+        self._pdirty = False
+        self.cache = {}
 
     def __enter__(self):
-        """
-        Start listening for RT Packets
-
-        Start background threads: 
-        register to RT service
-        keep public packet updated.
-        """
-        self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
-        worker = Thread(target=self._send_register_rt, daemon=True)
-        worker.start()
-        self._public_packet = self._get_rt()
-        if self._sync:
-            worker2 = Thread(target=self._keepupdated, daemon=True)
-            worker2.start()
+        self.login()
         return self
 
     def _send_register_rt(self):
+        """ 
+        Continuously register to the RT Packet Service
+
+        This function to be run in its own thread.
+        """
         while self.running:
             if self._rt_register_socket in self.ready_to_write:
                 self._rt_register_socket.sendto(
@@ -81,7 +74,7 @@ class VbanCmd(abc.ABC):
                 sleep(10)
 
     def _fetch_rt_packet(self) -> Optional[VBAN_VMRT_Packet_Data]:
-        """ Returns only a valid RT Data Packet. May Return None """
+        """ Returns a valid RT Data Packet or None """
         if self._rt_packet_socket in self.ready_to_write:
             data, _ = self._rt_packet_socket.recvfrom(1024*1024*2)
             # check for packet data
@@ -114,6 +107,11 @@ class VbanCmd(abc.ABC):
                     )
 
     @property
+    def pdirty(self):
+        """ True iff a parameter has changed """
+        return self._pdirty
+
+    @property
     def public_packet(self):
         return self._public_packet
     @public_packet.setter
@@ -124,12 +122,15 @@ class VbanCmd(abc.ABC):
         """ 
         Continously update public packet in background.
 
-        This function to be run in its own thread.
+        Set parameter dirty flag.
 
         Update public packet only if new private packet is found.
+
+        This function to be run in its own thread.
         """
         while self.running:
             private_packet = self._get_rt()
+            self._pdirty = private_packet.isdirty(self.public_packet)
             if not private_packet.__eq__(self.public_packet):
                 self.public_packet = private_packet
 
@@ -143,9 +144,7 @@ class VbanCmd(abc.ABC):
         return fget()
 
     def set_rt(self, id_: str, param: Optional[str]=None, val: Optional[Union[int, float]]=None):
-        """ 
-        Sends a string request command over a network.
-        """
+        """ Sends a string request command over a network. """
         cmd = id_ if not param and val else f'{id_}.{param}={val}'
         if self._sendrequest_string_socket in self.ready_to_write:
             self._sendrequest_string_socket.sendto(
@@ -153,12 +152,11 @@ class VbanCmd(abc.ABC):
                 )
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
-            sleep(self._ratelimiter)
+            self.cache[f'{id_}.{param}'] = [val, True]
+            sleep(0.018)
 
     def sendtext(self, cmd):
-        """ 
-        Sends a multiple parameter string over a network.
-        """
+        """ Sends a multiple parameter string over a network. """
         self.set_rt(cmd)
         sleep(self._delay)
 
@@ -198,7 +196,23 @@ class VbanCmd(abc.ABC):
                 raise ValueError(obj)
             target.apply(submapping)
 
-    def close(self):
+    def login(self):
+        """
+        Start listening for RT Packets
+
+        Start background threads:
+
+        Register to RT service
+        Keep public packet updated.
+        """
+        self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
+        worker = Thread(target=self._send_register_rt, daemon=True)
+        worker.start()
+        self._public_packet = self._get_rt()
+        worker2 = Thread(target=self._keepupdated, daemon=True)
+        worker2.start()
+
+    def logout(self):
         """ sets thread flag, closes sockets """
         self.running = False
         sleep(0.2)
@@ -207,7 +221,7 @@ class VbanCmd(abc.ABC):
         self._rt_packet_socket.close()
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.close()
+        self.logout()
 
 
 def _make_remote(kind: NamedTuple) -> VbanCmd:
@@ -220,7 +234,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
     def init(self, **kwargs):
         defaultkwargs = {
             'ip': None, 'port': 6990, 'streamname': 'Command1', 'bps': 0, 
-            'channel': 0, 'delay': 0.001, 'ratelimiter': 0.035, 'sync': True
+            'channel': 0, 'delay': 0.001, 'ratelimiter': 0.018
             }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, **kwargs)

@@ -2,7 +2,7 @@ from .errors import VMCMDErrors
 from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import strip_output_prop
+from .meta import strip_output_prop, strip_bool_prop
 
 class InputStrip(Channel):
     """ Base class for input strips. """
@@ -24,35 +24,11 @@ class InputStrip(Channel):
     def identifier(self):
         return f'Strip[{self.index}]'
 
-    @property
-    def mono(self) -> bool:
-        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._mono == 0
+    mono = strip_bool_prop('mono')
 
-    @mono.setter
-    def mono(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('mono is a boolean parameter')
-        self.setter('mono', 1 if val else 0)
+    solo = strip_bool_prop('solo')
 
-    @property
-    def solo(self) -> bool:
-        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._solo == 0
-
-    @solo.setter
-    def solo(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('solo is a boolean parameter')
-        self.setter('solo', 1 if val else 0)
-
-    @property
-    def mute(self) -> bool:
-        return not int.from_bytes(self.public_packet.stripstate[self.index], 'little') & self._modes._mute == 0
-
-    @mute.setter
-    def mute(self, val: bool):
-        if not isinstance(val, bool) and val not in (0,1):
-            raise VMCMDErrors('mute is a boolean parameter')
-        self.setter('mute', 1 if val else 0)
+    mute = strip_bool_prop('mute')
 
     @property
     def limit(self) -> int:
@@ -66,7 +42,11 @@ class InputStrip(Channel):
 
     @property
     def label(self) -> str:
-        return self.public_packet.striplabels[self.index]
+        val = self.getter('label')
+        if val is None:
+            val = self.public_packet.striplabels[self.index]
+            self._remote.cache[f'{self.identifier}.label'] = [val, False]
+        return val
 
     @label.setter
     def label(self, val: str):
@@ -76,7 +56,11 @@ class InputStrip(Channel):
 
     @property
     def gain(self) -> float:
-        return self.gainlayer[0].gain
+        val = self.getter('GainLayer[0]')
+        if val is None:
+            val = self.gainlayer[0].gain
+            self._remote.cache[f'{self.identifier}.GainLayer[0]'] = [val, False]
+        return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):
@@ -175,7 +159,12 @@ class GainLayer(InputStrip):
                 return 0
             else:
                 return ((1 << 16) - 1) - val
-        return round((fget() * 0.01), 1)
+        val = self.getter(f'GainLayer[{self._i}]')
+        if val is None:
+            val = round((fget() * 0.01), 1)
+            self._remote.cache[f'{self.identifier}.GainLayer[{self._i}]'] = [val, False]
+            return val
+        return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):

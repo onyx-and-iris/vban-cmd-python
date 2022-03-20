@@ -1,6 +1,7 @@
 import abc
 from .errors import VMCMDErrors
 from dataclasses import dataclass
+from time import sleep
 
 @dataclass
 class Modes:
@@ -25,9 +26,9 @@ class Modes:
 
     _mask:      hex=0x000000F0
 
-    _eq:        hex=0x00000100
+    _eq_on:        hex=0x00000100
     _cross:     hex=0x00000200
-    _eqb:       hex=0x00000800
+    _eq_ab:       hex=0x00000800
 
     _busa:      hex=0x00001000
     _busa1:     hex=0x00001000
@@ -69,6 +70,15 @@ class Channel(abc.ABC):
         self._remote = remote
         self.index = index
         self._modes = Modes()
+
+    def getter(self, param):
+        cmd = f'{self.identifier}.{param}'
+        if cmd in self._remote.cache and self._remote.cache[cmd][1]:
+            for _ in range(2):
+                if self._remote.pdirty:
+                    val = self._remote.cache.pop(f'{self.identifier}.{param}')[0]
+                    return val
+                sleep(0.001)
 
     def setter(self, param, val):
         """ Sends a string request RT packet. """
