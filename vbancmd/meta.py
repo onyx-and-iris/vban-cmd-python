@@ -76,3 +76,9 @@ def bus_mode_prop(param):
             raise VMCMDErrors(f'mode.{param} is a boolean parameter')
         self.setter(f'mode.{param}', 1 if val else 0)
     return property(fget, fset)
+
+def action_prop(param, val=1):
+    """ A param that performs an action """
+    def fdo(self):
+        self.setter(param, val)
+    return fdo

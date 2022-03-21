@@ -16,6 +16,7 @@ from .dataclass import (
 )
 from .strip import InputStrip
 from .bus import OutputBus
+from .command import Command
 
 class VbanCmd(abc.ABC):
     def __init__(self, **kwargs):
@@ -247,6 +248,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
         self.bus = \
         tuple(OutputBus.make((i < self.phys_out), self, i)
         for i in range(self.phys_out + self.virt_out))
+        self.command = Command.make(self)
 
     return type(f'VbanCmd{kind.name}', (VbanCmd,), {
         '__init__': init,
