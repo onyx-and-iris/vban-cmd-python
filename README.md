@@ -90,6 +90,39 @@ vban.bus[0].eq = not vban.bus[0].eq
 vban.logout()
 ```
 
+## Profiles
+Profiles through config files are supported.
+
+Three example profiles are provided with the package, one for each kind of Voicemeeter.
+To test one first rename _profiles directory to profiles.
+They will be loaded into memory but not applied. To apply one you may do:
+`vmr.apply_profile('config')`, but remember to save your current settings first.
+
+profiles directory can be safely deleted if you don't wish to load them each time.
+
+A config can contain any key that `remote.apply()` would accept. Additionally, `extends` can be provided to inherit from another profile. Two profiles are available by default:
+- `blank`, all strip off and all sliders to `0.0`. mono, solo, mute, eq all disabled.
+- `base`, all physical strip to `A1`, all virtual strip to `B1`, all sliders to `0.0`.
+
+Sample `mySetup.toml`
+```toml
+extends = 'base'
+[strip-0]
+mute = 1
+
+[strip-5]
+A1 = 0
+A2 = 1
+A4 = 1
+gain = 0.0
+
+[strip-6]
+A1 = 0
+A2 = 1
+A4 = 1
+gain = 0.0
+```
+
 ## API
 ### Kinds
 A *kind* specifies a major Voicemeeter version. Currently this encompasses
@@ -136,7 +169,6 @@ vban.apply({
     'bus-2': dict(mute=True),
 })
 ```
-
 
 ### `Strip`
 The following properties are gettable and settable:
