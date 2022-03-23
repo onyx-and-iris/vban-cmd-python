@@ -6,6 +6,7 @@ setup(
   description='VBAN CMD Python API',
   packages=['vbancmd'],
   install_requires=[
+    'toml'
   ],
   extras_require={
     'development': [

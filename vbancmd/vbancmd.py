@@ -7,6 +7,7 @@ from typing import NamedTuple, NoReturn, Optional, Union
 
 from .errors import VMCMDErrors
 from . import kinds
+from . import profiles
 from .dataclass import (
     HEADER_SIZE,
     VBAN_VMRT_Packet_Data,
@@ -58,6 +59,22 @@ class VbanCmd(abc.ABC):
     def __enter__(self):
         self.login()
         return self
+
+    def login(self):
+        """
+        Start listening for RT Packets
+
+        Start background threads:
+
+        Register to RT service
+        Keep public packet updated.
+        """
+        self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
+        worker = Thread(target=self._send_register_rt, daemon=True)
+        worker.start()
+        self._public_packet = self._get_rt()
+        worker2 = Thread(target=self._keepupdated, daemon=True)
+        worker2.start()
 
     def _send_register_rt(self):
         """ 
@@ -154,7 +171,7 @@ class VbanCmd(abc.ABC):
             count = int.from_bytes(self._text_header.framecounter, 'little') + 1
             self._text_header.framecounter = count.to_bytes(4, 'little')
             self.cache[f'{id_}.{param}'] = [val, True]
-            sleep(0.018)
+            sleep(self._ratelimiter)
 
     def sendtext(self, cmd):
         """ Sends a multiple parameter string over a network. """
@@ -197,21 +214,24 @@ class VbanCmd(abc.ABC):
                 raise ValueError(obj)
             target.apply(submapping)
 
-    def login(self):
-        """
-        Start listening for RT Packets
+    def apply_profile(self, name: str):
+        try:
+            profile = self.profiles[name]
+            if 'extends' in profile:
+                base = self.profiles[profile['extends']]
+                del profile['extends']
+                for key in profile.keys():
+                    if key in base:
+                        base[key] |= profile[key]
+                    else:
+                        base[key] = profile[key]
+                profile = base
+            self.apply(profile)
+        except KeyError:
+            raise VMCMDErrors(f'Unknown profile: {self.kind.id}/{name}')
 
-        Start background threads:
-
-        Register to RT service
-        Keep public packet updated.
-        """
-        self._rt_packet_socket.bind((socket.gethostbyname(socket.gethostname()), self._port))
-        worker = Thread(target=self._send_register_rt, daemon=True)
-        worker.start()
-        self._public_packet = self._get_rt()
-        worker2 = Thread(target=self._keepupdated, daemon=True)
-        worker2.start()
+    def reset(self) -> NoReturn:
+        self.apply_profile('base')
 
     def logout(self):
         """ sets thread flag, closes sockets """
@@ -250,8 +270,12 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
         for i in range(self.phys_out + self.virt_out))
         self.command = Command.make(self)
 
+    def get_profiles(self):
+        return profiles.profiles[kind.id]
+
     return type(f'VbanCmd{kind.name}', (VbanCmd,), {
         '__init__': init,
+        'profiles': property(get_profiles)
     })
 
 _remotes = {kind.id: _make_remote(kind) for kind in kinds.all}
