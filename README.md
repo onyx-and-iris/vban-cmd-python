@@ -100,7 +100,7 @@ They will be loaded into memory but not applied. To apply one you may do:
 
 profiles directory can be safely deleted if you don't wish to load them each time.
 
-A config can contain any key that `remote.apply()` would accept. Additionally, `extends` can be provided to inherit from another profile. Two profiles are available by default:
+A config can contain any key that `connect.apply()` would accept. Additionally, `extends` can be provided to inherit from another profile. Two profiles are available by default:
 - `blank`, all strip off and all sliders to `0.0`. mono, solo, mute, eq all disabled.
 - `base`, all physical strip to `A1`, all virtual strip to `B1`, all sliders to `0.0`.
 
