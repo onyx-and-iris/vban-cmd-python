@@ -108,20 +108,12 @@ class VBAN_VMRT_Packet_Data:
         return tuple(((1 << 16) - 1) - int.from_bytes(self._busGaindB100[i:i+2], 'little') for i in range(0, 16, 2))
     @property
     def striplabels(self) -> tuple:
-        """ returns list of strip labels """
-        labels = list(self._stripLabelUTF8c60[i:i+60].decode().rstrip('\x00') for i in range(0, 480, 60))
-        for i, label in enumerate(labels):
-            if label != label.lstrip('\x00'):
-                labels[i] = None
-        return labels
+        """ returns tuple of strip labels """
+        return tuple(self._stripLabelUTF8c60[i:i+60].decode('ascii') for i in range(0, 480, 60))
     @property
     def buslabels(self) -> tuple:
-        """ returns list of bus labels """
-        labels = list(self._busLabelUTF8c60[i:i+60].decode().rstrip('\x00') for i in range(0, 480, 60))
-        for i, label in enumerate(labels):
-            if label != label.lstrip('\x00'):
-                labels[i] = None
-        return labels
+        """ returns tuple of bus labels """
+        return tuple(self._busLabelUTF8c60[i:i+60].decode('ascii') for i in range(0, 480, 60))
 
 @dataclass
 class VBAN_VMRT_Packet_Header:
