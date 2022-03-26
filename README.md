@@ -31,6 +31,7 @@ With development dependencies:
 pip install -e .['development']
 ```
 
+## Usage
 #### Use with a context manager:
 Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
 
