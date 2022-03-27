@@ -54,7 +54,7 @@ class VBAN_VMRT_Packet_Data:
 
     @property
     def voicemeeterversion(self) -> tuple:
-        """returns voicemeeter version as a string"""
+        """returns voicemeeter version as a tuple"""
         return tuple(
             reversed(
                 tuple(
