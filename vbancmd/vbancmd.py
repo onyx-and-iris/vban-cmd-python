@@ -29,34 +29,13 @@ class VbanCmd(abc.ABC):
         self._channel = kwargs["channel"]
         self._delay = kwargs["delay"]
         self._ratelimiter = kwargs["ratelimiter"]
+        # fmt: off
         self._bps_opts = [
-            0,
-            110,
-            150,
-            300,
-            600,
-            1200,
-            2400,
-            4800,
-            9600,
-            14400,
-            19200,
-            31250,
-            38400,
-            57600,
-            115200,
-            128000,
-            230400,
-            250000,
-            256000,
-            460800,
-            921600,
-            1000000,
-            1500000,
-            2000000,
-            3000000,
+            0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250,
+            38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800, 921600,
+            1000000, 1500000, 2000000, 3000000,
         ]
-
+        # fmt: on
         if self._channel not in range(256):
             raise VMCMDErrors("Channel must be in range 0 to 255")
         self._text_header = TextRequestHeader(
