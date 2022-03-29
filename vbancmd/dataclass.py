@@ -41,6 +41,13 @@ class VBAN_VMRT_Packet_Data:
             and self._stripLabelUTF8c60 == other._stripLabelUTF8c60
             and self._busLabelUTF8c60 == other._busLabelUTF8c60
             and self._stripGaindB100Layer1 == other._stripGaindB100Layer1
+            and self._stripGaindB100Layer2 == other._stripGaindB100Layer2
+            and self._stripGaindB100Layer3 == other._stripGaindB100Layer3
+            and self._stripGaindB100Layer4 == other._stripGaindB100Layer4
+            and self._stripGaindB100Layer5 == other._stripGaindB100Layer5
+            and self._stripGaindB100Layer6 == other._stripGaindB100Layer6
+            and self._stripGaindB100Layer7 == other._stripGaindB100Layer7
+            and self._stripGaindB100Layer8 == other._stripGaindB100Layer8
             and self._busGaindB100 == other._busGaindB100
         ):
             return False
