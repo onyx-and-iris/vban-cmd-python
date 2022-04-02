@@ -42,8 +42,6 @@ class InputStrip(Channel):
 
     @limit.setter
     def limit(self, val: int):
-        if val not in range(-40, 13):
-            raise VMCMDErrors("Expected value from -40 to 12")
         self.setter("limit", val)
 
     @property
@@ -118,8 +116,6 @@ class VirtualInputStrip(InputStrip):
 
     @k.setter
     def k(self, val: int):
-        if val not in range(5):
-            raise VMCMDErrors("Expected value from 0 to 4")
         self.setter("karaoke", val)
 
 
