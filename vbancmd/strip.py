@@ -100,7 +100,16 @@ class PhysicalInputStrip(InputStrip):
 class VirtualInputStrip(InputStrip):
     @property
     def mc(self) -> bool:
-        return
+        val = self.getter("mc")
+        if val is None:
+            val = (
+                not int.from_bytes(self.public_packet.stripstate[self.index], "little")
+                & getattr(self._modes, f"_mutec")
+                == 0
+            )
+            self._remote.cache[f"{self.identifier}.mc"] = [val, False]
+            return val
+        return val == 1
 
     @mc.setter
     def mc(self, val: bool):
