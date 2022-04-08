@@ -29,6 +29,7 @@ class VbanCmd(abc.ABC):
         self._channel = kwargs["channel"]
         self._delay = kwargs["delay"]
         self._ratelimiter = kwargs["ratelimiter"]
+        self._sync = kwargs["sync"]
         # fmt: off
         self._bps_opts = [
             0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250,
@@ -196,7 +197,8 @@ class VbanCmd(abc.ABC):
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
             self.cache[f"{id_}.{param}"] = [val, True]
-            sleep(self._ratelimiter)
+            if self._sync:
+                sleep(self._ratelimiter)
 
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
@@ -243,6 +245,7 @@ class VbanCmd(abc.ABC):
             target.apply(submapping)
 
     def apply_profile(self, name: str):
+        self._sync = True
         try:
             profile = self.profiles[name]
             if "extends" in profile:
@@ -257,6 +260,7 @@ class VbanCmd(abc.ABC):
             self.apply(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
+        self._sync = False
 
     def reset(self) -> NoReturn:
         self.apply_profile("base")
@@ -290,6 +294,7 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
             "channel": 0,
             "delay": 0.001,
             "ratelimiter": 0.018,
+            "sync": False,
         }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, **kwargs)
