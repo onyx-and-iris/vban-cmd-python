@@ -265,6 +265,16 @@ class VbanCmd(abc.ABC):
     def reset(self) -> NoReturn:
         self.apply_profile("base")
 
+    @property
+    def strip_levels(self):
+        """Returns the full level array for strips, PREFADER mode, before math conversion"""
+        return self.public_packet.inputlevels
+
+    @property
+    def bus_levels(self):
+        """Returns the full level array for buses, before math conversion"""
+        return self.public_packet.outputlevels
+
     def logout(self):
         """sets thread flag, closes sockets"""
         self.running = False
