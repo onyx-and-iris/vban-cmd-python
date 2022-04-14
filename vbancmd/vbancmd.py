@@ -111,7 +111,7 @@ class VbanCmd(abc.ABC):
     def _fetch_rt_packet(self) -> Optional[VBAN_VMRT_Packet_Data]:
         """Returns a valid RT Data Packet or None"""
         if self._rt_packet_socket in self.ready_to_write:
-            data, _ = self._rt_packet_socket.recvfrom(1024 * 1024 * 2)
+            data, _ = self._rt_packet_socket.recvfrom(1024 * 2)
             # check for packet data
             if len(data) > HEADER_SIZE:
                 # check if packet is of type rt service
