@@ -267,13 +267,19 @@ class VbanCmd(abc.ABC):
 
     @property
     def strip_levels(self):
-        """Returns the full level array for strips, PREFADER mode, before math conversion"""
-        return self.public_packet.inputlevels
+        """Returns the full strip level array for a kind, PREFADER mode, before math conversion"""
+        return tuple(
+            list(filter(lambda x: x != ((1 << 16) - 1), self.public_packet.inputlevels))
+        )
 
     @property
     def bus_levels(self):
-        """Returns the full level array for buses, before math conversion"""
-        return self.public_packet.outputlevels
+        """Returns the full bus level array for a kind, before math conversion"""
+        return tuple(
+            list(
+                filter(lambda x: x != ((1 << 16) - 1), self.public_packet.outputlevels)
+            )
+        )
 
     def logout(self):
         """sets thread flag, closes sockets"""
