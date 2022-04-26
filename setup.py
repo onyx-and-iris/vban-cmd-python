@@ -10,9 +10,8 @@ setup(
   ],
   extras_require={
     'development': [
-      'nose',
-      'randomize',
-      'parameterized'
+        "pytest",
+        "pytest-randomly",
     ]
   }
 )
