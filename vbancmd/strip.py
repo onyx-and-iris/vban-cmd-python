@@ -49,7 +49,6 @@ class InputStrip(Channel):
         val = self.getter("label")
         if val is None:
             val = self.public_packet.striplabels[self.index]
-            self._remote.cache[f"{self.identifier}.label"] = [val, False]
         return val
 
     @label.setter
@@ -63,7 +62,6 @@ class InputStrip(Channel):
         val = self.getter("gain")
         if val is None:
             val = self.gainlayer[0].gain
-            self._remote.cache[f"{self.identifier}.gain"] = [val, False]
         return round(val, 1)
 
     @gain.setter
@@ -107,7 +105,6 @@ class VirtualInputStrip(InputStrip):
                 & getattr(self._modes, f"_mutec")
                 == 0
             )
-            self._remote.cache[f"{self.identifier}.mc"] = [val, False]
             return val
         return val == 1
 
@@ -175,7 +172,6 @@ class GainLayer(InputStrip):
         val = self.getter(f"GainLayer[{self._i}]")
         if val is None:
             val = round((fget() * 0.01), 1)
-            self._remote.cache[f"{self.identifier}.GainLayer[{self._i}]"] = [val, False]
             return val
         return round(val, 1)
 

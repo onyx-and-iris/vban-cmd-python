@@ -43,7 +43,6 @@ class OutputBus(Channel):
         val = self.getter("label")
         if val is None:
             val = self.public_packet.buslabels[self.index]
-            self._remote.cache[f"{self.identifier}.label"] = [val, False]
         return val
 
     @label.setter
@@ -66,7 +65,6 @@ class OutputBus(Channel):
         val = self.getter("gain")
         if val is None:
             val = round((fget() * 0.01), 1)
-            self._remote.cache[f"{self.identifier}.gain"] = [val, False]
         return round(val, 1)
 
     @gain.setter

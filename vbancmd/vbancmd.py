@@ -200,7 +200,7 @@ class VbanCmd(abc.ABC):
             )
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
-            self.cache[f"{id_}.{param}"] = [val, True]
+            self.cache[f"{id_}.{param}"] = val
             if self._sync:
                 sleep(self._delay)
 

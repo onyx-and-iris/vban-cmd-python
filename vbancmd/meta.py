@@ -13,7 +13,6 @@ def strip_bool_prop(param):
                 & getattr(self._modes, f"_{param}")
                 == 0
             )
-            self._remote.cache[f"{self.identifier}.{param}"] = [val, False]
             return val
         return val == 1
 
@@ -36,7 +35,6 @@ def bus_bool_prop(param):
                 & getattr(self._modes, f'_{param.replace(".", "_").lower()}')
                 == 0
             )
-            self._remote.cache[f"{self.identifier}.{param}"] = [val, False]
             return val
         return val == 1
 
@@ -59,7 +57,6 @@ def strip_output_prop(param):
                 & getattr(self._modes, f"_bus{param.lower()}")
                 == 0
             )
-            self._remote.cache[f"{self.identifier}.{param}"] = [val, False]
             return val
         return val == 1
 
@@ -78,7 +75,7 @@ def bus_mode_prop(param):
         val = self.getter(f"mode.{param}")
         if val is None:
             if param == "normal":
-                return not any(
+                return any(
                     not int.from_bytes(
                         self.public_packet.busstate[self.index], "little"
                     )
@@ -94,14 +91,13 @@ def bus_mode_prop(param):
                     & getattr(self._modes, f"_{param}")
                     == 0
                 )
-            self._remote.cache[f"{self.identifier}.mode.{param}"] = [val, False]
             return val
         return val == 1
 
     def fset(self, val):
         if not isinstance(val, bool) and val not in (0, 1):
             raise VMCMDErrors(f"mode.{param} is a boolean parameter")
-        self.setter(f"mode.{param}", 1)
+        self.setter(f"mode.{param}", 1 if val else 0)
 
     return property(fget, fset)
 

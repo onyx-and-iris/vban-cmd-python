@@ -86,12 +86,8 @@ class Channel(abc.ABC):
 
     def getter(self, param):
         cmd = f"{self.identifier}.{param}"
-        if cmd in self._remote.cache and self._remote.cache[cmd][1]:
-            for _ in range(2):
-                if self._remote.pdirty:
-                    val = self._remote.cache.pop(f"{self.identifier}.{param}")[0]
-                    return val
-                sleep(0.001)
+        if cmd in self._remote.cache:
+            return self._remote.cache.pop(f"{self.identifier}.{param}")
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
