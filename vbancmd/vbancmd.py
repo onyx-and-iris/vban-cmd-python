@@ -248,7 +248,7 @@ class VbanCmd(abc.ABC):
                 raise ValueError(obj)
             target.apply(submapping)
             if not self._sync:
-                sleep(self._ratelimiter)
+                sleep(self._delay * 30)
 
     def apply_profile(self, name: str):
         try:
