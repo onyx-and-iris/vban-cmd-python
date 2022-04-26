@@ -1,22 +1,47 @@
+from dataclasses import dataclass
 import vbancmd
 from vbancmd import kinds
+import random
 
-_kind = "potato"
+# let's keep things random
+# kind_id = random.choice(("basic", "banana", "potato"))
+kind_id = "banana"
+
 opts = {
-    "ip": "ws.local",
+    "ip": "codey.local",
     "streamname": "testing",
     "port": 6990,
     "bps": 0,
     "sync": True,
 }
 
-vbanrs = {kind.id: vbancmd.connect(_kind, **opts) for kind in kinds.all}
-tests = vbanrs[_kind]
+vbans = {kind.id: vbancmd.connect(kind_id, **opts) for kind in kinds.all}
+tests = vbans[kind_id]
+kind = kinds.get(kind_id)
 
 
-def setup_package():
+@dataclass
+class Data:
+    """bounds data to map tests to a kind"""
+
+    name: str = kind.id
+    phys_in: int = kind.ins[0] - 1
+    virt_in: int = kind.ins[0] + kind.ins[1] - 1
+    phys_out: int = kind.outs[0] - 1
+    virt_out: int = kind.outs[0] + kind.outs[1] - 1
+    vban_in: int = kind.vban[0] - 1
+    vban_out: int = kind.vban[1] - 1
+    button_lower: int = 0
+    button_upper: int = 79
+
+
+data = Data()
+
+
+def setup_module():
     tests.login()
+    tests.apply_profile("blank")
 
 
-def teardown_package():
+def teardown_module():
     tests.logout()
