@@ -13,7 +13,6 @@ class Modes:
     _mono: hex = 0x00000004
     _mutec: hex = 0x00000008
 
-    _normal: hex = 0x00000000
     _amix: hex = 0x00000010
     _repeat: hex = 0x00000020
     _bmix: hex = 0x00000030
@@ -62,7 +61,6 @@ class Modes:
         return (
             val
             for val in [
-                self._normal,
                 self._amix,
                 self._repeat,
                 self._bmix,

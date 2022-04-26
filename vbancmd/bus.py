@@ -123,7 +123,7 @@ def _make_bus_mode_mixin(cls):
         (cls,),
         {
             **{
-                f"{mode.lower()}": bus_mode_prop(mode)
+                f"{mode.lower()}": bus_mode_prop(mode.lower())
                 for mode in [
                     "normal",
                     "Amix",

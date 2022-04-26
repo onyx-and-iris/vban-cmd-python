@@ -28,7 +28,6 @@ class VbanCmd(abc.ABC):
         self._bps = kwargs["bps"]
         self._channel = kwargs["channel"]
         self._delay = kwargs["delay"]
-        self._ratelimiter = kwargs["ratelimiter"]
         self._sync = kwargs["sync"]
         # fmt: off
         self._bps_opts = [
@@ -89,6 +88,7 @@ class VbanCmd(abc.ABC):
         self._public_packet = self._get_rt()
         worker2 = Thread(target=self._keepupdated, daemon=True)
         worker2.start()
+        self._clear_dirty()
 
     def _send_register_rt(self):
         """
@@ -150,6 +150,10 @@ class VbanCmd(abc.ABC):
     def public_packet(self):
         return self._public_packet
 
+    def _clear_dirty(self):
+        while self.pdirty:
+            pass
+
     @public_packet.setter
     def public_packet(self, val):
         self._public_packet = val
@@ -198,7 +202,7 @@ class VbanCmd(abc.ABC):
             self._text_header.framecounter = count.to_bytes(4, "little")
             self.cache[f"{id_}.{param}"] = [val, True]
             if self._sync:
-                sleep(self._ratelimiter)
+                sleep(self._delay)
 
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
@@ -243,9 +247,10 @@ class VbanCmd(abc.ABC):
             else:
                 raise ValueError(obj)
             target.apply(submapping)
+            if not self._sync:
+                sleep(self._ratelimiter)
 
     def apply_profile(self, name: str):
-        self._sync = True
         try:
             profile = self.profiles[name]
             if "extends" in profile:
@@ -260,7 +265,6 @@ class VbanCmd(abc.ABC):
             self.apply(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
-        self._sync = False
 
     def reset(self) -> NoReturn:
         self.apply_profile("base")
@@ -309,7 +313,6 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
             "bps": 0,
             "channel": 0,
             "delay": 0.001,
-            "ratelimiter": 0.018,
             "sync": False,
         }
         kwargs = defaultkwargs | kwargs

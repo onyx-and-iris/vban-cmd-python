@@ -60,10 +60,10 @@ class InputStrip(Channel):
 
     @property
     def gain(self) -> float:
-        val = self.getter("GainLayer[0]")
+        val = self.getter("gain")
         if val is None:
             val = self.gainlayer[0].gain
-            self._remote.cache[f"{self.identifier}.GainLayer[0]"] = [val, False]
+            self._remote.cache[f"{self.identifier}.gain"] = [val, False]
         return round(val, 1)
 
     @gain.setter
