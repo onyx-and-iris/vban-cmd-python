@@ -18,6 +18,7 @@ from .dataclass import (
 from .strip import InputStrip
 from .bus import OutputBus
 from .command import Command
+from .util import script
 
 
 class VbanCmd(abc.ABC):
@@ -29,7 +30,6 @@ class VbanCmd(abc.ABC):
         self._channel = kwargs["channel"]
         self._delay = kwargs["delay"]
         self._sync = kwargs["sync"]
-        self._ratelimit = kwargs["ratelimit"]
         # fmt: off
         self._bps_opts = [
             0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250,
@@ -203,12 +203,10 @@ class VbanCmd(abc.ABC):
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
             self.cache[f"{id_}.{param}"] = val
-            sleep(self._delay)
-            if self._sync:
+            if self._sync or self.in_apply:
                 sleep(self._delay)
-            # if self.in_apply:
-            # sleep(self._ratelimit)
 
+    @script
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
         self.set_rt(cmd)
@@ -253,7 +251,6 @@ class VbanCmd(abc.ABC):
             else:
                 raise ValueError(obj)
             target.apply(submapping)
-            # sleep(self._ratelimit)
         self.in_apply = False
 
     def apply_profile(self, name: str):
@@ -268,7 +265,7 @@ class VbanCmd(abc.ABC):
                     else:
                         base[key] = profile[key]
                 profile = base
-            self.apply(profile)
+            self.sendtext(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
 
@@ -320,7 +317,6 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
             "channel": 0,
             "delay": 0.001,
             "sync": False,
-            "ratelimit": 0.025,
         }
         kwargs = defaultkwargs | kwargs
         VbanCmd.__init__(self, **kwargs)
