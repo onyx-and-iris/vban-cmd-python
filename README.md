@@ -1,6 +1,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/onyx-and-iris/vban-cmd-python/blob/dev/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # VBAN CMD
+
 This package offers a Python interface for [Voicemeeter VBAN TEXT](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=19) as well as the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=27) which allows a client to send and receive parameter values over a local network.
 
 It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
@@ -8,35 +10,43 @@ It may be used standalone or to extend the [Voicemeeter Remote Python API](https
 For sending audio across a network with VBAN you will need to look elsewhere.
 
 ## Tested against
-- Basic 1.0.8.1
-- Banana 2.0.6.1
-- Potato 3.0.2.1
+
+-   Basic 1.0.8.1
+-   Banana 2.0.6.1
+-   Potato 3.0.2.1
 
 ## Prerequisites
-- Voicemeeter 1 (Basic), 2 (Banana) or 3 (Potato)
-- Python 3.9+
+
+-   Voicemeeter 1 (Basic), 2 (Banana) or 3 (Potato)
+-   Python 3.9+
 
 ## Installation
+
 ```
 git clone https://github.com/onyx-and-iris/vban-cmd-python
 cd vban-cmd-python
 ```
 
 Just the interface:
+
 ```
 pip install .
 ```
 
 With development dependencies:
+
 ```
 pip install -e .['development']
 ```
 
 ## Usage
+
 #### Use with a context manager:
+
 Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
 
 ### Example 1
+
 ```python
 import vbancmd
 
@@ -68,9 +78,11 @@ if __name__ == '__main__':
 ```
 
 #### Or perform setup/teardown independently:
+
 for example:
 
 ### Example 2
+
 ```python
 import vbancmd
 
@@ -93,20 +105,23 @@ vban.logout()
 ```
 
 ## Profiles
+
 Profiles through config files are supported.
 
 Three example profiles are provided with the package, one for each kind of Voicemeeter.
-To test one first rename _profiles directory to profiles.
+To test one first rename \_profiles directory to profiles.
 They will be loaded into memory but not applied. To apply one you may do:
 `vmr.apply_profile('config')`, but remember to save your current settings first.
 
 profiles directory can be safely deleted if you don't wish to load them each time.
 
 A config can contain any key that `connect.apply()` would accept. Additionally, `extends` can be provided to inherit from another profile. Two profiles are available by default:
-- `blank`, all strip off and all sliders to `0.0`. mono, solo, mute, eq all disabled.
-- `base`, all physical strip to `A1`, all virtual strip to `B1`, all sliders to `0.0`.
+
+-   `blank`, all strip off and all sliders to `0.0`. mono, solo, mute, eq all disabled.
+-   `base`, all physical strip to `A1`, all virtual strip to `B1`, all sliders to `0.0`.
 
 Sample `mySetup.toml`
+
 ```toml
 extends = 'base'
 [strip-0]
@@ -126,45 +141,64 @@ gain = 0.0
 ```
 
 ## API
+
 ### Kinds
-A *kind* specifies a major Voicemeeter version. Currently this encompasses
-- `basic`
-- `banana`
-- `potato`
+
+A _kind_ specifies a major Voicemeeter version. Currently this encompasses
+
+-   `basic`
+-   `banana`
+-   `potato`
 
 #### `vbancmd.connect(kind_id, **kwargs) -> '(VbanCmd)'`
-Factory function for remotes. Keyword arguments include:
-- `ip`: remote pc you wish to send requests to.
-- `streamname`: default 'Command1'
-- `port`: default 6990
-- `channel`: from 0 to 255
-- `bps`: bitrate of stream, default 0 should be safe for most cases.
 
+Factory function for remotes. Keyword arguments include:
+
+-   `ip`: remote pc you wish to send requests to.
+-   `streamname`: default 'Command1'
+-   `port`: default 6990
+-   `channel`: from 0 to 255
+-   `bps`: bitrate of stream, default 0 should be safe for most cases.
 
 ### `VbanCmd` (higher level)
+
 #### `vban.type`
+
 The kind of the Voicemeeter instance.
+
 #### `vban.version`
+
 A tuple of the form `(v1, v2, v3, v4)`.
 
 #### `vban.strip`
+
 An `InputStrip` tuple, containing both physical and virtual.
+
 #### `vban.bus`
+
 An `OutputBus` tuple, containing both physical and virtual.
 
-
 #### `vban.show()`
+
 Shows Voicemeeter if it's hidden. No effect otherwise.
+
 #### `vban.hide()`
+
 Hides Voicemeeter if it's shown. No effect otherwise.
+
 #### `vban.shutdown()`
+
 Closes Voicemeeter.
+
 #### `vban.restart()`
+
 Restarts Voicemeeter's audio engine.
 
 #### `vban.apply(mapping)`
+
 Updates values through a dict.  
 Example:
+
 ```python
 vban.apply({
     'strip-2': dict(A1=True, B1=True, gain=-6.0),
@@ -173,80 +207,100 @@ vban.apply({
 ```
 
 ### `Strip`
-The following properties are gettable and settable:
-- `mono`: boolean
-- `solo`: boolean
-- `mute`: boolean
-- `label`: string
-- `gain`: float, -60 to 12
-- Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
 
+The following properties are gettable and settable:
+
+-   `mono`: boolean
+-   `solo`: boolean
+-   `mute`: boolean
+-   `label`: string
+-   `gain`: float, -60 to 12
+-   Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
 
 The following properties are settable:
-- `comp`: float, from 0.0 to 10.0
-- `gate`: float, from 0.0 to 10.0
-- `limit`: int, from -40 to 12
+
+-   `comp`: float, from 0.0 to 10.0
+-   `gate`: float, from 0.0 to 10.0
+-   `limit`: int, from -40 to 12
 
 #### `gainlayer`
-- `gainlayer[j].gain`: float, -60 to 12
+
+-   `gainlayer[j].gain`: float, -60 to 12
 
 for example:
+
 ```python
 # set and get the value of the second input strip, fourth gainlayer
 vban.strip[1].gainlayer[3].gain = -6.3
 print(vban.strip[1].gainlayer[3].gain)
 ```
+
 Gainlayers defined for Potato version only.
 
 ### `Bus`
+
 The following properties are gettable and settable:
-- `mute`: boolean
-- `mono`: boolean
-- `eq`: boolean
-- `eq_ab`: boolean
-- `label`: string
-- `gain`: float, -60 to 12
+
+-   `mute`: boolean
+-   `mono`: boolean
+-   `eq`: boolean
+-   `eq_ab`: boolean
+-   `label`: string
+-   `gain`: float, -60 to 12
 
 #### `mode`
+
 Bus modes are gettable and settable
-- `normal`, `amix`, `bmix`, `repeat`, `composite`, `tvmix`, `upmix21`,
-- `upmix41`, `upmix61`, `centeronly`, `lfeonly`, `rearonly`
+
+-   `normal`, `amix`, `bmix`, `repeat`, `composite`, `tvmix`, `upmix21`,
+-   `upmix41`, `upmix61`, `centeronly`, `lfeonly`, `rearonly`
 
 for example:
+
 ```python
 # set leftmost bus mode to tvmix
 vban.bus[0].mode.tvmix = True
 ```
 
 ### `VbanCmd` (lower level)
+
 #### `vban.set_rt(id_, param, val)`
+
 Sends a string request RT Packet where the command would take the form:
+
 ```python
 f'{id_}.{param}={val}'
 ```
 
 #### `vban._get_rt()`
+
 Used for updating the RT data packet, used internally by the Interface.
+
 ```python
 vban.public_packet = vban._get_rt()
 ```
 
 #### `vban.sendtext(cmd)`
+
 Sends a multi parameter TEXT string command, for example:
+
 ```python
 # Use ';' or ',' for delimiters.
 vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
 ```
 
 ### `Errors`
-- `errors.VMCMDErrors`: Base VMCMD error class.
+
+-   `errors.VMCMDErrors`: Base VMCMD error class.
 
 ### `Tests`
+
 First make sure you installed the [development dependencies](https://github.com/onyx-and-iris/vban-cmd-python#installation)
 
-To run the tests from tests directory:
+Then from tests directory:
 
-`nosetests --r test -v`
+`pytest -v`
 
 ## Resources
-- [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf)
+
+-   [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf)
