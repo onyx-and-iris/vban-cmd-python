@@ -203,10 +203,11 @@ class VbanCmd(abc.ABC):
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
             self.cache[f"{id_}.{param}"] = val
+            sleep(self._delay)
             if self._sync:
                 sleep(self._delay)
-            if self.in_apply:
-                sleep(self._ratelimit)
+            # if self.in_apply:
+            # sleep(self._ratelimit)
 
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
@@ -252,7 +253,7 @@ class VbanCmd(abc.ABC):
             else:
                 raise ValueError(obj)
             target.apply(submapping)
-            sleep(self._ratelimit)
+            # sleep(self._ratelimit)
         self.in_apply = False
 
     def apply_profile(self, name: str):
