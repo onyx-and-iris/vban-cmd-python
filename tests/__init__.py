@@ -5,8 +5,7 @@ import random
 import sys
 
 # let's keep things random
-# kind_id = random.choice(("basic", "banana", "potato"))
-kind_id = "potato"
+kind_id = random.choice(("basic", "banana", "potato"))
 
 opts = {
     "ip": "codey.local",
