@@ -1,5 +1,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/onyx-and-iris/vban-cmd-python/blob/dev/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Tests Status](./tests/basic.svg?dummy=8484744)
+![Tests Status](./tests/banana.svg?dummy=8484744)
+![Tests Status](./tests/potato.svg?dummy=8484744)
 
 # VBAN CMD
 

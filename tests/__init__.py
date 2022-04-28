@@ -2,10 +2,10 @@ from dataclasses import dataclass
 import vbancmd
 from vbancmd import kinds
 import random
+import sys
 
 # let's keep things random
-# kind_id = random.choice(("basic", "banana", "potato"))
-kind_id = "banana"
+kind_id = random.choice(("basic", "banana", "potato"))
 
 opts = {
     "ip": "codey.local",
@@ -39,6 +39,7 @@ data = Data()
 
 
 def setup_module():
+    print(f"\nRunning tests for kind [{data.name}]\n", file=sys.stdout)
     tests.login()
     tests.apply_profile("blank")
 
