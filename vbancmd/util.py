@@ -15,7 +15,6 @@ def cache_bool(func, param):
         self, *rem = args
         cmd = f"{self.identifier}[{self.index}].{param}"
         if cmd in self._remote.cache:
-            print(self._remote.cache[cmd] == 1)
             return self._remote.cache.pop(cmd) == 1
         return func(*args, **kwargs)
 
