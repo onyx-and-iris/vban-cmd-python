@@ -34,6 +34,12 @@ def cache_string(func, param):
     return wrapper
 
 
+def depth(d):
+    if isinstance(d, dict):
+        return 1 + (max(map(depth, d.values())) if d else 0)
+    return 0
+
+
 def script(func):
     """Convert dictionary to script"""
 

@@ -104,7 +104,11 @@ class Channel(abc.ABC):
 
     def apply(self, mapping):
         """Sets all parameters of a dict for the strip."""
+        script = ""
         for key, val in mapping.items():
             if not hasattr(self, key):
                 raise VMCMDErrors(f"Invalid {self.identifier} attribute: {key}")
-            setattr(self, key, val)
+            self._remote.cache[f"{self.identifier}[{self.index}].{key}"] = val
+            script += f"{self.identifier}[{self.index}].{key}={val};"
+
+        self._remote.sendtext(script)

@@ -22,6 +22,9 @@ class OutputBus(Channel):
                 "levels": BusLevel(remote, index),
                 "mode": BusModeMixin(remote, index),
                 **{param: channel_bool_prop(param) for param in ["mute", "mono"]},
+                "eq": channel_bool_prop("eq.On"),
+                "eq_ab": channel_bool_prop("eq.ab"),
+                "label": channel_label_prop(),
             },
         )
         return OB_cls(remote, index, *args, **kwargs)
@@ -29,12 +32,6 @@ class OutputBus(Channel):
     @property
     def identifier(self):
         return "bus"
-
-    eq = channel_bool_prop("eq.On")
-
-    eq_ab = channel_bool_prop("eq.ab")
-
-    label = channel_label_prop()
 
     @property
     def gain(self) -> float:

@@ -67,7 +67,6 @@ class VbanCmd(abc.ABC):
         self.running = True
         self._pdirty = False
         self.cache = {}
-        self.in_apply = False
 
     def __enter__(self):
         self.login()
@@ -204,8 +203,6 @@ class VbanCmd(abc.ABC):
             self._text_header.framecounter = count.to_bytes(4, "little")
             if param:
                 self.cache[f"{id_}.{param}"] = val
-            if self._sync or self.in_apply:
-                sleep(self._delay)
 
     @script
     def sendtext(self, cmd):
@@ -241,7 +238,6 @@ class VbanCmd(abc.ABC):
 
     def apply(self, mapping: dict):
         """Sets all parameters of a di"""
-        self.in_apply = True
         for key, submapping in mapping.items():
             obj, index = key.split("-")
 
@@ -252,7 +248,6 @@ class VbanCmd(abc.ABC):
             else:
                 raise ValueError(obj)
             target.apply(submapping)
-        self.in_apply = False
 
     def apply_profile(self, name: str):
         try:
@@ -266,7 +261,7 @@ class VbanCmd(abc.ABC):
                     else:
                         base[key] = profile[key]
                 profile = base
-            self.sendtext(profile)
+            self.apply(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
 
