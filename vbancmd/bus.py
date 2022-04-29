@@ -1,8 +1,7 @@
 from .errors import VMCMDErrors
-from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import bus_mode_prop, bus_bool_prop
+from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
 
 
 class OutputBus(Channel):
@@ -22,34 +21,20 @@ class OutputBus(Channel):
             {
                 "levels": BusLevel(remote, index),
                 "mode": BusModeMixin(remote, index),
+                **{param: channel_bool_prop(param) for param in ["mute", "mono"]},
             },
         )
         return OB_cls(remote, index, *args, **kwargs)
 
     @property
     def identifier(self):
-        return f"Bus[{self.index}]"
+        return "bus"
 
-    mute = bus_bool_prop("mute")
+    eq = channel_bool_prop("eq.On")
 
-    mono = bus_bool_prop("mono")
+    eq_ab = channel_bool_prop("eq.ab")
 
-    eq = bus_bool_prop("eq.On")
-
-    eq_ab = bus_bool_prop("eq.ab")
-
-    @property
-    def label(self) -> str:
-        val = self.getter("label")
-        if val is None:
-            val = self.public_packet.buslabels[self.index]
-        return val
-
-    @label.setter
-    def label(self, val: str):
-        if not isinstance(val, str):
-            raise VMCMDErrors("label is a string parameter")
-        self.setter("label", val)
+    label = channel_label_prop()
 
     @property
     def gain(self) -> float:
@@ -62,10 +47,10 @@ class OutputBus(Channel):
             else:
                 return ((1 << 16) - 1) - val
 
-        val = self.getter("gain")
+        val = round(self.getter("gain"), 1)
         if val is None:
             val = round((fget() * 0.01), 1)
-        return round(val, 1)
+        return val
 
     @gain.setter
     def gain(self, val: float):

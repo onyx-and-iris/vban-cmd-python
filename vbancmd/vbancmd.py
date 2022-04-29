@@ -194,7 +194,7 @@ class VbanCmd(abc.ABC):
         val: Optional[Union[int, float]] = None,
     ):
         """Sends a string request command over a network."""
-        cmd = id_ if not param and val else f"{id_}.{param}={val}"
+        cmd = id_ if not param else f"{id_}.{param}={val}"
         if self._sendrequest_string_socket in self.ready_to_write:
             self._sendrequest_string_socket.sendto(
                 self._text_header.header + cmd.encode(),
@@ -202,7 +202,8 @@ class VbanCmd(abc.ABC):
             )
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
-            self.cache[f"{id_}.{param}"] = val
+            if param:
+                self.cache[f"{id_}.{param}"] = val
             if self._sync or self.in_apply:
                 sleep(self._delay)
 

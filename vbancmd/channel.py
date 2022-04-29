@@ -11,7 +11,7 @@ class Modes:
     _mute: hex = 0x00000001
     _solo: hex = 0x00000002
     _mono: hex = 0x00000004
-    _mutec: hex = 0x00000008
+    _mc: hex = 0x00000008
 
     _amix: hex = 0x00000010
     _repeat: hex = 0x00000020
@@ -85,13 +85,13 @@ class Channel(abc.ABC):
         self._modes = Modes()
 
     def getter(self, param):
-        cmd = f"{self.identifier}.{param}"
+        cmd = f"{self.identifier}[{self.index}].{param}"
         if cmd in self._remote.cache:
-            return self._remote.cache.pop(f"{self.identifier}.{param}")
+            return self._remote.cache.pop(cmd)
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
-        self._remote.set_rt(f"{self.identifier}", param, val)
+        self._remote.set_rt(f"{self.identifier}[{self.index}]", param, val)
 
     @abc.abstractmethod
     def identifier(self):
