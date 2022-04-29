@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="vbancmd",
-    version="0.0.1",
+    version="0.0.2",
     description="VBAN CMD Python API",
     packages=["vbancmd"],
     install_requires=["toml"],
