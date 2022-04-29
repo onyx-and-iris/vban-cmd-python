@@ -267,6 +267,10 @@ vban.bus[0].mode.tvmix = True
 
 ### `VbanCmd` (lower level)
 
+#### `vban.pdirty`
+
+True iff a parameter has been changed.
+
 #### `vban.set_rt(id_, param, val)`
 
 Sends a string request RT Packet where the command would take the form:
@@ -275,22 +279,9 @@ Sends a string request RT Packet where the command would take the form:
 f'{id_}.{param}={val}'
 ```
 
-#### `vban._get_rt()`
+#### `vban.public_packet`
 
-Used for updating the RT data packet, used internally by the Interface.
-
-```python
-vban.public_packet = vban._get_rt()
-```
-
-#### `vban.sendtext(cmd)`
-
-Sends a multi parameter TEXT string command, for example:
-
-```python
-# Use ';' or ',' for delimiters.
-vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
-```
+Returns a data packet with current Voiceemeter states. Designed to be used internally by the interface but available for parsing through this read only property object.
 
 ### `Errors`
 
