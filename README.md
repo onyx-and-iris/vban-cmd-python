@@ -269,7 +269,7 @@ vban.bus[0].mode.tvmix = True
 
 #### `vban.pdirty`
 
-True iff a parameter has been changed.
+True iff a parameter has been changed. Typical this is checked periodically to update states.
 
 #### `vban.set_rt(id_, param, val)`
 
@@ -281,7 +281,7 @@ f'{id_}.{param}={val}'
 
 #### `vban.public_packet`
 
-Returns a data packet with current Voiceemeter states. Designed to be used internally by the interface but available for parsing through this read only property object.
+Returns a Voicemeeter rt data packet. Designed to be used internally by the interface but available for parsing through this read only property object. States may or may not be current, use the polling parameter pdirty to be sure.
 
 ### `Errors`
 
