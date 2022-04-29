@@ -1,8 +1,7 @@
 from .errors import VMCMDErrors
-from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import bus_mode_prop, bus_bool_prop
+from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
 
 
 class OutputBus(Channel):
@@ -22,35 +21,17 @@ class OutputBus(Channel):
             {
                 "levels": BusLevel(remote, index),
                 "mode": BusModeMixin(remote, index),
+                **{param: channel_bool_prop(param) for param in ["mute", "mono"]},
+                "eq": channel_bool_prop("eq.On"),
+                "eq_ab": channel_bool_prop("eq.ab"),
+                "label": channel_label_prop(),
             },
         )
         return OB_cls(remote, index, *args, **kwargs)
 
     @property
     def identifier(self):
-        return f"Bus[{self.index}]"
-
-    mute = bus_bool_prop("mute")
-
-    mono = bus_bool_prop("mono")
-
-    eq = bus_bool_prop("eq.On")
-
-    eq_ab = bus_bool_prop("eq.ab")
-
-    @property
-    def label(self) -> str:
-        val = self.getter("label")
-        if val is None:
-            val = self.public_packet.buslabels[self.index]
-            self._remote.cache[f"{self.identifier}.label"] = [val, False]
-        return val
-
-    @label.setter
-    def label(self, val: str):
-        if not isinstance(val, str):
-            raise VMCMDErrors("label is a string parameter")
-        self.setter("label", val)
+        return "bus"
 
     @property
     def gain(self) -> float:
@@ -65,8 +46,7 @@ class OutputBus(Channel):
 
         val = self.getter("gain")
         if val is None:
-            val = round((fget() * 0.01), 1)
-            self._remote.cache[f"{self.identifier}.gain"] = [val, False]
+            val = fget() * 0.01
         return round(val, 1)
 
     @gain.setter
@@ -123,7 +103,7 @@ def _make_bus_mode_mixin(cls):
         (cls,),
         {
             **{
-                f"{mode.lower()}": bus_mode_prop(mode)
+                f"{mode.lower()}": bus_mode_prop(mode.lower())
                 for mode in [
                     "normal",
                     "Amix",

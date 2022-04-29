@@ -35,7 +35,7 @@ class VBAN_VMRT_Packet_Data:
 
     def isdirty(self, other):
         """defines the dirty flag"""
-        if (
+        return not (
             self._stripState == other._stripState
             and self._busState == other._busState
             and self._stripLabelUTF8c60 == other._stripLabelUTF8c60
@@ -49,9 +49,7 @@ class VBAN_VMRT_Packet_Data:
             and self._stripGaindB100Layer7 == other._stripGaindB100Layer7
             and self._stripGaindB100Layer8 == other._stripGaindB100Layer8
             and self._busGaindB100 == other._busGaindB100
-        ):
-            return False
-        return True
+        )
 
     @property
     def voicemeetertype(self) -> str:

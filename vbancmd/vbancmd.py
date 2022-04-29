@@ -18,6 +18,7 @@ from .dataclass import (
 from .strip import InputStrip
 from .bus import OutputBus
 from .command import Command
+from .util import script
 
 
 class VbanCmd(abc.ABC):
@@ -28,7 +29,6 @@ class VbanCmd(abc.ABC):
         self._bps = kwargs["bps"]
         self._channel = kwargs["channel"]
         self._delay = kwargs["delay"]
-        self._ratelimiter = kwargs["ratelimiter"]
         self._sync = kwargs["sync"]
         # fmt: off
         self._bps_opts = [
@@ -89,6 +89,7 @@ class VbanCmd(abc.ABC):
         self._public_packet = self._get_rt()
         worker2 = Thread(target=self._keepupdated, daemon=True)
         worker2.start()
+        self._clear_dirty()
 
     def _send_register_rt(self):
         """
@@ -150,6 +151,10 @@ class VbanCmd(abc.ABC):
     def public_packet(self):
         return self._public_packet
 
+    def _clear_dirty(self):
+        while self.pdirty:
+            pass
+
     @public_packet.setter
     def public_packet(self, val):
         self._public_packet = val
@@ -188,7 +193,7 @@ class VbanCmd(abc.ABC):
         val: Optional[Union[int, float]] = None,
     ):
         """Sends a string request command over a network."""
-        cmd = id_ if not param and val else f"{id_}.{param}={val}"
+        cmd = id_ if not param else f"{id_}.{param}={val}"
         if self._sendrequest_string_socket in self.ready_to_write:
             self._sendrequest_string_socket.sendto(
                 self._text_header.header + cmd.encode(),
@@ -196,10 +201,10 @@ class VbanCmd(abc.ABC):
             )
             count = int.from_bytes(self._text_header.framecounter, "little") + 1
             self._text_header.framecounter = count.to_bytes(4, "little")
-            self.cache[f"{id_}.{param}"] = [val, True]
-            if self._sync:
-                sleep(self._ratelimiter)
+            if param:
+                self.cache[f"{id_}.{param}"] = val
 
+    @script
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
         self.set_rt(cmd)
@@ -245,7 +250,6 @@ class VbanCmd(abc.ABC):
             target.apply(submapping)
 
     def apply_profile(self, name: str):
-        self._sync = True
         try:
             profile = self.profiles[name]
             if "extends" in profile:
@@ -253,14 +257,13 @@ class VbanCmd(abc.ABC):
                 del profile["extends"]
                 for key in profile.keys():
                     if key in base:
-                        base[key] |= profile[key]
+                        base[key] = base[key] | profile[key]
                     else:
                         base[key] = profile[key]
                 profile = base
             self.apply(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
-        self._sync = False
 
     def reset(self) -> NoReturn:
         self.apply_profile("base")
@@ -309,7 +312,6 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
             "bps": 0,
             "channel": 0,
             "delay": 0.001,
-            "ratelimiter": 0.018,
             "sync": False,
         }
         kwargs = defaultkwargs | kwargs

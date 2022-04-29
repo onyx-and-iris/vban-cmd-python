@@ -1,8 +1,7 @@
 from .errors import VMCMDErrors
-from . import channel
 from .channel import Channel
 from . import kinds
-from .meta import strip_output_prop, strip_bool_prop
+from .meta import strip_output_prop, channel_bool_prop, channel_label_prop
 
 
 class InputStrip(Channel):
@@ -22,19 +21,18 @@ class InputStrip(Channel):
             (InputStrip, GainLayerMixin),
             {
                 "levels": StripLevel(remote, index),
+                **{
+                    param: channel_bool_prop(param)
+                    for param in ["mono", "solo", "mute"]
+                },
+                "label": channel_label_prop(),
             },
         )
         return IS_cls(remote, index, **kwargs)
 
     @property
     def identifier(self):
-        return f"Strip[{self.index}]"
-
-    mono = strip_bool_prop("mono")
-
-    solo = strip_bool_prop("solo")
-
-    mute = strip_bool_prop("mute")
+        return "strip"
 
     @property
     def limit(self) -> int:
@@ -45,25 +43,10 @@ class InputStrip(Channel):
         self.setter("limit", val)
 
     @property
-    def label(self) -> str:
-        val = self.getter("label")
-        if val is None:
-            val = self.public_packet.striplabels[self.index]
-            self._remote.cache[f"{self.identifier}.label"] = [val, False]
-        return val
-
-    @label.setter
-    def label(self, val: str):
-        if not isinstance(val, str):
-            raise VMCMDErrors("label is a string parameter")
-        self.setter("label", val)
-
-    @property
     def gain(self) -> float:
-        val = self.getter("GainLayer[0]")
+        val = self.getter("gain")
         if val is None:
             val = self.gainlayer[0].gain
-            self._remote.cache[f"{self.identifier}.GainLayer[0]"] = [val, False]
         return round(val, 1)
 
     @gain.setter
@@ -98,24 +81,7 @@ class PhysicalInputStrip(InputStrip):
 
 
 class VirtualInputStrip(InputStrip):
-    @property
-    def mc(self) -> bool:
-        val = self.getter("mc")
-        if val is None:
-            val = (
-                not int.from_bytes(self.public_packet.stripstate[self.index], "little")
-                & getattr(self._modes, f"_mutec")
-                == 0
-            )
-            self._remote.cache[f"{self.identifier}.mc"] = [val, False]
-            return val
-        return val == 1
-
-    @mc.setter
-    def mc(self, val: bool):
-        if not isinstance(val, bool) and val not in (0, 1):
-            raise VMCMDErrors("mc is a boolean parameter")
-        self.setter("mc", 1 if val else 0)
+    mc = channel_bool_prop("mc")
 
     mono = mc
 
@@ -174,9 +140,7 @@ class GainLayer(InputStrip):
 
         val = self.getter(f"GainLayer[{self._i}]")
         if val is None:
-            val = round((fget() * 0.01), 1)
-            self._remote.cache[f"{self.identifier}.GainLayer[{self._i}]"] = [val, False]
-            return val
+            val = fget() * 0.01
         return round(val, 1)
 
     @gain.setter

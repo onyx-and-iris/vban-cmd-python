@@ -11,9 +11,8 @@ class Modes:
     _mute: hex = 0x00000001
     _solo: hex = 0x00000002
     _mono: hex = 0x00000004
-    _mutec: hex = 0x00000008
+    _mc: hex = 0x00000008
 
-    _normal: hex = 0x00000000
     _amix: hex = 0x00000010
     _repeat: hex = 0x00000020
     _bmix: hex = 0x00000030
@@ -62,7 +61,6 @@ class Modes:
         return (
             val
             for val in [
-                self._normal,
                 self._amix,
                 self._repeat,
                 self._bmix,
@@ -87,17 +85,13 @@ class Channel(abc.ABC):
         self._modes = Modes()
 
     def getter(self, param):
-        cmd = f"{self.identifier}.{param}"
-        if cmd in self._remote.cache and self._remote.cache[cmd][1]:
-            for _ in range(2):
-                if self._remote.pdirty:
-                    val = self._remote.cache.pop(f"{self.identifier}.{param}")[0]
-                    return val
-                sleep(0.001)
+        cmd = f"{self.identifier}[{self.index}].{param}"
+        if cmd in self._remote.cache:
+            return self._remote.cache.pop(cmd)
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
-        self._remote.set_rt(f"{self.identifier}", param, val)
+        self._remote.set_rt(f"{self.identifier}[{self.index}]", param, val)
 
     @abc.abstractmethod
     def identifier(self):
@@ -109,8 +103,12 @@ class Channel(abc.ABC):
         return self._remote.public_packet
 
     def apply(self, mapping):
-        """Sets all parameters of a dict for the strip."""
+        """Sets all parameters of a dict for the channel."""
+        script = ""
         for key, val in mapping.items():
             if not hasattr(self, key):
                 raise VMCMDErrors(f"Invalid {self.identifier} attribute: {key}")
-            setattr(self, key, val)
+            self._remote.cache[f"{self.identifier}[{self.index}].{key}"] = val
+            script += f"{self.identifier}[{self.index}].{key}={val};"
+
+        self._remote.sendtext(script)
