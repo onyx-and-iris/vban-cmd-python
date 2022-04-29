@@ -269,7 +269,7 @@ vban.bus[0].mode.tvmix = True
 
 #### `vban.pdirty`
 
-True iff a parameter has been changed. Typical this is checked periodically to update states.
+True iff a parameter has been changed. Typically this is checked periodically to update states.
 
 #### `vban.set_rt(id_, param, val)`
 
