@@ -103,7 +103,7 @@ class Channel(abc.ABC):
         return self._remote.public_packet
 
     def apply(self, mapping):
-        """Sets all parameters of a dict for the strip."""
+        """Sets all parameters of a dict for the channel."""
         script = ""
         for key, val in mapping.items():
             if not hasattr(self, key):
