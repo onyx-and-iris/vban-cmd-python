@@ -47,10 +47,10 @@ class OutputBus(Channel):
             else:
                 return ((1 << 16) - 1) - val
 
-        val = round(self.getter("gain"), 1)
+        val = self.getter("gain")
         if val is None:
-            val = round((fget() * 0.01), 1)
-        return val
+            val = fget() * 0.01
+        return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):

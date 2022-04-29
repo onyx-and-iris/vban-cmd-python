@@ -45,10 +45,10 @@ class InputStrip(Channel):
 
     @property
     def gain(self) -> float:
-        val = round(self.getter("gain"), 1)
+        val = self.getter("gain")
         if val is None:
             val = self.gainlayer[0].gain
-        return val
+        return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):
@@ -139,10 +139,10 @@ class GainLayer(InputStrip):
             else:
                 return ((1 << 16) - 1) - val
 
-        val = round(self.getter(f"GainLayer[{self._i}]"), 1)
+        val = self.getter(f"GainLayer[{self._i}]")
         if val is None:
-            val = round((fget() * 0.01), 1)
-        return val
+            val = fget() * 0.01
+        return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):
