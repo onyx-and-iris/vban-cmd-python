@@ -3,7 +3,7 @@ Function RunTests {
     $run_tests = "pytest -v --capture=tee-sys --junitxml=./tests/.coverage.xml"
     $match_pattern = "^=|^\s*$|^Running|^Using|^plugins|^collecting|^tests"
 
-    if ( Test-Path "./$coverage" ) { Clear-Content $coverage }
+    if ( Test-Path $coverage ) { Clear-Content $coverage }
 
     ForEach ($line in $(Invoke-Expression $run_tests)) {
         If ( $line -Match $match_pattern ) {
