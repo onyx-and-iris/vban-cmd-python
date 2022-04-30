@@ -155,10 +155,6 @@ class VbanCmd(abc.ABC):
         while self.pdirty:
             pass
 
-    @public_packet.setter
-    def public_packet(self, val):
-        self._public_packet = val
-
     def _keepupdated(self) -> NoReturn:
         """
         Continously update public packet in background.
@@ -172,8 +168,8 @@ class VbanCmd(abc.ABC):
         while self.running:
             private_packet = self._get_rt()
             self._pdirty = private_packet.isdirty(self.public_packet)
-            if not private_packet.__eq__(self.public_packet):
-                self.public_packet = private_packet
+            if not private_packet == self.public_packet:
+                self._public_packet = private_packet
 
     def _get_rt(self) -> VBAN_VMRT_Packet_Data:
         """Attempt to fetch data packet until a valid one found"""
