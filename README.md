@@ -14,9 +14,9 @@ For sending audio across a network with VBAN you will need to look elsewhere.
 
 ## Tested against
 
--   Basic 1.0.8.1
--   Banana 2.0.6.1
--   Potato 3.0.2.1
+-   Basic 1.0.8.2
+-   Banana 2.0.6.2
+-   Potato 3.0.2.2
 
 ## Prerequisites
 
