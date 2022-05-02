@@ -6,11 +6,15 @@
 
 # VBAN CMD
 
-This package offers a Python interface for [Voicemeeter VBAN TEXT](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=19) as well as the [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=27) which allows a client to send and receive parameter values over a local network.
+This package offers a Python interface for the Voicemeeter RT Packet Service as well as Voicemeeter VBAN-TEXT.
+
+This allows a user to get (rt packets) and set (vban-text) parameters over a local network. Consider the Streamer View app over VBAN, for example.
 
 It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
 
 For sending audio across a network with VBAN you will need to look elsewhere.
+
+For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Tested against
 
@@ -20,7 +24,7 @@ For sending audio across a network with VBAN you will need to look elsewhere.
 
 ## Prerequisites
 
--   Voicemeeter 1 (Basic), 2 (Banana) or 3 (Potato)
+-   [Voicemeeter](https://voicemeeter.com/)
 -   Python 3.9+
 
 ## Installation
@@ -46,7 +50,7 @@ pip install -e .['development']
 
 #### Use with a context manager:
 
-Parameter coverage is not as extensive for the RT Packet Service as with the Remote API.
+Parameter coverage is not as extensive for this interface as with the Remote API.
 
 ### Example 1
 
@@ -81,8 +85,6 @@ if __name__ == '__main__':
 ```
 
 #### Or perform setup/teardown independently:
-
-for example:
 
 ### Example 2
 
@@ -267,6 +269,10 @@ vban.bus[0].mode.tvmix = True
 
 ### `VbanCmd` (lower level)
 
+#### `vban.pdirty`
+
+True iff a parameter has been changed. Typically this is checked periodically to update states.
+
 #### `vban.set_rt(id_, param, val)`
 
 Sends a string request RT Packet where the command would take the form:
@@ -275,22 +281,9 @@ Sends a string request RT Packet where the command would take the form:
 f'{id_}.{param}={val}'
 ```
 
-#### `vban._get_rt()`
+#### `vban.public_packet`
 
-Used for updating the RT data packet, used internally by the Interface.
-
-```python
-vban.public_packet = vban._get_rt()
-```
-
-#### `vban.sendtext(cmd)`
-
-Sends a multi parameter TEXT string command, for example:
-
-```python
-# Use ';' or ',' for delimiters.
-vban.sendtext('Strip[0].Mute=1;Strip[3].A3=0;Bus[2].Mute=0;Bus[3].Eq.On=1')
-```
+Returns a Voicemeeter rt data packet. Designed to be used internally by the interface but available for parsing through this read only property object. States may or may not be current, use the polling parameter pdirty to be sure.
 
 ### `Errors`
 
@@ -306,4 +299,6 @@ Then from tests directory:
 
 ## Resources
 
--   [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf)
+-   [Voicemeeter VBAN TEXT](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=19)
+
+-   [Voicemeeter RT Packet Service](https://vb-audio.com/Voicemeeter/VBANProtocol_Specifications.pdf#page=27)

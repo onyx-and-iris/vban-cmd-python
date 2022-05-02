@@ -25,6 +25,7 @@ class InputStrip(Channel):
                     param: channel_bool_prop(param)
                     for param in ["mono", "solo", "mute"]
                 },
+                "label": channel_label_prop(),
             },
         )
         return IS_cls(remote, index, **kwargs)
@@ -32,8 +33,6 @@ class InputStrip(Channel):
     @property
     def identifier(self):
         return "strip"
-
-    label = channel_label_prop()
 
     @property
     def limit(self) -> int:

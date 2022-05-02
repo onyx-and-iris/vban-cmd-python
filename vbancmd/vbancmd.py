@@ -67,7 +67,6 @@ class VbanCmd(abc.ABC):
         self.running = True
         self._pdirty = False
         self.cache = {}
-        self.in_apply = False
 
     def __enter__(self):
         self.login()
@@ -156,10 +155,6 @@ class VbanCmd(abc.ABC):
         while self.pdirty:
             pass
 
-    @public_packet.setter
-    def public_packet(self, val):
-        self._public_packet = val
-
     def _keepupdated(self) -> NoReturn:
         """
         Continously update public packet in background.
@@ -173,8 +168,8 @@ class VbanCmd(abc.ABC):
         while self.running:
             private_packet = self._get_rt()
             self._pdirty = private_packet.isdirty(self.public_packet)
-            if not private_packet.__eq__(self.public_packet):
-                self.public_packet = private_packet
+            if not private_packet == self.public_packet:
+                self._public_packet = private_packet
 
     def _get_rt(self) -> VBAN_VMRT_Packet_Data:
         """Attempt to fetch data packet until a valid one found"""
@@ -204,8 +199,6 @@ class VbanCmd(abc.ABC):
             self._text_header.framecounter = count.to_bytes(4, "little")
             if param:
                 self.cache[f"{id_}.{param}"] = val
-            if self._sync or self.in_apply:
-                sleep(self._delay)
 
     @script
     def sendtext(self, cmd):
@@ -241,7 +234,6 @@ class VbanCmd(abc.ABC):
 
     def apply(self, mapping: dict):
         """Sets all parameters of a di"""
-        self.in_apply = True
         for key, submapping in mapping.items():
             obj, index = key.split("-")
 
@@ -252,7 +244,6 @@ class VbanCmd(abc.ABC):
             else:
                 raise ValueError(obj)
             target.apply(submapping)
-        self.in_apply = False
 
     def apply_profile(self, name: str):
         try:
@@ -266,7 +257,7 @@ class VbanCmd(abc.ABC):
                     else:
                         base[key] = profile[key]
                 profile = base
-            self.sendtext(profile)
+            self.apply(profile)
         except KeyError:
             raise VMCMDErrors(f"Unknown profile: {self.kind.id}/{name}")
 

@@ -14,7 +14,7 @@ def channel_bool_prop(param):
                 getattr(self.public_packet, f"{self.identifier}state")[self.index],
                 "little",
             )
-            & getattr(self._modes, f"_{param}")
+            & getattr(self._modes, f'_{param.replace(".", "_").lower()}')
             == 0
         )
 
