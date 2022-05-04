@@ -1,10 +1,10 @@
 from .errors import VMCMDErrors
-from .channel import Channel
+from .channel import IChannel
 from . import kinds
 from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
 
 
-class OutputBus(Channel):
+class OutputBus(IChannel):
     """Base class for output buses."""
 
     @classmethod
@@ -13,7 +13,7 @@ class OutputBus(Channel):
         Factory function for output busses.
         Returns a physical/virtual bus of a kind.
         """
-        BusModeMixin = _make_bus_mode_mixin(cls)
+        BusModeMixin = _make_bus_mode_mixin(IChannel)
         OutputBus = PhysicalOutputBus if is_physical else VirtualOutputBus
         OB_cls = type(
             f"Bus{remote.kind.name}",
@@ -68,10 +68,14 @@ class VirtualOutputBus(OutputBus):
     pass
 
 
-class BusLevel(OutputBus):
+class BusLevel(IChannel):
     def __init__(self, remote, index):
         super().__init__(remote, index)
         self.level_map = _bus_maps[remote.kind.id]
+
+    @property
+    def identifier(self) -> str:
+        return f"Bus[{self.index}]"
 
     def getter_level(self, mode=None):
         def fget(i, data):
@@ -96,27 +100,32 @@ def _make_bus_level_map(kind):
 _bus_maps = {kind.id: _make_bus_level_map(kind) for kind in kinds.all}
 
 
-def _make_bus_mode_mixin(cls):
+def _make_bus_mode_mixin(kls):
     """Creates a mixin of Bus Modes."""
+
+    def identifier(self) -> str:
+        return f"Bus[{self.index}].mode"
+
     return type(
         "BusModeMixin",
-        (cls,),
+        (kls,),
         {
+            "identifier": property(identifier),
             **{
-                f"{mode.lower()}": bus_mode_prop(mode.lower())
+                mode: bus_mode_prop(mode)
                 for mode in [
                     "normal",
-                    "Amix",
-                    "Bmix",
-                    "Repeat",
-                    "Composite",
-                    "TVMix",
-                    "UpMix21",
-                    "UpMix41",
-                    "UpMix61",
-                    "CenterOnly",
-                    "LFEOnly",
-                    "RearOnly",
+                    "amix",
+                    "bmix",
+                    "repeat",
+                    "composite",
+                    "tvmix",
+                    "upmix21",
+                    "upmix41",
+                    "upmix61",
+                    "centeronly",
+                    "lfeonly",
+                    "rearonly",
                 ]
             },
         },

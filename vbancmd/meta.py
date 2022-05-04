@@ -63,7 +63,7 @@ def strip_output_prop(param):
 def bus_mode_prop(param):
     """A bus mode prop."""
 
-    @partial(cache_bool, param=f"mode.{param}")
+    @partial(cache_bool, param=param)
     def fget(self):
         modelist = {
             "amix": (1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1),
@@ -88,8 +88,8 @@ def bus_mode_prop(param):
 
     def fset(self, val):
         if not isinstance(val, bool) and val not in (0, 1):
-            raise VMCMDErrors(f"mode.{param} is a boolean parameter")
-        self.setter(f"mode.{param}", 1 if val else 0)
+            raise VMCMDErrors(f"{param} is a boolean parameter")
+        self.setter(param, 1 if val else 0)
 
     return property(fget, fset)
 

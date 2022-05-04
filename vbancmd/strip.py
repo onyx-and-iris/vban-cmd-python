@@ -1,10 +1,10 @@
 from .errors import VMCMDErrors
-from .channel import Channel
+from .channel import IChannel
 from . import kinds
 from .meta import strip_output_prop, channel_bool_prop, channel_label_prop
 
 
-class InputStrip(Channel):
+class InputStrip(IChannel):
     """Base class for input strips."""
 
     @classmethod

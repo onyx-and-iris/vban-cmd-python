@@ -76,7 +76,7 @@ class Modes:
         )
 
 
-class Channel(abc.ABC):
+class IChannel(abc.ABC):
     """Base class for InputStrip and OutputBus."""
 
     def __init__(self, remote, index):
