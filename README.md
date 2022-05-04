@@ -18,9 +18,9 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Tested against
 
--   Basic 1.0.8.1
--   Banana 2.0.6.1
--   Potato 3.0.2.1
+-   Basic 1.0.8.2
+-   Banana 2.0.6.2
+-   Potato 3.0.2.2
 
 ## Prerequisites
 
