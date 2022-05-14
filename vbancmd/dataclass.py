@@ -33,8 +33,9 @@ class VBAN_VMRT_Packet_Data:
     _stripLabelUTF8c60: bytes
     _busLabelUTF8c60: bytes
 
-    def isdirty(self, other):
-        """defines the dirty flag"""
+    def pdirty(self, other):
+        """True iff any defined parameter has changed"""
+
         return not (
             self._stripState == other._stripState
             and self._busState == other._busState

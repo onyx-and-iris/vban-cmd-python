@@ -19,6 +19,7 @@ from .strip import InputStrip
 from .bus import OutputBus
 from .command import Command
 from .util import script
+from .subject import Subject
 
 
 class VbanCmd(abc.ABC):
@@ -66,6 +67,8 @@ class VbanCmd(abc.ABC):
         self._public_packet = None
         self.running = True
         self._pdirty = False
+        self._ldirty = False
+        self.subject = Subject()
         self.cache = {}
 
     def __enter__(self):
@@ -87,9 +90,9 @@ class VbanCmd(abc.ABC):
         worker = Thread(target=self._send_register_rt, daemon=True)
         worker.start()
         self._public_packet = self._get_rt()
-        worker2 = Thread(target=self._keepupdated, daemon=True)
+        worker2 = Thread(target=self._updates, daemon=True)
         worker2.start()
-        self._clear_dirty()
+        self.clear_dirty()
 
     def _send_register_rt(self):
         """
@@ -148,28 +151,70 @@ class VbanCmd(abc.ABC):
         return self._pdirty
 
     @property
+    def ldirty(self):
+        """True iff a level value has changed."""
+        return self._ldirty
+
+    @property
     def public_packet(self):
         return self._public_packet
 
-    def _clear_dirty(self):
+    def clear_dirty(self):
         while self.pdirty:
             pass
 
-    def _keepupdated(self) -> NoReturn:
+    def _updates(self) -> NoReturn:
         """
         Continously update public packet in background.
 
-        Set parameter dirty flag.
+        Set parameter and level dirty flags.
 
         Update public packet only if new private packet is found.
+
+        Then notify observers of updates to states.
 
         This function to be run in its own thread.
         """
         while self.running:
             private_packet = self._get_rt()
-            self._pdirty = private_packet.isdirty(self.public_packet)
-            if not private_packet == self.public_packet:
+
+            private_input_levels = private_packet.inputlevels
+            public_input_levels = self.public_packet.inputlevels
+            strip_comp = [
+                not a == b
+                for a, b in zip(
+                    private_input_levels,
+                    public_input_levels,
+                )
+            ]
+            private_output_levels = private_packet.outputlevels
+            public_output_levels = self.public_packet.outputlevels
+            bus_comp = [
+                not a == b
+                for a, b in zip(
+                    private_output_levels,
+                    public_output_levels,
+                )
+            ]
+
+            self._pdirty = private_packet.pdirty(self.public_packet)
+            self._ldirty = any(any(list_) for list_ in [strip_comp, bus_comp])
+
+            if self._public_packet != private_packet:
                 self._public_packet = private_packet
+            if self.pdirty:
+                self.subject.notify("pdirty")
+            if self.ldirty:
+                self.subject.notify(
+                    "ldirty",
+                    [
+                        public_input_levels,
+                        strip_comp,
+                        public_output_levels,
+                        bus_comp,
+                    ],
+                )
+            sleep(self._delay)
 
     def _get_rt(self) -> VBAN_VMRT_Packet_Data:
         """Attempt to fetch data packet until a valid one found"""
@@ -281,7 +326,6 @@ class VbanCmd(abc.ABC):
         )
 
     def logout(self):
-        """sets thread flag, closes sockets"""
         self.running = False
         sleep(0.2)
         self._rt_register_socket.close()
@@ -315,6 +359,8 @@ def _make_remote(kind: NamedTuple) -> VbanCmd:
         self.kind = kind
         self.phys_in, self.virt_in = kind.ins
         self.phys_out, self.virt_out = kind.outs
+        self.strip_comp = [False for _ in range(2 * self.phys_in + 8 * self.virt_in)]
+        self.bus_comp = [False for _ in range(8 * (self.phys_out + self.virt_out))]
         self.strip = tuple(
             InputStrip.make((i < self.phys_in), self, i)
             for i in range(self.phys_in + self.virt_in)

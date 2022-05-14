@@ -9,7 +9,7 @@ kind_id = random.choice(tuple(kind.id for kind in kinds.all))
 
 opts = {
     "ip": "codey.local",
-    "streamname": "testing",
+    "streamname": "codey",
     "port": 6990,
     "bps": 0,
     "sync": True,
