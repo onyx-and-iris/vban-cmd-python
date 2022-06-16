@@ -198,21 +198,23 @@ class VbanCmd(metaclass=ABCMeta):
                     )
                 ),
             )
+            self._pdirty = private_packet.pdirty(self.public_packet)
+            self._ldirty = any(any(list_) for list_ in (strip_comp, bus_comp))
 
             if self._public_packet != private_packet:
                 self._public_packet = private_packet
-                if private_packet.pdirty(self.public_packet):
-                    self.subject.notify("pdirty")
-                if any(any(list_) for list_ in (strip_comp, bus_comp)):
-                    self.subject.notify(
-                        "ldirty",
-                        (
-                            self.public_packet.inputlevels,
-                            strip_comp,
-                            self.public_packet.outputlevels,
-                            bus_comp,
-                        ),
-                    )
+            if self.pdirty:
+                self.subject.notify("pdirty")
+            if self.ldirty:
+                self.subject.notify(
+                    "ldirty",
+                    (
+                        self.public_packet.inputlevels,
+                        strip_comp,
+                        self.public_packet.outputlevels,
+                        bus_comp,
+                    ),
+                )
             time.sleep(self.ratelimit)
 
     @property
