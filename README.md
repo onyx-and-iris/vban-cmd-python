@@ -32,10 +32,9 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ### `Pip`
 
-Install voicemeeter-api package from your console
+Install vban-cmd package from your console
 
 `pip install vban-cmd`
-
 
 ## `Use`
 
