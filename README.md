@@ -38,7 +38,7 @@ Install vban-cmd package from your console
 
 ## `Use`
 
-Simplest use case, use a context manager to request a VbanCmdvban_cmd class of a kind.
+Simplest use case, use a context manager to request a VbanCmd class of a kind.
 
 Login and logout are handled for you in this scenario.
 
