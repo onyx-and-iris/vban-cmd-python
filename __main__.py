@@ -23,7 +23,7 @@ class ManyThings:
 
 
 def main():
-    with vban_cmd.api(kind_id) as vban:
+    with vban_cmd.api(kind_id, **opts) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
@@ -42,6 +42,10 @@ def main():
 
 if __name__ == "__main__":
     kind_id = "banana"
-    ip = "<ip address>"
+    opts = {
+        "ip": "<ip address>",
+        "streamname": "Command1",
+        "port": 6980,
+    }
 
     main()
