@@ -38,12 +38,12 @@ class App(tk.Tk):
         self.phys_in, self.virt_in = self.ins
         self.col = self.phys_in + self.virt_in
         self.row = 3
-        self.w = {"Basic": 300, "Banana": 600, "Potato": 800}
+        self.w = {"basic": 300, "banana": 600, "potato": 800}
         self.h = 150
         self.defaultsizes = {
-            "Basic": f"{self.w[self.name]}x{self.h}",
-            "Banana": f"{self.w[self.name]}x{self.h}",
-            "Potato": f"{self.w[self.name]}x{self.h}",
+            "basic": f"{self.w[self.name]}x{self.h}",
+            "banana": f"{self.w[self.name]}x{self.h}",
+            "potato": f"{self.w[self.name]}x{self.h}",
         }
         self.geometry(self.defaultsizes[self.name])
 
@@ -133,7 +133,7 @@ class App(tk.Tk):
         self.after(20, self.watch_levels_step, i)
 
 
-_apps = {kind.id: App.make(kind) for kind in kinds.all}
+_apps = {kind.name: App.make(kind) for kind in kinds.kinds_all}
 
 
 def connect(kind_id: str) -> App:
@@ -150,10 +150,10 @@ if __name__ == "__main__":
     opts = {
         # make sure VBAN is configured on remote machine then set IP accordingly
         "ip": "ws.local",
-        "streamname": "testing",
+        "streamname": "workstation",
         "port": 6990,
     }
 
-    with vban_cmd.connect(kind_id, **opts) as vban:
+    with vban_cmd.api(kind_id, **opts) as vban:
         app = connect(kind_id)
         app.mainloop()
