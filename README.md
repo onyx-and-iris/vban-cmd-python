@@ -171,6 +171,22 @@ vban.strip[0].apply(mute: true, gain: 3.2, A1: true)
 vban.vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
 ```
 
+## Config Files
+
+`vban.apply_config('config')`
+
+You may load config files in TOML format.
+Three example profiles have been included with the package. Remember to save
+current settings before loading a profile. To set one you may do:
+
+```python
+import vban_cmd
+with vban_cmd.api('banana') as vban:
+    vban.apply_config('config')
+```
+
+will load a config file at configs/banana/config.toml for Voicemeeter Banana.
+
 ## `Base Module`
 
 ### VbanCmd class
