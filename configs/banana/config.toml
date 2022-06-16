@@ -1,4 +1,3 @@
-extends = 'blank'
 [strip-0]
 limit = 12
 label = ""

@@ -1,4 +1,3 @@
-extends = 'blank'
 [strip-0]
 A1 = true
 B1 = true
