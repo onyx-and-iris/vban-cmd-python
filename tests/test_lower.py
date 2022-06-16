@@ -1,7 +1,9 @@
+import time
+
 import pytest
-from tests import tests, data
-from vbancmd import kinds
-import re
+from vban_cmd import kinds
+
+from tests import data, tests
 
 
 class TestPublicPacketLower:
@@ -10,9 +12,15 @@ class TestPublicPacketLower:
     """Tests for a valid rt data packet"""
 
     def test_it_gets_an_rt_data_packet(self):
-        assert tests.public_packet.voicemeetertype in (kind.id for kind in kinds.all)
+        assert tests.public_packet.voicemeetertype in (
+            kind.name for kind in kinds.kinds_all
+        )
 
 
+@pytest.mark.skipif(
+    "not config.getoption('--run-slow')",
+    reason="Only run when --run-slow is given",
+)
 @pytest.mark.parametrize("value", [0, 1])
 class TestSetRT:
     __test__ = True
@@ -26,7 +34,8 @@ class TestSetRT:
             ("bus", data.virt_out, "mono"),
         ],
     )
-    def test_it_gets_an_rt_data_packet(self, kls, index, param, value):
-        tests.set_rt(f"{kls}[{index}]", param, value)
+    def test_it_sends_a_text_request(self, kls, index, param, value):
+        tests._set_rt(f"{kls}[{index}]", param, value)
+        time.sleep(0.1)
         target = getattr(tests, kls)[index]
         assert getattr(target, param) == bool(value)

@@ -1,19 +1,9 @@
-from pathlib import Path
-
-
-PROJECT_DIR = str(Path(__file__).parents[1])
-
-
-def project_path():
-    return PROJECT_DIR
-
-
 def cache_bool(func, param):
     """Check cache for a bool prop"""
 
     def wrapper(*args, **kwargs):
         self, *rem = args
-        cmd = f"{self.identifier}[{self.index}].{param}"
+        cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd) == 1
         return func(*args, **kwargs)
@@ -26,7 +16,7 @@ def cache_string(func, param):
 
     def wrapper(*args, **kwargs):
         self, *rem = args
-        cmd = f"{self.identifier}[{self.index}].{param}"
+        cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
         return func(*args, **kwargs)

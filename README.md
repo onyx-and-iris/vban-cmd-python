@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/onyx-and-iris/vban-cmd-python/blob/dev/LICENSE)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 ![Tests Status](./tests/basic.svg?dummy=8484744)
 ![Tests Status](./tests/banana.svg?dummy=8484744)
 ![Tests Status](./tests/potato.svg?dummy=8484744)
@@ -22,252 +23,157 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 -   Banana 2.0.6.2
 -   Potato 3.0.2.2
 
-## Prerequisites
+## Requirements
 
 -   [Voicemeeter](https://voicemeeter.com/)
--   Python 3.9+
+-   Python 3.11 or greater
 
 ## Installation
 
-```
-git clone https://github.com/onyx-and-iris/vban-cmd-python
-cd vban-cmd-python
-```
+### `Pip`
 
-Just the interface:
+Install voicemeeter-api package from your console
 
-```
-pip install .
-```
+`pip install vban-cmd`
 
-With development dependencies:
 
-```
-pip install -e .['development']
-```
+## `Use`
 
-## Usage
+Simplest use case, use a context manager to request a VbanCmdvban_cmd class of a kind.
 
-#### Use with a context manager:
+Login and logout are handled for you in this scenario.
 
-Parameter coverage is not as extensive for this interface as with the Remote API.
-
-### Example 1
+#### `__main__.py`
 
 ```python
-import vbancmd
+import vban_cmd
+
 
 class ManyThings:
     def __init__(self, vban):
         self.vban = vban
 
     def things(self):
-        # Set the mapping of the second input strip
-        self.vban.strip[1].A3 = True
-        print(f'Output A3 of Strip {self.vban.strip[1].label}: {self.vban.strip[1].A3}')
+        self.vban.strip[0].label = "podmic"
+        self.vban.strip[0].mute = True
+        print(
+            f"strip 0 ({self.vban.strip[0].label}) has been set to {self.vban.strip[0].mute}"
+        )
 
     def other_things(self):
-        # Toggle mute for the leftmost output bus
-        self.vban.bus[0].mute = not self.vban.bus[0].mute
+        info = (
+            f"bus 3 gain has been set to {self.vban.bus[3].gain}",
+            f"bus 4 eq has been set to {self.vban.bus[4].eq}",
+        )
+        self.vban.bus[3].gain = -6.3
+        self.vban.bus[4].eq = True
+        print("\n".join(info))
 
 
 def main():
-    with vbancmd.connect(kind_id, ip=ip) as vban:
+    with vban_cmd.api(kind_id) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
 
-if __name__ == '__main__':
-    kind_id = 'potato'
-    ip = '<ip address>'
+        # set many parameters at once
+        vban.apply(
+            {
+                "strip-2": {"A1": True, "B1": True, "gain": -6.0},
+                "bus-2": {"mute": True},
+                "button-0": {"state": True},
+                "vban-in-0": {"on": True},
+                "vban-out-1": {"name": "streamname"},
+            }
+        )
+
+
+if __name__ == "__main__":
+    kind_id = "banana"
+    ip = "<ip address>"
 
     main()
 ```
 
-#### Or perform setup/teardown independently:
+Otherwise you must remember to call `vban.login()`, `vban.logout()` at the start/end of your code.
 
-### Example 2
+## `kind_id`
 
-```python
-import vbancmd
-
-kind_id = 'potato'
-ip = '<ip address>'
-
-vban = vbancmd.connect(kind_id, ip=ip)
-
-# call login() at the start of your code
-vban.login()
-
-# Toggle mute for leftmost input strip
-vban.strip[0].mute = not vban.strip[0].mute
-
-# Toggle eq for leftmost output bus
-vban.bus[0].eq = not vban.bus[0].eq
-
-# call logout() at the end of your code
-vban.logout()
-```
-
-## Profiles
-
-Profiles through config files are supported.
-
-Three example profiles are provided with the package, one for each kind of Voicemeeter.
-To test one first rename \_profiles directory to profiles.
-They will be loaded into memory but not applied. To apply one you may do:
-`vmr.apply_profile('config')`, but remember to save your current settings first.
-
-profiles directory can be safely deleted if you don't wish to load them each time.
-
-A config can contain any key that `connect.apply()` would accept. Additionally, `extends` can be provided to inherit from another profile. Two profiles are available by default:
-
--   `blank`, all strip off and all sliders to `0.0`. mono, solo, mute, eq all disabled.
--   `base`, all physical strip to `A1`, all virtual strip to `B1`, all sliders to `0.0`.
-
-Sample `mySetup.toml`
-
-```toml
-extends = 'base'
-[strip-0]
-mute = 1
-
-[strip-5]
-A1 = 0
-A2 = 1
-A4 = 1
-gain = 0.0
-
-[strip-6]
-A1 = 0
-A2 = 1
-A4 = 1
-gain = 0.0
-```
-
-## API
-
-### Kinds
-
-A _kind_ specifies a major Voicemeeter version. Currently this encompasses
+Pass the kind of Voicemeeter as an argument. kind_id may be:
 
 -   `basic`
 -   `banana`
 -   `potato`
 
-#### `vbancmd.connect(kind_id, **kwargs) -> '(VbanCmd)'`
+## `Available commands`
 
-Factory function for remotes. Keyword arguments include:
+### Channels (strip/bus)
 
--   `ip`: remote pc you wish to send requests to.
--   `streamname`: default 'Command1'
--   `port`: default 6990
--   `channel`: from 0 to 255
--   `bps`: bitrate of stream, default 0 should be safe for most cases.
-
-### `VbanCmd` (higher level)
-
-#### `vban.type`
-
-The kind of the Voicemeeter instance.
-
-#### `vban.version`
-
-A tuple of the form `(v1, v2, v3, v4)`.
-
-#### `vban.strip`
-
-An `InputStrip` tuple, containing both physical and virtual.
-
-#### `vban.bus`
-
-An `OutputBus` tuple, containing both physical and virtual.
-
-#### `vban.show()`
-
-Shows Voicemeeter if it's hidden. No effect otherwise.
-
-#### `vban.hide()`
-
-Hides Voicemeeter if it's shown. No effect otherwise.
-
-#### `vban.shutdown()`
-
-Closes Voicemeeter.
-
-#### `vban.restart()`
-
-Restarts Voicemeeter's audio engine.
-
-#### `vban.apply(mapping)`
-
-Updates values through a dict.  
-Example:
-
-```python
-vban.apply({
-    'strip-2': dict(A1=True, B1=True, gain=-6.0),
-    'bus-2': dict(mute=True),
-})
-```
-
-### `Strip`
-
-The following properties are gettable and settable:
+The following properties exist for audio channels.
 
 -   `mono`: boolean
 -   `solo`: boolean
 -   `mute`: boolean
 -   `label`: string
 -   `gain`: float, -60 to 12
--   Output mapping (e.g. `A1`, `B3`, etc.): boolean, depends on the Voicemeeter kind
-
-The following properties are settable:
-
+-   `A1 - A5`, `B1 - B3`: boolean
 -   `comp`: float, from 0.0 to 10.0
 -   `gate`: float, from 0.0 to 10.0
 -   `limit`: int, from -40 to 12
 
-#### `gainlayer`
-
--   `gainlayer[j].gain`: float, -60 to 12
-
-for example:
+example:
 
 ```python
-# set and get the value of the second input strip, fourth gainlayer
-vban.strip[1].gainlayer[3].gain = -6.3
-print(vban.strip[1].gainlayer[3].gain)
+vban.strip[3].gain = 3.7
+print(strip[0].label)
+
+vban.bus[4].mono = true
 ```
 
-Gainlayers defined for Potato version only.
+### Command
 
-### `Bus`
+Certain 'special' commands are defined by the API as performing actions rather than setting values. The following methods are available:
 
-The following properties are gettable and settable:
+-   `show()` : Bring Voiceemeter GUI to the front
+-   `shutdown()` : Shuts down the GUI
+-   `restart()` : Restart the audio engine
 
--   `mute`: boolean
--   `mono`: boolean
--   `eq`: boolean
--   `eq_ab`: boolean
--   `label`: string
--   `gain`: float, -60 to 12
+The following properties are write only and accept boolean values.
 
-#### `mode`
+-   `showvbanchat`: boolean
+-   `lock`: boolean
 
-Bus modes are gettable and settable
-
--   `normal`, `amix`, `bmix`, `repeat`, `composite`, `tvmix`, `upmix21`,
--   `upmix41`, `upmix61`, `centeronly`, `lfeonly`, `rearonly`
-
-for example:
+example:
 
 ```python
-# set leftmost bus mode to tvmix
-vban.bus[0].mode.tvmix = True
+vban.command.restart()
+vban.command.showvbanchat = true
 ```
 
-### `VbanCmd` (lower level)
+### Multiple parameters
+
+-   `apply`
+    Set many strip/bus parameters at once, for example:
+
+```python
+vban.apply(
+    {
+        "strip-2": {"A1": True, "B1": True, "gain": -6.0},
+        "bus-2": {"mute": True},
+    }
+)
+```
+
+Or for each class you may do:
+
+```python
+vban.strip[0].apply(mute: true, gain: 3.2, A1: true)
+vban.vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
+```
+
+## `Base Module`
+
+### VbanCmd class
 
 #### `vban.pdirty`
 

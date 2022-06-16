@@ -1,27 +1,47 @@
-import vbancmd
+import vban_cmd
+
 
 class ManyThings:
     def __init__(self, vban):
         self.vban = vban
 
     def things(self):
-        # Set the mapping of the second input strip
-        self.vban.strip[1].A3 = True
-        print(f'Output A3 of Strip {self.vban.strip[1].label}: {self.vban.strip[1].A3}')
+        self.vban.strip[0].label = "podmic"
+        self.vban.strip[0].mute = True
+        print(
+            f"strip 0 ({self.vban.strip[0].label}) has been set to {self.vban.strip[0].mute}"
+        )
 
     def other_things(self):
-        # Toggle mute for the leftmost output bus
-        self.vban.bus[0].mute = not self.vban.bus[0].mute
+        info = (
+            f"bus 3 gain has been set to {self.vban.bus[3].gain}",
+            f"bus 4 eq has been set to {self.vban.bus[4].eq}",
+        )
+        self.vban.bus[3].gain = -6.3
+        self.vban.bus[4].eq = True
+        print("\n".join(info))
 
 
 def main():
-    with vbancmd.connect(kind_id, ip=ip) as vban:
+    with vban_cmd.api(kind_id) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
 
-if __name__ == '__main__':
-    kind_id = 'potato'
-    ip = '<ip address>'
+        # set many parameters at once
+        vban.apply(
+            {
+                "strip-2": {"A1": True, "B1": True, "gain": -6.0},
+                "bus-2": {"mute": True},
+                "button-0": {"state": True},
+                "vban-in-0": {"on": True},
+                "vban-out-1": {"name": "streamname"},
+            }
+        )
+
+
+if __name__ == "__main__":
+    kind_id = "banana"
+    ip = "<ip address>"
 
     main()

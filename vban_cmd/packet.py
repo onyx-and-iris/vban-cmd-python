@@ -8,7 +8,7 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 
 @dataclass
 class VBAN_VMRT_Packet_Data:
-    """RT Packet Data"""
+    """Represents the structure of a VMRT data packet"""
 
     _voicemeeterType: bytes
     _reserved: bytes
@@ -198,7 +198,7 @@ class VBAN_VMRT_Packet_Data:
 
 @dataclass
 class VBAN_VMRT_Packet_Header:
-    """RT PACKET header (expected from Voicemeeter server)"""
+    """Represents a RESPONSE RT PACKET header"""
 
     name = "Voicemeeter-RTP"
     vban: bytes = "VBAN".encode()
@@ -221,35 +221,8 @@ class VBAN_VMRT_Packet_Header:
 
 
 @dataclass
-class RegisterRTHeader:
-    """REGISTER RT PACKET header"""
-
-    name = "Register RTP"
-    timeout = 15
-    vban: bytes = "VBAN".encode()
-    format_sr: bytes = (0x60).to_bytes(1, "little")
-    format_nbs: bytes = (0).to_bytes(1, "little")
-    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, "little")
-    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, "little")  # timeout
-    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
-    framecounter: bytes = (0).to_bytes(4, "little")
-
-    @property
-    def header(self):
-        header = self.vban
-        header += self.format_sr
-        header += self.format_nbs
-        header += self.format_nbc
-        header += self.format_bit
-        header += self.streamname
-        header += self.framecounter
-        assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"
-        return header
-
-
-@dataclass
 class TextRequestHeader:
-    """VBAN-TEXT request header"""
+    """Represents a REQUEST RT PACKET header"""
 
     name: str
     bps_index: int
@@ -278,6 +251,33 @@ class TextRequestHeader:
         header += self.nbs
         header += self.nbc
         header += self.bit
+        header += self.streamname
+        header += self.framecounter
+        assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"
+        return header
+
+
+@dataclass
+class RegisterRTHeader:
+    """Represents a REGISTER RT PACKET header"""
+
+    name = "Register RTP"
+    timeout = 15
+    vban: bytes = "VBAN".encode()
+    format_sr: bytes = (0x60).to_bytes(1, "little")
+    format_nbs: bytes = (0).to_bytes(1, "little")
+    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, "little")
+    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, "little")  # timeout
+    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
+    framecounter: bytes = (0).to_bytes(4, "little")
+
+    @property
+    def header(self):
+        header = self.vban
+        header += self.format_sr
+        header += self.format_nbs
+        header += self.format_nbc
+        header += self.format_bit
         header += self.streamname
         header += self.framecounter
         assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"

@@ -1,7 +1,6 @@
-import abc
-from .errors import VMCMDErrors
+import time
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from time import sleep
 
 
 @dataclass
@@ -76,24 +75,28 @@ class Modes:
         )
 
 
-class IChannel(abc.ABC):
-    """Base class for InputStrip and OutputBus."""
+class IRemote(metaclass=ABCMeta):
+    """
+    Common interface between base class and extended (higher) classes
 
-    def __init__(self, remote, index):
+    Provides some default implementation
+    """
+
+    def __init__(self, remote, index=None):
         self._remote = remote
         self.index = index
         self._modes = Modes()
 
     def getter(self, param):
-        cmd = f"{self.identifier}[{self.index}].{param}"
+        cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
-        self._remote.set_rt(f"{self.identifier}[{self.index}]", param, val)
+        self._remote._set_rt(f"{self.identifier}", param, val)
 
-    @abc.abstractmethod
+    @abstractmethod
     def identifier(self):
         pass
 
@@ -102,13 +105,16 @@ class IChannel(abc.ABC):
         """Returns an RT data packet."""
         return self._remote.public_packet
 
-    def apply(self, mapping):
+    def apply(self, data):
         """Sets all parameters of a dict for the channel."""
         script = ""
-        for key, val in mapping.items():
-            if not hasattr(self, key):
-                raise VMCMDErrors(f"Invalid {self.identifier} attribute: {key}")
-            self._remote.cache[f"{self.identifier}[{self.index}].{key}"] = val
-            script += f"{self.identifier}[{self.index}].{key}={val};"
+        for attr, val in data.items():
+            if hasattr(self, attr):
+                self._remote.cache[f"{self.identifier}[{self.index}].{attr}"] = val
+                script += f"{self.identifier}[{self.index}].{attr}={val};"
 
         self._remote.sendtext(script)
+        return self
+
+    def then_wait(self):
+        time.sleep(self._remote.DELAY)

@@ -1,17 +1,20 @@
-from .util import cache_bool, cache_string
-from .errors import VMCMDErrors
-
 from functools import partial
+
+from .error import VMCMDErrors
+from .util import cache_bool, cache_string
 
 
 def channel_bool_prop(param):
-    """A channel bool prop. (strip|bus)"""
+    """meta function for channel boolean parameters"""
 
     @partial(cache_bool, param=param)
     def fget(self):
         return (
             not int.from_bytes(
-                getattr(self.public_packet, f"{self.identifier}state")[self.index],
+                getattr(
+                    self.public_packet,
+                    f"{'strip' if 'strip' in type(self).__name__.lower() else 'bus'}state",
+                )[self.index],
                 "little",
             )
             & getattr(self._modes, f'_{param.replace(".", "_").lower()}')
@@ -27,11 +30,14 @@ def channel_bool_prop(param):
 
 
 def channel_label_prop():
-    """A channel label prop. (strip|bus)"""
+    """meta function for channel label parameters"""
 
     @partial(cache_string, param="label")
     def fget(self) -> str:
-        return getattr(self.public_packet, f"{self.identifier}labels")[self.index]
+        return getattr(
+            self.public_packet,
+            f"{'strip' if 'strip' in type(self).__name__.lower() else 'bus'}labels",
+        )[self.index]
 
     def fset(self, val: str):
         if not isinstance(val, str):
@@ -42,7 +48,7 @@ def channel_label_prop():
 
 
 def strip_output_prop(param):
-    """A strip output prop. (A1-A5, B1-B3)"""
+    """meta function for strip output parameters. (A1-A5, B1-B3)"""
 
     @partial(cache_bool, param=param)
     def fget(self):
@@ -61,7 +67,7 @@ def strip_output_prop(param):
 
 
 def bus_mode_prop(param):
-    """A bus mode prop."""
+    """meta function for bus mode parameters"""
 
     @partial(cache_bool, param=param)
     def fget(self):
