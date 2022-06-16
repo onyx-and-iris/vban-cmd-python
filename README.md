@@ -80,9 +80,6 @@ def main():
             {
                 "strip-2": {"A1": True, "B1": True, "gain": -6.0},
                 "bus-2": {"mute": True},
-                "button-0": {"state": True},
-                "vban-in-0": {"on": True},
-                "vban-out-1": {"name": "streamname"},
             }
         )
 
