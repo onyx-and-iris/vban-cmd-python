@@ -258,9 +258,9 @@ class VbanCmd(metaclass=ABCMeta):
         )
         try:
             self.apply(self.configs[name])
+            print(f"Profile '{name}' applied!")
         except KeyError as e:
             print(("\n").join(error_msg))
-        print(f"Profile '{name}' applied!")
 
     def logout(self):
         self.running = False
