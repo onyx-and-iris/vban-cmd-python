@@ -159,7 +159,7 @@ class VbanCmd(metaclass=ABCMeta):
 
     @property
     def version(self) -> str:
-        """Returns Voicemeeter's version as a tuple"""
+        """Returns Voicemeeter's version as a string"""
         v1, v2, v3, v4 = self.public_packet.voicemeeterversion
         return f"{v1}.{v2}.{v3}.{v4}"
 
