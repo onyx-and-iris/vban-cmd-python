@@ -193,19 +193,23 @@ will load a config file at configs/banana/example.toml for Voicemeeter Banana.
 
 #### `vban.pdirty`
 
-True iff a parameter has been changed. Typically this is checked periodically to update states.
+True iff a parameter has been changed.
 
-#### `vban.set_rt(id_, param, val)`
+#### `vban.ldirty`
 
-Sends a string request RT Packet where the command would take the form:
+True iff a level value has been changed.
+
+#### `vban.sendtext(script)`
+
+Sends a script block as a string request RT Packet, for example:
 
 ```python
-f'{id_}.{param}={val}'
+vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
 ```
 
 #### `vban.public_packet`
 
-Returns a Voicemeeter rt data packet. Designed to be used internally by the interface but available for parsing through this read only property object. States may or may not be current, use the polling parameter pdirty to be sure.
+Returns a Voicemeeter rt data packet object. Designed to be used internally by the interface but available for parsing through this read only property object. States not guaranteed to be current (requires use of dirty parameters to confirm).
 
 ### `Errors`
 
