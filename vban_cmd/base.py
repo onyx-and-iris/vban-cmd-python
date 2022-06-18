@@ -43,8 +43,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.expected_packet = VBAN_VMRT_Packet_Header()
 
         self.socks = tuple(
-            socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            for _, _ in enumerate(Socket)
+            socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in Socket
         )
         self.running = True
         self.subject = Subject()
