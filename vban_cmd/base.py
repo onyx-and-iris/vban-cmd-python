@@ -183,7 +183,7 @@ class VbanCmd(metaclass=ABCMeta):
     def _updates(self) -> NoReturn:
         while self.running:
             private_packet = self._get_rt()
-            strip_comp, bus_comp = (
+            self._strip_comp, self._bus_comp = (
                 tuple(
                     not a == b
                     for a, b in zip(
@@ -198,22 +198,16 @@ class VbanCmd(metaclass=ABCMeta):
                 ),
             )
             self._pdirty = private_packet.pdirty(self.public_packet)
-            self._ldirty = any(any(list_) for list_ in (strip_comp, bus_comp))
+            self._ldirty = any(
+                any(list_) for list_ in (self._strip_comp, self._bus_comp)
+            )
 
             if self._public_packet != private_packet:
                 self._public_packet = private_packet
             if self.pdirty:
                 self.subject.notify("pdirty")
             if self.ldirty:
-                self.subject.notify(
-                    "ldirty",
-                    (
-                        self.public_packet.inputlevels,
-                        strip_comp,
-                        self.public_packet.outputlevels,
-                        bus_comp,
-                    ),
-                )
+                self.subject.notify("ldirty")
             time.sleep(self.ratelimit)
 
     @property
