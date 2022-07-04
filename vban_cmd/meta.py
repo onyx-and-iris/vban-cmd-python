@@ -22,8 +22,6 @@ def channel_bool_prop(param):
         )
 
     def fset(self, val):
-        if not isinstance(val, bool) and val not in (0, 1):
-            raise VMCMDErrors(f"{param} is a boolean parameter")
         self.setter(param, 1 if val else 0)
 
     return property(fget, fset)
@@ -40,9 +38,7 @@ def channel_label_prop():
         )[self.index]
 
     def fset(self, val: str):
-        if not isinstance(val, str):
-            raise VMCMDErrors("label is a string parameter")
-        self.setter("label", val)
+        self.setter("label", str(val))
 
     return property(fget, fset)
 
@@ -59,8 +55,6 @@ def strip_output_prop(param):
         )
 
     def fset(self, val):
-        if not isinstance(val, bool) and val not in (0, 1):
-            raise VMCMDErrors(f"{param} is a boolean parameter")
         self.setter(param, 1 if val else 0)
 
     return property(fget, fset)
@@ -93,8 +87,6 @@ def bus_mode_prop(param):
         return tuple(round(val / 16) for val in vals) == modelist[param]
 
     def fset(self, val):
-        if not isinstance(val, bool) and val not in (0, 1):
-            raise VMCMDErrors(f"{param} is a boolean parameter")
         self.setter(param, 1 if val else 0)
 
     return property(fget, fset)
