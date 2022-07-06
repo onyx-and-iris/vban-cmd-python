@@ -90,32 +90,30 @@ class VbanCmd(metaclass=ABCMeta):
         if len(data) > HEADER_SIZE:
             # check if packet is of type VBAN
             if self.expected_packet.header == data[: HEADER_SIZE - 4]:
-                # check if packet is of type vmrt_data
-                if int.from_bytes(data[4:5]) == int(0x60):
-                    return VBAN_VMRT_Packet_Data(
-                        _voicemeeterType=data[28:29],
-                        _reserved=data[29:30],
-                        _buffersize=data[30:32],
-                        _voicemeeterVersion=data[32:36],
-                        _optionBits=data[36:40],
-                        _samplerate=data[40:44],
-                        _inputLeveldB100=data[44:112],
-                        _outputLeveldB100=data[112:240],
-                        _TransportBit=data[240:244],
-                        _stripState=data[244:276],
-                        _busState=data[276:308],
-                        _stripGaindB100Layer1=data[308:324],
-                        _stripGaindB100Layer2=data[324:340],
-                        _stripGaindB100Layer3=data[340:356],
-                        _stripGaindB100Layer4=data[356:372],
-                        _stripGaindB100Layer5=data[372:388],
-                        _stripGaindB100Layer6=data[388:404],
-                        _stripGaindB100Layer7=data[404:420],
-                        _stripGaindB100Layer8=data[420:436],
-                        _busGaindB100=data[436:452],
-                        _stripLabelUTF8c60=data[452:932],
-                        _busLabelUTF8c60=data[932:1412],
-                    )
+                return VBAN_VMRT_Packet_Data(
+                    _voicemeeterType=data[28:29],
+                    _reserved=data[29:30],
+                    _buffersize=data[30:32],
+                    _voicemeeterVersion=data[32:36],
+                    _optionBits=data[36:40],
+                    _samplerate=data[40:44],
+                    _inputLeveldB100=data[44:112],
+                    _outputLeveldB100=data[112:240],
+                    _TransportBit=data[240:244],
+                    _stripState=data[244:276],
+                    _busState=data[276:308],
+                    _stripGaindB100Layer1=data[308:324],
+                    _stripGaindB100Layer2=data[324:340],
+                    _stripGaindB100Layer3=data[340:356],
+                    _stripGaindB100Layer4=data[356:372],
+                    _stripGaindB100Layer5=data[372:388],
+                    _stripGaindB100Layer6=data[388:404],
+                    _stripGaindB100Layer7=data[404:420],
+                    _stripGaindB100Layer8=data[420:436],
+                    _busGaindB100=data[436:452],
+                    _stripLabelUTF8c60=data[452:932],
+                    _busLabelUTF8c60=data[932:1412],
+                )
 
     def _get_rt(self) -> VBAN_VMRT_Packet_Data:
         """Attempt to fetch data packet until a valid one found"""
@@ -166,7 +164,7 @@ class VbanCmd(metaclass=ABCMeta):
     @property
     def pdirty(self):
         """True iff a parameter has changed"""
-        return self._pp.pdirty(self.public_packet)
+        return self._pdirty
 
     @property
     def ldirty(self):
@@ -200,9 +198,11 @@ class VbanCmd(metaclass=ABCMeta):
             start = time.time()
             self._pp = self._get_rt()
             self._strip_buf, self._bus_buf = self._get_levels(self._pp)
+            self._pdirty = self._pp.pdirty(self.public_packet)
 
-            if self.pdirty:
+            if self.public_packet != self._pp:
                 self._public_packet = self._pp
+            if self.pdirty:
                 self.subject.notify("pdirty")
             if self.ldirty:
                 self.cache["strip_level"] = tuple(self._strip_buf)
