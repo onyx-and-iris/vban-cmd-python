@@ -1,9 +1,10 @@
+import dataclasses
 import socket
 import time
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 from threading import Thread
-from typing import NoReturn, Optional, Union
+from typing import Iterable, NoReturn, Optional, Union
 
 from .packet import (
     HEADER_SIZE,
@@ -165,12 +166,22 @@ class VbanCmd(metaclass=ABCMeta):
     @property
     def pdirty(self):
         """True iff a parameter has changed"""
-        return self._pdirty
+        return self._pp.pdirty(self.public_packet)
 
     @property
     def ldirty(self):
         """True iff a level value has changed."""
-        return self._ldirty
+        self._strip_comp, self._bus_comp = (
+            tuple(
+                not a == b
+                for a, b in zip(self._public_packet.inputlevels, self._strip_buf)
+            ),
+            tuple(
+                not a == b
+                for a, b in zip(self._public_packet.outputlevels, self._bus_buf)
+            ),
+        )
+        return any(any(l) for l in (self._strip_comp, self._bus_comp))
 
     @property
     def public_packet(self):
@@ -181,49 +192,35 @@ class VbanCmd(metaclass=ABCMeta):
             pass
 
     def _updates(self) -> NoReturn:
-        while self.running:
-            private_packet = self._get_rt()
-            self._strip_comp, self._bus_comp = (
-                tuple(
-                    not a == b
-                    for a, b in zip(
-                        private_packet.inputlevels, self.public_packet.inputlevels
-                    )
-                ),
-                tuple(
-                    not a == b
-                    for a, b in zip(
-                        private_packet.outputlevels, self.public_packet.outputlevels
-                    )
-                ),
-            )
-            self._pdirty = private_packet.pdirty(self.public_packet)
-            self._ldirty = any(
-                any(list_) for list_ in (self._strip_comp, self._bus_comp)
-            )
-
-            if self._public_packet != private_packet:
-                self._public_packet = private_packet
-            if self.pdirty:
-                self.subject.notify("pdirty")
-            if self.ldirty:
-                self.subject.notify("ldirty")
-            time.sleep(self.ratelimit)
-
-    @property
-    def strip_levels(self):
-        """Returns the full strip level array for a kind, PREFADER mode, before math conversion"""
-        return tuple(
-            list(filter(lambda x: x != ((1 << 16) - 1), self.public_packet.inputlevels))
+        self.cache["strip_level"], self.cache["bus_level"] = self._get_levels(
+            self.public_packet
         )
 
-    @property
-    def bus_levels(self):
-        """Returns the full bus level array for a kind, before math conversion"""
-        return tuple(
-            list(
-                filter(lambda x: x != ((1 << 16) - 1), self.public_packet.outputlevels)
-            )
+        while self.running:
+            start = time.time()
+            self._pp = self._get_rt()
+            self._strip_buf, self._bus_buf = self._get_levels(self._pp)
+
+            if self.pdirty:
+                self._public_packet = self._pp
+                self.subject.notify("pdirty")
+            if self.ldirty:
+                self.cache["strip_level"] = tuple(self._strip_buf)
+                self.cache["bus_level"] = tuple(self._bus_buf)
+                self.subject.notify("ldirty")
+            elapsed = time.time() - start
+            if self.ratelimit - elapsed > 0:
+                time.sleep(self.ratelimit - elapsed)
+
+    def _get_levels(self, packet) -> Iterable:
+        """
+        returns both level arrays (strip_levels, bus_levels) BEFORE math conversion
+
+        strip levels in PREFADER mode.
+        """
+        return (
+            [val for val in packet.inputlevels],
+            [val for val in packet.outputlevels],
         )
 
     def apply(self, data: dict):

@@ -64,7 +64,7 @@ class FactoryBase(VbanCmd):
             "streamname": "Command1",
             "bps": 0,
             "channel": 0,
-            "ratelimit": 0,
+            "ratelimit": 0.01,
             "sync": False,
         }
         kwargs = defaultkwargs | kwargs

@@ -100,12 +100,12 @@ class StripLevel(IRemote):
             )
         )
         self.level_map = phys_map + virt_map
+        self.range = self.level_map[self.index]
 
-    def getter_prefader(self):
-        range_ = self.level_map[self.index]
+    def getter(self):
         return tuple(
             round(-i * 0.01, 1)
-            for i in self._remote.strip_levels[range_[0] : range_[-1]]
+            for i in self._remote.cache["strip_level"][self.range[0] : self.range[-1]]
         )
 
     @property
@@ -114,7 +114,7 @@ class StripLevel(IRemote):
 
     @property
     def prefader(self) -> tuple:
-        return self.getter_prefader()
+        return self.getter()
 
     @property
     def postfader(self) -> tuple:
@@ -125,8 +125,8 @@ class StripLevel(IRemote):
         return
 
     @property
-    def updated(self) -> tuple:
-        return self._remote._strip_comp
+    def is_updated(self) -> bool:
+        return any(self._remote._strip_comp[self.range[0] : self.range[-1]])
 
 
 class GainLayer(IRemote):

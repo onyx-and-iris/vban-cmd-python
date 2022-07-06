@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Generator
 
 VBAN_SERVICE_RTPACKETREGISTER = 32
 VBAN_SERVICE_RTPACKET = 33
@@ -76,21 +77,24 @@ class VBAN_VMRT_Packet_Data:
         return int.from_bytes(self._samplerate, "little")
 
     @property
-    def inputlevels(self) -> tuple:
+    def inputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all inputs"""
-        return tuple(
-            ((1 << 16) - 1) - int.from_bytes(self._inputLeveldB100[i : i + 2], "little")
-            for i in range(0, 68, 2)
-        )
+        for i in range(0, 68, 2):
+            val = ((1 << 16) - 1) - int.from_bytes(
+                self._inputLeveldB100[i : i + 2], "little"
+            )
+            if val != ((1 << 16) - 1):
+                yield val
 
     @property
-    def outputlevels(self) -> tuple:
+    def outputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all outputs"""
-        return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._outputLeveldB100[i : i + 2], "little")
-            for i in range(0, 128, 2)
-        )
+        for i in range(0, 128, 2):
+            val = ((1 << 16) - 1) - int.from_bytes(
+                self._outputLeveldB100[i : i + 2], "little"
+            )
+            if val != ((1 << 16) - 1):
+                yield val
 
     @property
     def stripstate(self) -> tuple:
