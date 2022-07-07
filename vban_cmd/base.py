@@ -200,14 +200,14 @@ class VbanCmd(metaclass=ABCMeta):
             self._strip_buf, self._bus_buf = self._get_levels(self._pp)
             self._pdirty = self._pp.pdirty(self.public_packet)
 
-            if self.public_packet != self._pp:
-                self._public_packet = self._pp
-            if self.pdirty:
-                self.subject.notify("pdirty")
             if self.ldirty:
                 self.cache["strip_level"] = tuple(self._strip_buf)
                 self.cache["bus_level"] = tuple(self._bus_buf)
                 self.subject.notify("ldirty")
+            if self.public_packet != self._pp:
+                self._public_packet = self._pp
+            if self.pdirty:
+                self.subject.notify("pdirty")
             elapsed = time.time() - start
             if self.ratelimit - elapsed > 0:
                 time.sleep(self.ratelimit - elapsed)
