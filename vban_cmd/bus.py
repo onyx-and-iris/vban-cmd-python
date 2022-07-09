@@ -71,7 +71,6 @@ class BusLevel(IRemote):
     def getter(self):
         """Returns a tuple of level values for the channel."""
 
-        range_ = self.level_map[self.index]
         return tuple(
             round(-i * 0.01, 1)
             for i in self._remote.cache["bus_level"][self.range[0] : self.range[-1]]

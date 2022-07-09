@@ -14,7 +14,7 @@ from .packet import (
     VBAN_VMRT_Packet_Header,
 )
 from .subject import Subject
-from .util import script
+from .util import comp, script
 
 Socket = IntEnum("Socket", "register request response", start=0)
 
@@ -170,14 +170,8 @@ class VbanCmd(metaclass=ABCMeta):
     def ldirty(self):
         """True iff a level value has changed."""
         self._strip_comp, self._bus_comp = (
-            tuple(
-                not a == b
-                for a, b in zip(self._public_packet.inputlevels, self._strip_buf)
-            ),
-            tuple(
-                not a == b
-                for a, b in zip(self._public_packet.outputlevels, self._bus_buf)
-            ),
+            tuple(not x for x in comp(self.cache["strip_level"], self._strip_buf)),
+            tuple(not x for x in comp(self.cache["bus_level"], self._bus_buf)),
         )
         return any(any(l) for l in (self._strip_comp, self._bus_comp))
 
@@ -201,8 +195,8 @@ class VbanCmd(metaclass=ABCMeta):
             self._pdirty = self._pp.pdirty(self.public_packet)
 
             if self.ldirty:
-                self.cache["strip_level"] = tuple(self._strip_buf)
-                self.cache["bus_level"] = tuple(self._bus_buf)
+                self.cache["strip_level"] = self._strip_buf
+                self.cache["bus_level"] = self._bus_buf
                 self.subject.notify("ldirty")
             if self.public_packet != self._pp:
                 self._public_packet = self._pp
@@ -219,8 +213,8 @@ class VbanCmd(metaclass=ABCMeta):
         strip levels in PREFADER mode.
         """
         return (
-            [val for val in packet.inputlevels],
-            [val for val in packet.outputlevels],
+            tuple(val for val in packet.inputlevels),
+            tuple(val for val in packet.outputlevels),
         )
 
     def apply(self, data: dict):

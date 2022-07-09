@@ -1,3 +1,6 @@
+from typing import Iterator
+
+
 def cache_bool(func, param):
     """Check cache for a bool prop"""
 
@@ -49,3 +52,15 @@ def script(func):
         return func(remote, script)
 
     return wrapper
+
+
+def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
+    """
+    Generator function, accepts two tuples.
+
+    Evaluates equality of each member in both tuples.
+    """
+    for a, b in zip(t0, t1):
+        if b <= 9500:
+            yield a == b
+        yield True
