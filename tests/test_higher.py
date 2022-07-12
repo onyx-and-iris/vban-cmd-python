@@ -1,5 +1,6 @@
 import pytest
-from tests import tests, data
+
+from tests import data, tests
 
 
 @pytest.mark.parametrize("value", [False, True])
@@ -12,12 +13,24 @@ class TestSetAndGetBoolHigher:
         "index,param",
         [
             (data.phys_in, "mute"),
-            (data.phys_in, "mono"),
-            (data.virt_in, "mc"),
-            (data.virt_in, "mono"),
+            (data.virt_in, "solo"),
         ],
     )
     def test_it_sets_and_gets_strip_bool_params(self, index, param, value):
+        setattr(tests.strip[index], param, value)
+        assert getattr(tests.strip[index], param) == value
+
+    @pytest.mark.skipif(
+        data.name == "banana",
+        reason="Only test if logged into Basic or Potato version",
+    )
+    @pytest.mark.parametrize(
+        "index,param",
+        [
+            (data.phys_in, "mc"),
+        ],
+    )
+    def test_it_sets_and_gets_strip_bool_params_mc(self, index, param, value):
         setattr(tests.strip[index], param, value)
         assert getattr(tests.strip[index], param) == value
 

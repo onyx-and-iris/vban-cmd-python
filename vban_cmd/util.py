@@ -1,11 +1,4 @@
-from pathlib import Path
-
-
-PROJECT_DIR = str(Path(__file__).parents[1])
-
-
-def project_path():
-    return PROJECT_DIR
+from typing import Iterator
 
 
 def cache_bool(func, param):
@@ -13,7 +6,7 @@ def cache_bool(func, param):
 
     def wrapper(*args, **kwargs):
         self, *rem = args
-        cmd = f"{self.identifier}[{self.index}].{param}"
+        cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd) == 1
         return func(*args, **kwargs)
@@ -26,7 +19,7 @@ def cache_string(func, param):
 
     def wrapper(*args, **kwargs):
         self, *rem = args
-        cmd = f"{self.identifier}[{self.index}].{param}"
+        cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
         return func(*args, **kwargs)
@@ -59,3 +52,15 @@ def script(func):
         return func(remote, script)
 
     return wrapper
+
+
+def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
+    """
+    Generator function, accepts two tuples.
+
+    Evaluates equality of each member in both tuples.
+    """
+    for a, b in zip(t0, t1):
+        if b <= 9500:
+            yield a == b
+        yield True

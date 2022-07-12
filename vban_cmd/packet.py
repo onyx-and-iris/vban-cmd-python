@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Generator
 
 VBAN_SERVICE_RTPACKETREGISTER = 32
 VBAN_SERVICE_RTPACKET = 33
@@ -8,7 +9,7 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 
 @dataclass
 class VBAN_VMRT_Packet_Data:
-    """RT Packet Data"""
+    """Represents the structure of a VMRT data packet"""
 
     _voicemeeterType: bytes
     _reserved: bytes
@@ -33,8 +34,9 @@ class VBAN_VMRT_Packet_Data:
     _stripLabelUTF8c60: bytes
     _busLabelUTF8c60: bytes
 
-    def isdirty(self, other):
-        """defines the dirty flag"""
+    def pdirty(self, other):
+        """True iff any defined parameter has changed"""
+
         return not (
             self._stripState == other._stripState
             and self._busState == other._busState
@@ -75,21 +77,24 @@ class VBAN_VMRT_Packet_Data:
         return int.from_bytes(self._samplerate, "little")
 
     @property
-    def inputlevels(self) -> tuple:
+    def inputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all inputs"""
-        return tuple(
-            ((1 << 16) - 1) - int.from_bytes(self._inputLeveldB100[i : i + 2], "little")
-            for i in range(0, 68, 2)
-        )
+        for i in range(0, 68, 2):
+            val = ((1 << 16) - 1) - int.from_bytes(
+                self._inputLeveldB100[i : i + 2], "little"
+            )
+            if val != ((1 << 16) - 1):
+                yield val
 
     @property
-    def outputlevels(self) -> tuple:
+    def outputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all outputs"""
-        return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._outputLeveldB100[i : i + 2], "little")
-            for i in range(0, 128, 2)
-        )
+        for i in range(0, 128, 2):
+            val = ((1 << 16) - 1) - int.from_bytes(
+                self._outputLeveldB100[i : i + 2], "little"
+            )
+            if val != ((1 << 16) - 1):
+                yield val
 
     @property
     def stripstate(self) -> tuple:
@@ -197,7 +202,7 @@ class VBAN_VMRT_Packet_Data:
 
 @dataclass
 class VBAN_VMRT_Packet_Header:
-    """RT PACKET header (expected from Voicemeeter server)"""
+    """Represents a RESPONSE RT PACKET header"""
 
     name = "Voicemeeter-RTP"
     vban: bytes = "VBAN".encode()
@@ -220,35 +225,8 @@ class VBAN_VMRT_Packet_Header:
 
 
 @dataclass
-class RegisterRTHeader:
-    """REGISTER RT PACKET header"""
-
-    name = "Register RTP"
-    timeout = 15
-    vban: bytes = "VBAN".encode()
-    format_sr: bytes = (0x60).to_bytes(1, "little")
-    format_nbs: bytes = (0).to_bytes(1, "little")
-    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, "little")
-    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, "little")  # timeout
-    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
-    framecounter: bytes = (0).to_bytes(4, "little")
-
-    @property
-    def header(self):
-        header = self.vban
-        header += self.format_sr
-        header += self.format_nbs
-        header += self.format_nbc
-        header += self.format_bit
-        header += self.streamname
-        header += self.framecounter
-        assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"
-        return header
-
-
-@dataclass
 class TextRequestHeader:
-    """VBAN-TEXT request header"""
+    """Represents a REQUEST RT PACKET header"""
 
     name: str
     bps_index: int
@@ -277,6 +255,33 @@ class TextRequestHeader:
         header += self.nbs
         header += self.nbc
         header += self.bit
+        header += self.streamname
+        header += self.framecounter
+        assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"
+        return header
+
+
+@dataclass
+class RegisterRTHeader:
+    """Represents a REGISTER RT PACKET header"""
+
+    name = "Register RTP"
+    timeout = 15
+    vban: bytes = "VBAN".encode()
+    format_sr: bytes = (0x60).to_bytes(1, "little")
+    format_nbs: bytes = (0).to_bytes(1, "little")
+    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, "little")
+    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, "little")  # timeout
+    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
+    framecounter: bytes = (0).to_bytes(4, "little")
+
+    @property
+    def header(self):
+        header = self.vban
+        header += self.format_sr
+        header += self.format_nbs
+        header += self.format_nbc
+        header += self.format_bit
         header += self.streamname
         header += self.framecounter
         assert len(header) == HEADER_SIZE, f"Header expected {HEADER_SIZE} bytes"
