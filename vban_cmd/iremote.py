@@ -107,9 +107,19 @@ class IRemote(metaclass=ABCMeta):
 
     def apply(self, data):
         """Sets all parameters of a dict for the channel."""
-        script = ""
+
+        def fget(attr, val):
+            if attr == "mode":
+                return (f"mode.{val}", 1)
+            return (attr, val)
+
+        script = str()
         for attr, val in data.items():
             if hasattr(self, attr):
+                attr, val = fget(attr, val)
+                if isinstance(val, bool):
+                    val = 1 if val else 0
+
                 self._remote.cache[f"{self.identifier}[{self.index}].{attr}"] = val
                 script += f"{self.identifier}[{self.index}].{attr}={val};"
 

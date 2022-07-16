@@ -1,8 +1,17 @@
+import time
 from abc import abstractmethod
+from enum import IntEnum
 from typing import Union
 
+from .error import VMCMDErrors
 from .iremote import IRemote
 from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
+
+BusModes = IntEnum(
+    "BusModes",
+    "normal amix bmix repeat composite tvmix upmix21 upmix41 upmix61 centeronly lfeonly rearonly",
+    start=0,
+)
 
 
 class Bus(IRemote):
@@ -95,28 +104,34 @@ def _make_bus_mode_mixin():
     def identifier(self) -> str:
         return f"Bus[{self.index}].mode"
 
+    def get(self):
+        time.sleep(0.01)
+        for i, val in enumerate(
+            [
+                self.amix,
+                self.bmix,
+                self.repeat,
+                self.composite,
+                self.tvmix,
+                self.upmix21,
+                self.upmix41,
+                self.upmix61,
+                self.centeronly,
+                self.lfeonly,
+                self.rearonly,
+            ]
+        ):
+            if val:
+                return BusModes(i + 1).name
+        return "normal"
+
     return type(
         "BusModeMixin",
         (IRemote,),
         {
             "identifier": property(identifier),
-            **{
-                mode: bus_mode_prop(mode)
-                for mode in [
-                    "normal",
-                    "amix",
-                    "bmix",
-                    "repeat",
-                    "composite",
-                    "tvmix",
-                    "upmix21",
-                    "upmix41",
-                    "upmix61",
-                    "centeronly",
-                    "lfeonly",
-                    "rearonly",
-                ]
-            },
+            **{mode.name: bus_mode_prop(mode.name) for mode in BusModes},
+            "get": get,
         },
     )
 
