@@ -36,6 +36,6 @@ class TestSetRT:
     )
     def test_it_sends_a_text_request(self, kls, index, param, value):
         tests._set_rt(f"{kls}[{index}]", param, value)
-        time.sleep(0.1)
+        time.sleep(0.02)
         target = getattr(tests, kls)[index]
         assert getattr(target, param) == bool(value)

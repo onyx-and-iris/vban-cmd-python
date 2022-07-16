@@ -1,6 +1,6 @@
 Function RunTests {
     $coverage = "./tests/pytest_coverage.log"
-    $run_tests = "pytest -v --capture=tee-sys --junitxml=./tests/.coverage.xml"
+    $run_tests = "pytest --run-slow -v --capture=tee-sys --junitxml=./tests/.coverage.xml"
     $match_pattern = "^=|^\s*$|^Running|^Using|^plugins|^collecting|^tests"
 
     if ( Test-Path $coverage ) { Clear-Content $coverage }
