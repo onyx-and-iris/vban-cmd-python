@@ -70,6 +70,7 @@ class VbanCmd(metaclass=ABCMeta):
         self._public_packet = self._get_rt()
         worker2 = Thread(target=self._updates, daemon=True)
         worker2.start()
+        time.sleep(0.1)
 
     def _send_register_rt(self):
         """Fires a subscription packet every 10 seconds"""
@@ -143,6 +144,8 @@ class VbanCmd(metaclass=ABCMeta):
         self.text_header.framecounter = count.to_bytes(4, "little")
         if param:
             self.cache[f"{id_}.{param}"] = val
+        if self.sync:
+            time.sleep(0.02)
 
     @script
     def sendtext(self, cmd):

@@ -43,3 +43,6 @@ class Command(IRemote):
         self.setter("lock", 1 if val else 0)
 
     lock = property(fset=set_lock)
+
+    def reset(self):
+        self._remote.apply_config("reset")

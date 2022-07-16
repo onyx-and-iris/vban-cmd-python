@@ -187,7 +187,7 @@ class VBAN_VMRT_Packet_Data:
     def striplabels(self) -> tuple:
         """returns tuple of strip labels"""
         return tuple(
-            self._stripLabelUTF8c60[i : i + 60].decode("ascii").split("\x00")[0]
+            self._stripLabelUTF8c60[i : i + 60].decode().split("\x00")[0]
             for i in range(0, 480, 60)
         )
 
@@ -195,7 +195,7 @@ class VBAN_VMRT_Packet_Data:
     def buslabels(self) -> tuple:
         """returns tuple of bus labels"""
         return tuple(
-            self._busLabelUTF8c60[i : i + 60].decode("ascii").split("\x00")[0]
+            self._busLabelUTF8c60[i : i + 60].decode().split("\x00")[0]
             for i in range(0, 480, 60)
         )
 
