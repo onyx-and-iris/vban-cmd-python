@@ -107,9 +107,9 @@ Pass the kind of Voicemeeter as an argument. kind_id may be:
 
 ## `Available commands`
 
-### Channels (strip/bus)
+### Strip
 
-The following properties exist for audio channels.
+The following properties are available.
 
 -   `mono`: boolean
 -   `solo`: boolean
@@ -126,9 +126,93 @@ example:
 ```python
 vban.strip[3].gain = 3.7
 print(strip[0].label)
-
-vban.bus[4].mono = true
 ```
+
+##### Gainlayers
+
+-   `gain`: float, from -60.0 to 12.0
+
+example:
+
+```python
+vm.strip[3].gainlayer[3].gain = 3.7
+```
+
+Gainlayers are defined for potato version only.
+
+##### Levels
+
+The following properties are available.
+
+-   `prefader`
+
+example:
+
+```python
+print(vm.strip[3].levels.prefader)
+```
+
+Level properties will return -200.0 if no audio detected.
+
+### Bus
+
+The following properties are available.
+
+-   `mono`: boolean
+-   `eq`: boolean
+-   `eq_ab`: boolean
+-   `mute`: boolean
+-   `label`: string
+-   `gain`: float, -60 to 12
+
+example:
+
+```python
+vban.bus[4].eq = true
+print(vm.bus[0].label)
+```
+
+##### Modes
+
+The following properties are available.
+
+-   `normal`: boolean
+-   `amix`: boolean
+-   `bmix`: boolean
+-   `composite`: boolean
+-   `tvmix`: boolean
+-   `upmix21`: boolean
+-   `upmix41`: boolean
+-   `upmix61`: boolean
+-   `centeronly`: boolean
+-   `lfeonly`: boolean
+-   `rearonly`: boolean
+
+The following methods are available.
+
+-   `get()`: Returns the current bus mode
+
+example:
+
+```python
+vm.bus[4].mode.amix = True
+
+print(vm.bus[2].mode.get())
+```
+
+##### Levels
+
+The following properties are available.
+
+-   `all`
+
+example:
+
+```python
+print(vm.bus[0].levels.all)
+```
+
+`levels.all` will return -200.0 if no audio detected.
 
 ### Command
 
@@ -137,6 +221,7 @@ Certain 'special' commands are defined by the API as performing actions rather t
 -   `show()` : Bring Voiceemeter GUI to the front
 -   `shutdown()` : Shuts down the GUI
 -   `restart()` : Restart the audio engine
+-   `reset()`: Applies the `reset` config. (phys strip B1, virt strip A1, gains, comp, gate 0.0, mute, mono, solo, eq false)
 
 The following properties are write only and accept boolean values.
 
@@ -176,8 +261,8 @@ vban.vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
 `vban.apply_config(<configname>)`
 
 You may load config files in TOML format.
-Three example profiles have been included with the package. Remember to save
-current settings before loading a profile. To set one you may do:
+Three example configs have been included with the package. Remember to save
+current settings before loading a user config. To set one you may do:
 
 ```python
 import vban_cmd
@@ -201,7 +286,7 @@ True iff a level value has been changed.
 
 #### `vban.sendtext(script)`
 
-Sends a script block as a string request RT Packet, for example:
+Sends a script block as a string request, for example:
 
 ```python
 vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")

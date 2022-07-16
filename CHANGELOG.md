@@ -9,9 +9,63 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 ## [Unreleased]
 
--   [ ] Create a stable branch.
+-   [x]
 
-## [0.3.0] - 2022-04
+## [1.2.0] - 2022-07-15
+
+### Added
+
+-   get() added to bus mode mixin. returns the current bus mode.
+-   support for setting bus mode in toml config
+-   levels, gainlayers, bus modes sections added to readme.
+-   test_configs to unit tests
+-   test_factory to unit tests
+
+### Changed
+
+-   type checks removed.
+-   inputlevels/outputlevels in VBAN_VMRT_Packet_Data now generator functions
+
+### Fixed
+
+-   is_updated in strip/bus levels now returns a bool, is level dirty or not?
+
+## [1.1.0] - 2022-06-20
+
+### Added
+
+-   pre-commit.ps1 added for use with git hook
+
+### Changed
+
+-   No longer passing data in ldirty notification.
+
+### Fixed
+
+-   bug fixed in TOMLStrBuilder.
+
+## [1.0.0] - 2022-06-16
+
+### Added
+
+-   project now packaged with poetry and added to pypi.
+
+### Changed
+
+-   factory method now using director/builder classes.
+-   config now using loader to manage configs in memory.
+-   TOMLStrBuilder added to config, builds a config as a string for the toml parser.
+-   kinds mapped as dataclasses
+-   major version bump due to dependency change. Now requires python 3.11+
+
+## [0.4.0] - 2022-04-14
+
+### Added
+
+-   support for observers added.
+-   pdirty, ldirty notifications defined.
+
+## [0.3.0] - 2022-04-01
 
 ### Added
 
