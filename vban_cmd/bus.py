@@ -3,7 +3,6 @@ from abc import abstractmethod
 from enum import IntEnum
 from typing import Union
 
-from .error import VMCMDErrors
 from .iremote import IRemote
 from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
 
@@ -94,8 +93,15 @@ class BusLevel(IRemote):
         return self.getter()
 
     @property
-    def is_updated(self) -> bool:
+    def isdirty(self) -> bool:
+        """
+        Returns dirty status for this specific channel.
+
+        Expected to be used in a callback only.
+        """
         return any(self._remote._bus_comp[self.range[0] : self.range[-1]])
+
+    is_updated = isdirty
 
 
 def _make_bus_mode_mixin():

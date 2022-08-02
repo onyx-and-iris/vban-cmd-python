@@ -125,8 +125,15 @@ class StripLevel(IRemote):
         return
 
     @property
-    def is_updated(self) -> bool:
+    def isdirty(self) -> bool:
+        """
+        Returns dirty status for this specific channel.
+
+        Expected to be used in a callback only.
+        """
         return any(self._remote._strip_comp[self.range[0] : self.range[-1]])
+
+    is_updated = isdirty
 
 
 class GainLayer(IRemote):
