@@ -276,6 +276,60 @@ will load a config file at configs/banana/example.toml for Voicemeeter Banana.
 
 ### VbanCmd class
 
+`vban_cmd.api(kind_id: str, **opts: dict)`
+
+You may pass the following optional keyword arguments:
+
+-   `ip`: str, ip or hostname of remote machine
+-   `streamname`: str, name of the stream to connect to.
+-   `port`: int=6980, vban udp port of remote machine.
+-   `subs`: dict={"pdirty": True, "ldirty": False}, controls which updates to listen for.
+    -   `pdirty`: parameter updates
+    -   `ldirty`: level updates
+
+#### Event updates
+
+To receive event updates you should do the following:
+
+-   register your app to receive updates using the `vm.subject.add(observer)` method, where observer is your app.
+-   define an `on_update(subject)` callback function in your app. The value of subject may be checked for the type of update.
+
+See `examples/observer` for a demonstration.
+
+Level updates are considered high volume, by default they are NOT listened for.
+
+Each of the update types may be enabled/disabled separately.
+
+example:
+
+```python
+import vban_cmd
+# Listen for level updates
+opts = {
+    "ip": "<ip address>",
+    "streamname": "Command1",
+    "port": 6980,
+    "subs": {"ldirty": True},
+}
+with vban_cmd.api('banana', **opts) as vban:
+    ...
+```
+
+#### `vm.event`
+
+You may also add/remove event subscriptions as necessary with the Event class.
+
+example:
+
+```python
+vm.event.add("ldirty")
+
+vm.event.remove("pdirty")
+
+# get a list of currently subscribed
+print(vm.event.get())
+```
+
 #### `vban.pdirty`
 
 True iff a parameter has been changed.
