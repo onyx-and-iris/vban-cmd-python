@@ -58,6 +58,9 @@ class FactoryBase(VbanCmd):
     """Base class for factories, subclasses VbanCmd."""
 
     def __init__(self, kind_id: str, **kwargs):
+        defaultsubs = {"pdirty": True, "ldirty": False}
+        if "subs" in kwargs:
+            defaultsubs = defaultsubs | kwargs.pop("subs")
         defaultkwargs = {
             "ip": None,
             "port": 6980,
@@ -66,6 +69,7 @@ class FactoryBase(VbanCmd):
             "channel": 0,
             "ratelimit": 0.01,
             "sync": False,
+            "subs": defaultsubs,
         }
         kwargs = defaultkwargs | kwargs
         self.kind = kindmap(kind_id)

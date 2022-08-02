@@ -1,4 +1,3 @@
-import dataclasses
 import socket
 import time
 from abc import ABCMeta, abstractmethod
@@ -6,6 +5,7 @@ from enum import IntEnum
 from threading import Thread
 from typing import Iterable, NoReturn, Optional, Union
 
+from .misc import Event
 from .packet import (
     HEADER_SIZE,
     RegisterRTHeader,
@@ -48,7 +48,8 @@ class VbanCmd(metaclass=ABCMeta):
         )
         self.running = True
         self.subject = Subject()
-        self.cache = {}
+        self.cache = dict()
+        self.event = Event(self.subs)
 
     @abstractmethod
     def __str__(self):
@@ -187,6 +188,7 @@ class VbanCmd(metaclass=ABCMeta):
             pass
 
     def _updates(self) -> NoReturn:
+        print(f"Listening for {', '.join(self.event.get())} events")
         self.cache["strip_level"], self.cache["bus_level"] = self._get_levels(
             self.public_packet
         )
@@ -197,13 +199,13 @@ class VbanCmd(metaclass=ABCMeta):
             self._strip_buf, self._bus_buf = self._get_levels(self._pp)
             self._pdirty = self._pp.pdirty(self.public_packet)
 
-            if self.ldirty:
+            if self.event.ldirty and self.ldirty:
                 self.cache["strip_level"] = self._strip_buf
                 self.cache["bus_level"] = self._bus_buf
                 self.subject.notify("ldirty")
             if self.public_packet != self._pp:
                 self._public_packet = self._pp
-            if self.pdirty:
+            if self.event.pdirty and self.pdirty:
                 self.subject.notify("pdirty")
             elapsed = time.time() - start
             if self.ratelimit - elapsed > 0:
