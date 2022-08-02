@@ -11,6 +11,20 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [1.3.0] - 2022-08-02
+
+### Added
+
+-   Keyword argument subs for vban_cmd.api. Provides control over which updates to receive.
+-   Event class added to misc. Toggle events, get list of currently subscribed.
+-   vban_cmd.api section added to README in Base Module section.
+-   observer example updated to reflect changes.
+-   alias property isdirty for is_updated in strip/bus levels
+
+### Changed
+
+-   By default no longer listen for level updates (high volume). Should be enabled explicitly with subs kwarg.
+
 ## [1.2.0] - 2022-07-15
 
 ### Added
