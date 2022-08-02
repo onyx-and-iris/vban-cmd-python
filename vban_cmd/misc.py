@@ -14,14 +14,6 @@ class Event:
         return self.subs["pdirty"]
 
     @property
-    def mdirty(self):
-        return self.subs["mdirty"]
-
-    @property
-    def midi(self):
-        return self.subs["midi"]
-
-    @property
     def ldirty(self):
         return self.subs["ldirty"]
 
