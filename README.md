@@ -57,7 +57,7 @@ class ManyThings:
         self.vban.strip[0].label = "podmic"
         self.vban.strip[0].mute = True
         print(
-            f"strip 0 ({self.vban.strip[0].label}) has been set to {self.vban.strip[0].mute}"
+            f"strip 0 ({self.vban.strip[0].label}) mute has been set to {self.vban.strip[0].mute}"
         )
 
     def other_things(self):
@@ -292,7 +292,7 @@ You may pass the following optional keyword arguments:
 
 To receive event updates you should do the following:
 
--   register your app to receive updates using the `vm.subject.add(observer)` method, where observer is your app.
+-   register your app to receive updates using the `vban.subject.add(observer)` method, where observer is your app.
 -   define an `on_update(subject)` callback function in your app. The value of subject may be checked for the type of update.
 
 See `examples/observer` for a demonstration.
@@ -316,19 +316,19 @@ with vban_cmd.api('banana', **opts) as vban:
     ...
 ```
 
-#### `vm.event`
+#### `vban.event`
 
 You may also add/remove event subscriptions as necessary with the Event class.
 
 example:
 
 ```python
-vm.event.add("ldirty")
+vban.event.add("ldirty")
 
-vm.event.remove("pdirty")
+vban.event.remove("pdirty")
 
 # get a list of currently subscribed
-print(vm.event.get())
+print(vban.event.get())
 ```
 
 #### `vban.pdirty`
