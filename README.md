@@ -134,7 +134,7 @@ print(strip[0].label)
 example:
 
 ```python
-vm.strip[3].gainlayer[3].gain = 3.7
+vban.strip[3].gainlayer[3].gain = 3.7
 ```
 
 Gainlayers are defined for potato version only.
@@ -148,7 +148,7 @@ The following properties are available.
 example:
 
 ```python
-print(vm.strip[3].levels.prefader)
+print(vban.strip[3].levels.prefader)
 ```
 
 Level properties will return -200.0 if no audio detected.
@@ -168,7 +168,7 @@ example:
 
 ```python
 vban.bus[4].eq = true
-print(vm.bus[0].label)
+print(vban.bus[0].label)
 ```
 
 ##### Modes
@@ -194,9 +194,9 @@ The following methods are available.
 example:
 
 ```python
-vm.bus[4].mode.amix = True
+vban.bus[4].mode.amix = True
 
-print(vm.bus[2].mode.get())
+print(vban.bus[2].mode.get())
 ```
 
 ##### Levels
@@ -208,7 +208,7 @@ The following properties are available.
 example:
 
 ```python
-print(vm.bus[0].levels.all)
+print(vban.bus[0].levels.all)
 ```
 
 `levels.all` will return -200.0 if no audio detected.
