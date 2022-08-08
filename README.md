@@ -8,7 +8,7 @@
 
 # VBAN CMD
 
-This python interface allows you to get and set parameter values over a network.
+This python interface allows you to get and set Voicemeeter parameter values over a network.
 
 It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
 
