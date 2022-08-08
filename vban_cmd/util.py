@@ -1,3 +1,4 @@
+from enum import IntEnum
 from typing import Iterator
 
 
@@ -64,3 +65,6 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
         if b <= 9500:
             yield a == b
         yield True
+
+
+Socket = IntEnum("Socket", "register request response", start=0)
