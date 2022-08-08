@@ -8,13 +8,11 @@
 
 # VBAN CMD
 
-This package offers a Python interface for the Voicemeeter RT Packet Service as well as Voicemeeter VBAN-TEXT.
-
-This allows a user to get (rt packets) and set (vban-text) parameters over a local network. Consider the Streamer View app over VBAN, for example.
+This python interface allows you to get and set parameter values over a network.
 
 It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
 
-For sending audio across a network with VBAN you will need to look elsewhere.
+There is no support for audio transfer in this package, only parameters.
 
 For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
