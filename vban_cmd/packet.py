@@ -8,31 +8,32 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 
 
 @dataclass
-class VBAN_VMRT_Packet_Data:
-    """Represents the structure of a VMRT data packet"""
+class VbanRtPacket:
+    """Represents the body of a VBAN RT data packet"""
 
-    _voicemeeterType: bytes
-    _reserved: bytes
-    _buffersize: bytes
-    _voicemeeterVersion: bytes
-    _optionBits: bytes
-    _samplerate: bytes
-    _inputLeveldB100: bytes
-    _outputLeveldB100: bytes
-    _TransportBit: bytes
-    _stripState: bytes
-    _busState: bytes
-    _stripGaindB100Layer1: bytes
-    _stripGaindB100Layer2: bytes
-    _stripGaindB100Layer3: bytes
-    _stripGaindB100Layer4: bytes
-    _stripGaindB100Layer5: bytes
-    _stripGaindB100Layer6: bytes
-    _stripGaindB100Layer7: bytes
-    _stripGaindB100Layer8: bytes
-    _busGaindB100: bytes
-    _stripLabelUTF8c60: bytes
-    _busLabelUTF8c60: bytes
+    def __init__(self, data):
+        self._voicemeeterType: bytes = data[28:29]
+        self._reserved: bytes = data[29:30]
+        self._buffersize: bytes = data[30:32]
+        self._voicemeeterVersion: bytes = data[32:36]
+        self._optionBits: bytes = data[36:40]
+        self._samplerate: bytes = data[40:44]
+        self._inputLeveldB100: bytes = data[44:112]
+        self._outputLeveldB100: bytes = data[112:240]
+        self._TransportBit: bytes = data[240:244]
+        self._stripState: bytes = data[244:276]
+        self._busState: bytes = data[276:308]
+        self._stripGaindB100Layer1: bytes = data[308:324]
+        self._stripGaindB100Layer2: bytes = data[324:340]
+        self._stripGaindB100Layer3: bytes = data[340:356]
+        self._stripGaindB100Layer4: bytes = data[356:372]
+        self._stripGaindB100Layer5: bytes = data[372:388]
+        self._stripGaindB100Layer6: bytes = data[388:404]
+        self._stripGaindB100Layer7: bytes = data[404:420]
+        self._stripGaindB100Layer8: bytes = data[420:436]
+        self._busGaindB100: bytes = data[436:452]
+        self._stripLabelUTF8c60: bytes = data[452:932]
+        self._busLabelUTF8c60: bytes = data[932:1412]
 
     def pdirty(self, other):
         """True iff any defined parameter has changed"""
@@ -201,8 +202,8 @@ class VBAN_VMRT_Packet_Data:
 
 
 @dataclass
-class VBAN_VMRT_Packet_Header:
-    """Represents a RESPONSE RT PACKET header"""
+class VbanRtPacketHeader:
+    """Represents the header of VBAN RT data packet"""
 
     name = "Voicemeeter-RTP"
     vban: bytes = "VBAN".encode()
@@ -225,7 +226,7 @@ class VBAN_VMRT_Packet_Header:
 
 
 @dataclass
-class TextRequestHeader:
+class RequestHeader:
     """Represents a REQUEST RT PACKET header"""
 
     name: str
@@ -262,8 +263,8 @@ class TextRequestHeader:
 
 
 @dataclass
-class RegisterRTHeader:
-    """Represents a REGISTER RT PACKET header"""
+class SubscribeHeader:
+    """Represents a packet used to subscribe to the RT Packet Service"""
 
     name = "Register RTP"
     timeout = 15

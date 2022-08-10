@@ -1,17 +1,17 @@
 import socket
 import time
 from abc import ABCMeta, abstractmethod
-from typing import Iterable, NoReturn, Optional, Union
+from typing import Iterable, Optional, Union
 
 from .misc import Event
-from .packet import TextRequestHeader
+from .packet import RequestHeader
 from .subject import Subject
 from .util import Socket, comp, script
 from .worker import Subscriber, Updater
 
 
 class VbanCmd(metaclass=ABCMeta):
-    """Base class responsible for communicating over VBAN RT Service"""
+    """Base class responsible for communicating with the VBAN RT Packet Service"""
 
     DELAY = 0.001
     # fmt: off
@@ -26,7 +26,7 @@ class VbanCmd(metaclass=ABCMeta):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
 
-        self.text_header = TextRequestHeader(
+        self.packet_request = RequestHeader(
             name=self.streamname,
             bps_index=self.BPS_OPTS.index(self.bps),
             channel=self.channel,
@@ -66,11 +66,11 @@ class VbanCmd(metaclass=ABCMeta):
         """Sends a string request command over a network."""
         cmd = id_ if not param else f"{id_}.{param}={val}"
         self.socks[Socket.request].sendto(
-            self.text_header.header + cmd.encode(),
+            self.packet_request.header + cmd.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
-        count = int.from_bytes(self.text_header.framecounter, "little") + 1
-        self.text_header.framecounter = count.to_bytes(4, "little")
+        count = int.from_bytes(self.packet_request.framecounter, "little") + 1
+        self.packet_request.framecounter = count.to_bytes(4, "little")
         if param:
             self.cache[f"{id_}.{param}"] = val
         if self.sync:
