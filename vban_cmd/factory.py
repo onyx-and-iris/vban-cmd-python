@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import IntEnum
 from functools import cached_property
-from typing import Iterable, NoReturn, Self
+from typing import Iterable, NoReturn
 
 from .base import VbanCmd
 from .bus import request_bus_obj as bus
@@ -35,21 +35,21 @@ class FactoryBuilder:
         name = name.split("_")[1]
         print(self._info[int(getattr(self.BuilderProgress, name))])
 
-    def make_strip(self) -> Self:
+    def make_strip(self):
         self._factory.strip = tuple(
             strip(i < self.kind.phys_in, self._factory, i)
             for i in range(self.kind.num_strip)
         )
         return self
 
-    def make_bus(self) -> Self:
+    def make_bus(self):
         self._factory.bus = tuple(
             bus(i < self.kind.phys_out, self._factory, i)
             for i in range(self.kind.num_bus)
         )
         return self
 
-    def make_command(self) -> Self:
+    def make_command(self):
         self._factory.command = Command.make(self._factory)
         return self
 
