@@ -104,7 +104,6 @@ class Updater(threading.Thread):
                 _pp
             )
             self._remote._pdirty = _pp.pdirty(self._remote.public_packet)
-            print(self._remote.pdirty)
 
             if self._remote.event.ldirty and self._remote.ldirty:
                 self._remote.cache["strip_level"] = self._remote._strip_buf
