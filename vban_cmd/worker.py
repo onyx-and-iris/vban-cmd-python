@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+from typing import Optional
 
 from .packet import HEADER_SIZE, SubscribeHeader, VbanRtPacket, VbanRtPacketHeader
 from .util import Socket
@@ -46,17 +47,48 @@ class Updater(threading.Thread):
         self.packet_expected = VbanRtPacketHeader()
         self._remote._public_packet = self._get_rt()
 
+    def _fetch_rt_packet(self) -> Optional[VbanRtPacket]:
+        data, _ = self._remote.socks[Socket.response].recvfrom(2048)
+        # check for packet data
+        if len(data) > HEADER_SIZE:
+            # check if packet is of type rt packet response
+            if self.packet_expected.header == data[: HEADER_SIZE - 4]:
+                return VbanRtPacket(
+                    _voicemeeterType=data[28:29],
+                    _reserved=data[29:30],
+                    _buffersize=data[30:32],
+                    _voicemeeterVersion=data[32:36],
+                    _optionBits=data[36:40],
+                    _samplerate=data[40:44],
+                    _inputLeveldB100=data[44:112],
+                    _outputLeveldB100=data[112:240],
+                    _TransportBit=data[240:244],
+                    _stripState=data[244:276],
+                    _busState=data[276:308],
+                    _stripGaindB100Layer1=data[308:324],
+                    _stripGaindB100Layer2=data[324:340],
+                    _stripGaindB100Layer3=data[340:356],
+                    _stripGaindB100Layer4=data[356:372],
+                    _stripGaindB100Layer5=data[372:388],
+                    _stripGaindB100Layer6=data[388:404],
+                    _stripGaindB100Layer7=data[404:420],
+                    _stripGaindB100Layer8=data[420:436],
+                    _busGaindB100=data[436:452],
+                    _stripLabelUTF8c60=data[452:932],
+                    _busLabelUTF8c60=data[932:1412],
+                )
+
     def _get_rt(self) -> VbanRtPacket:
         """Attempt to fetch data packet until a valid one found"""
 
-        while True:
-            data, _ = self._remote.socks[Socket.response].recvfrom(2048)
-            # check for packet data
-            if len(data) > HEADER_SIZE:
-                # check if packet is of type rt packet response
-                if self.packet_expected.header == data[: HEADER_SIZE - 4]:
-                    return VbanRtPacket(data)
-            time.sleep(self._remote.DELAY)
+        def fget():
+            data = False
+            while not data:
+                data = self._fetch_rt_packet()
+                time.sleep(self._remote.DELAY)
+            return data
+
+        return fget()
 
     def update(self):
         print(f"Listening for {', '.join(self._remote.event.get())} events")
@@ -72,6 +104,7 @@ class Updater(threading.Thread):
                 _pp
             )
             self._remote._pdirty = _pp.pdirty(self._remote.public_packet)
+            print(self._remote.pdirty)
 
             if self._remote.event.ldirty and self._remote.ldirty:
                 self._remote.cache["strip_level"] = self._remote._strip_buf
