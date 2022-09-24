@@ -351,7 +351,7 @@ Returns a Voicemeeter rt data packet object. Designed to be used internally by t
 
 ### `Errors`
 
--   `errors.VMCMDErrors`: Base VMCMD error class.
+-   `errors.VBANCMDError`: Base VMCMD error class.
 
 ### `Tests`
 
