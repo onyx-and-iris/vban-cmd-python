@@ -1,4 +1,4 @@
-class VMCMDErrors(Exception):
+class VBANCMDError(Exception):
     """general errors"""
 
     pass

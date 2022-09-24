@@ -1,4 +1,3 @@
-from .error import VMCMDErrors
 from .iremote import IRemote
 from .meta import action_prop
 

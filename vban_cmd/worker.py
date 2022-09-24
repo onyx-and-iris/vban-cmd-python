@@ -3,6 +3,7 @@ import threading
 import time
 from typing import Optional
 
+from .error import VBANCMDError
 from .packet import HEADER_SIZE, SubscribeHeader, VbanRtPacket, VbanRtPacketHeader
 from .util import Socket
 
@@ -26,9 +27,9 @@ class Subscriber(threading.Thread):
                 self.packet.framecounter = count.to_bytes(4, "little")
                 time.sleep(10)
             except socket.gaierror as e:
-                print(f"Unable to resolve hostname {self._remote.ip}")
-                self._remote.socks[Socket.register].close()
-                raise e
+                err_msg = f"Unable to resolve hostname {self._remote.ip}"
+                print(err_msg)
+                raise VBANCMDError(err_msg)
 
 
 class Updater(threading.Thread):
@@ -80,9 +81,9 @@ class Updater(threading.Thread):
                         _busLabelUTF8c60=data[932:1412],
                     )
         except TimeoutError as e:
-            print(f"Unable to establish connection with {self._remote.ip}")
-            [sock.close() for sock in self._remote.socks]
-            raise e
+            err_msg = f"Unable to establish connection with {self._remote.ip}"
+            print(err_msg)
+            raise VBANCMDError(err_msg)
 
     def _get_rt(self) -> VbanRtPacket:
         """Attempt to fetch data packet until a valid one found"""

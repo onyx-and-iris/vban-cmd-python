@@ -1,6 +1,5 @@
 from functools import partial
 
-from .error import VMCMDErrors
 from .util import cache_bool, cache_string
 
 
