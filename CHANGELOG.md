@@ -11,6 +11,18 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [1.5.0] - 2022-09-28
+
+### Changed
+
+-   Logging module used in place of print statements across the interface.
+-   base error name changed (VBANCMDError)
+
+### Fixed
+
+-   Timeout and raise connection error when socket connection fails.
+-   Bug in observer example
+
 ## [1.4.0] - 2022-09-03
 
 ### Added
