@@ -1,3 +1,5 @@
+import logging
+
 import vban_cmd
 
 
@@ -7,7 +9,7 @@ class Observer:
         # register your app as event observer
         self.vban.subject.add(self)
         # add level updates, since they are disabled by default.
-        self.vm.event.add("ldirty")
+        self.vban.event.add("ldirty")
 
     # define an 'on_update' callback function to receive event updates
     def on_update(self, subject):
@@ -29,7 +31,7 @@ class Observer:
 
 def main():
     with vban_cmd.api(kind_id, **opts) as vban:
-        obs = Observer(vban)
+        Observer(vban)
 
         while cmd := input("Press <Enter> to exit\n"):
             if not cmd:
@@ -37,6 +39,8 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
     kind_id = "potato"
     opts = {
         "ip": "<ip address>",
