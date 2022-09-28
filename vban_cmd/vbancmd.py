@@ -1,3 +1,4 @@
+import logging
 import socket
 import time
 from abc import ABCMeta, abstractmethod
@@ -21,6 +22,7 @@ class VbanCmd(metaclass=ABCMeta):
         1000000, 1500000, 2000000, 3000000,
     ]
     # fmt: on
+    logger = logging.getLogger("vbancmd.vbancmd")
 
     def __init__(self, **kwargs):
         for attr, val in kwargs.items():
@@ -56,6 +58,8 @@ class VbanCmd(metaclass=ABCMeta):
 
         self.updater = Updater(self)
         self.updater.start()
+
+        self.logger.info(f"{type(self).__name__}: Successfully logged into {self}")
 
     def _set_rt(
         self,

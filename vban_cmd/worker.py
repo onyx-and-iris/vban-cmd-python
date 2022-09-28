@@ -1,3 +1,4 @@
+import logging
 import socket
 import threading
 import time
@@ -38,6 +39,8 @@ class Updater(threading.Thread):
 
     notifies observers of event updates
     """
+
+    logger = logging.getLogger("worker.updater")
 
     def __init__(self, remote):
         super().__init__(name="updater", target=self.update, daemon=True)
@@ -98,7 +101,7 @@ class Updater(threading.Thread):
         return fget()
 
     def update(self):
-        print(f"Listening for {', '.join(self._remote.event.get())} events")
+        self.logger.info(f"Listening for {', '.join(self._remote.event.get())} events")
         (
             self._remote.cache["strip_level"],
             self._remote.cache["bus_level"],
