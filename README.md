@@ -271,19 +271,6 @@ with vban_cmd.api('banana') as vban:
 
 will load a config file at configs/banana/example.toml for Voicemeeter Banana.
 
-## VbanCmd class
-
-`vban_cmd.api(kind_id: str, **opts: dict)`
-
-You may pass the following optional keyword arguments:
-
--   `ip`: str, ip or hostname of remote machine
--   `streamname`: str, name of the stream to connect to.
--   `port`: int=6980, vban udp port of remote machine.
--   `subs`: dict={"pdirty": True, "ldirty": False}, controls which updates to listen for.
-    -   `pdirty`: parameter updates
-    -   `ldirty`: level updates
-
 ## Events
 
 Level updates are considered high volume, by default they are NOT listened for. Use `subs` keyword arg to initialize event updates.
@@ -333,6 +320,19 @@ vban.event.remove("pdirty")
 # get a list of currently subscribed
 print(vban.event.get())
 ```
+
+## VbanCmd class
+
+`vban_cmd.api(kind_id: str, **opts: dict)`
+
+You may pass the following optional keyword arguments:
+
+-   `ip`: str, ip or hostname of remote machine
+-   `streamname`: str, name of the stream to connect to.
+-   `port`: int=6980, vban udp port of remote machine.
+-   `subs`: dict={"pdirty": True, "ldirty": False}, controls which updates to listen for.
+    -   `pdirty`: parameter updates
+    -   `ldirty`: level updates
 
 #### `vban.pdirty`
 
