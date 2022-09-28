@@ -80,9 +80,7 @@ class VbanRtPacket:
     def inputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all inputs"""
         for i in range(0, 68, 2):
-            val = ((1 << 16) - 1) - int.from_bytes(
-                self._inputLeveldB100[i : i + 2], "little"
-            )
+            val = int.from_bytes(self._inputLeveldB100[i : i + 2], "little")
             if val != ((1 << 16) - 1):
                 yield val
 
@@ -90,9 +88,7 @@ class VbanRtPacket:
     def outputlevels(self) -> Generator[float, None, None]:
         """returns the entire level array across all outputs"""
         for i in range(0, 128, 2):
-            val = ((1 << 16) - 1) - int.from_bytes(
-                self._outputLeveldB100[i : i + 2], "little"
-            )
+            val = int.from_bytes(self._outputLeveldB100[i : i + 2], "little")
             if val != ((1 << 16) - 1):
                 yield val
 
@@ -114,64 +110,56 @@ class VbanRtPacket:
     @property
     def stripgainlayer1(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer1[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer1[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer2(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer2[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer2[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer3(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer3[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer3[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer4(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer4[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer4[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer5(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer5[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer5[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer6(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer6[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer6[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer7(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer7[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer7[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer8(self) -> tuple:
         return tuple(
-            ((1 << 16) - 1)
-            - int.from_bytes(self._stripGaindB100Layer8[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer8[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 
@@ -179,7 +167,7 @@ class VbanRtPacket:
     def busgain(self) -> tuple:
         """returns tuple of bus gains"""
         return tuple(
-            ((1 << 16) - 1) - int.from_bytes(self._busGaindB100[i : i + 2], "little")
+            int.from_bytes(self._busGaindB100[i : i + 2], "little")
             for i in range(0, 16, 2)
         )
 

@@ -103,9 +103,20 @@ class StripLevel(IRemote):
         self.range = self.level_map[self.index]
 
     def getter(self):
+        """Returns a tuple of level values for the channel."""
+
+        if self._remote.running and self._remote.event.ldirty:
+            return tuple(
+                round(i * -0.01, 1)
+                for i in self._remote.cache["strip_level"][
+                    self.range[0] : self.range[-1]
+                ]
+            )
         return tuple(
-            round(-i * 0.01, 1)
-            for i in self._remote.cache["strip_level"][self.range[0] : self.range[-1]]
+            round(i * -0.01, 1)
+            for i in self._remote._get_levels(self.public_packet)[0][
+                self.range[0] : self.range[-1]
+            ]
         )
 
     @property
@@ -149,17 +160,12 @@ class GainLayer(IRemote):
     def gain(self) -> float:
         def fget():
             val = getattr(self.public_packet, f"stripgainlayer{self._i+1}")[self.index]
-            if val < 10000:
-                return -val
-            elif val == ((1 << 16) - 1):
-                return 0
-            else:
-                return ((1 << 16) - 1) - val
+            if 0 <= val <= 1200:
+                return val * 0.01
+            return (((1 << 16) - 1) - val) * -0.01
 
         val = self.getter(f"GainLayer[{self._i}]")
-        if val is None:
-            val = fget() * 0.01
-        return round(val, 1)
+        return round(val if val else fget(), 1)
 
     @gain.setter
     def gain(self, val: float):
