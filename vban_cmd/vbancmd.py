@@ -3,7 +3,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from typing import Iterable, Optional, Union
 
-from .misc import Event
+from .event import Event
 from .packet import RequestHeader
 from .subject import Subject
 from .util import Socket, comp, script
@@ -122,8 +122,8 @@ class VbanCmd(metaclass=ABCMeta):
         strip levels in PREFADER mode.
         """
         return (
-            tuple(val for val in packet.inputlevels),
-            tuple(val for val in packet.outputlevels),
+            tuple(((1 << 16) - 1) - val for val in packet.inputlevels),
+            tuple(((1 << 16) - 1) - val for val in packet.outputlevels),
         )
 
     def apply(self, data: dict):

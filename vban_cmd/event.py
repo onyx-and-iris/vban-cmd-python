@@ -1,13 +1,19 @@
+import logging
+
+
 class Event:
+    logger = logging.getLogger("event.event")
+
     def __init__(self, subs: dict):
         self.subs = subs
 
     def info(self, msg):
-        info = (
-            f"{msg} events",
-            f"Now listening for {', '.join(self.get())} events",
-        )
-        print("\n".join(info))
+        info = (f"{msg} events",)
+        if self.any():
+            info += (f"now listening for {', '.join(self.get())} events",)
+        else:
+            info += (f"not listening for any events",)
+        self.logger.info(", ".join(info))
 
     @property
     def pdirty(self):
