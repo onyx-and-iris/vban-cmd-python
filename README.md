@@ -271,9 +271,7 @@ with vban_cmd.api('banana') as vban:
 
 will load a config file at configs/banana/example.toml for Voicemeeter Banana.
 
-## `Base Module`
-
-### VbanCmd class
+## VbanCmd class
 
 `vban_cmd.api(kind_id: str, **opts: dict)`
 
@@ -286,18 +284,9 @@ You may pass the following optional keyword arguments:
     -   `pdirty`: parameter updates
     -   `ldirty`: level updates
 
-#### Event updates
+## Events
 
-To receive event updates you should do the following:
-
--   register your app to receive updates using the `vban.subject.add(observer)` method, where observer is your app.
--   define an `on_update(subject)` callback function in your app. The value of subject may be checked for the type of update.
-
-See `examples/observer` for a demonstration.
-
-Level updates are considered high volume, by default they are NOT listened for.
-
-Each of the update types may be enabled/disabled separately.
+Level updates are considered high volume, by default they are NOT listened for. Use `subs` keyword arg to initialize event updates.
 
 example:
 
@@ -312,6 +301,22 @@ opts = {
 }
 with vban_cmd.api('banana', **opts) as vban:
     ...
+```
+
+#### `vban.subject`
+
+Use the Subject class to register an app as event observer.
+
+The following methods are available:
+
+-   `add`: registers an app as an event observer
+-   `remove`: deregisters an app as an event observer
+
+example:
+
+```python
+# register the app self as an event observer
+self.vban.subject.add(self)
 ```
 
 #### `vban.event`
