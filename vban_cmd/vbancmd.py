@@ -52,6 +52,7 @@ class VbanCmd(metaclass=ABCMeta):
     def login(self):
         """Starts the subscriber and updater threads"""
         self.running = True
+        self.event.info()
 
         self.subscriber = Subscriber(self)
         self.subscriber.start()
@@ -163,6 +164,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.running = False
         time.sleep(0.2)
         [sock.close() for sock in self.socks]
+        self.logger.info(f"{type(self).__name__}: Successfully logged out of {self}")
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.logout()

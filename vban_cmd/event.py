@@ -2,13 +2,15 @@ import logging
 
 
 class Event:
+    """Keeps track of event subscriptions"""
+
     logger = logging.getLogger("event.event")
 
     def __init__(self, subs: dict):
         self.subs = subs
 
-    def info(self, msg):
-        info = (f"{msg} events",)
+    def info(self, msg=None):
+        info = (f"{msg} events",) if msg else ()
         if self.any():
             info += (f"now listening for {', '.join(self.get())} events",)
         else:

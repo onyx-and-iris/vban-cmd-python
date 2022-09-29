@@ -101,7 +101,6 @@ class Updater(threading.Thread):
         return fget()
 
     def update(self):
-        self.logger.info(f"Listening for {', '.join(self._remote.event.get())} events")
         (
             self._remote.cache["strip_level"],
             self._remote.cache["bus_level"],
