@@ -105,15 +105,18 @@ class StripLevel(IRemote):
     def getter(self):
         """Returns a tuple of level values for the channel."""
 
+        def fget(i):
+            return round((((1 << 16) - 1) - i) * -0.01, 1)
+
         if self._remote.running and self._remote.event.ldirty:
             return tuple(
-                round(i * -0.01, 1)
+                fget(i)
                 for i in self._remote.cache["strip_level"][
                     self.range[0] : self.range[-1]
                 ]
             )
         return tuple(
-            round(i * -0.01, 1)
+            fget(i)
             for i in self._remote._get_levels(self.public_packet)[0][
                 self.range[0] : self.range[-1]
             ]
