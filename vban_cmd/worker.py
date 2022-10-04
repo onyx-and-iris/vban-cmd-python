@@ -6,7 +6,7 @@ from typing import Optional
 
 from .error import VBANCMDError
 from .packet import HEADER_SIZE, SubscribeHeader, VbanRtPacket, VbanRtPacketHeader
-from .util import Socket
+from .util import Socket, comp
 
 
 class Subscriber(threading.Thread):
@@ -51,6 +51,14 @@ class Updater(threading.Thread):
         )
         self.packet_expected = VbanRtPacketHeader()
         self._remote._public_packet = self._get_rt()
+        (
+            self._remote.cache["strip_level"],
+            self._remote.cache["bus_level"],
+        ) = self._remote._get_levels(self._remote.public_packet)
+        self._remote._strip_comp = [False] * (
+            2 * self._remote.kind.phys_in + 8 * self._remote.kind.virt_in
+        )
+        self._remote._bus_comp = [False] * (self._remote.kind.num_bus * 8)
 
     def _fetch_rt_packet(self) -> Optional[VbanRtPacket]:
         try:
@@ -59,7 +67,9 @@ class Updater(threading.Thread):
             if len(data) > HEADER_SIZE:
                 # check if packet is of type rt packet response
                 if self.packet_expected.header == data[: HEADER_SIZE - 4]:
+                    self.logger.debug("valid packet received")
                     return VbanRtPacket(
+                        _kind=self._remote.kind,
                         _voicemeeterType=data[28:29],
                         _reserved=data[29:30],
                         _buffersize=data[30:32],
@@ -92,7 +102,7 @@ class Updater(threading.Thread):
         """Attempt to fetch data packet until a valid one found"""
 
         def fget():
-            data = False
+            data = None
             while not data:
                 data = self._fetch_rt_packet()
                 time.sleep(self._remote.DELAY)
@@ -100,28 +110,33 @@ class Updater(threading.Thread):
 
         return fget()
 
-    def update(self):
-        (
-            self._remote.cache["strip_level"],
-            self._remote.cache["bus_level"],
-        ) = self._remote._get_levels(self._remote.public_packet)
+    def _update_comps(self, _pp):
+        self._remote._strip_comp = _pp._strip_comp
+        self._remote._bus_comp = _pp._bus_comp
 
+    def update(self):
         while self._remote.running:
             start = time.time()
             _pp = self._get_rt()
-            self._remote._strip_buf, self._remote._bus_buf = self._remote._get_levels(
-                _pp
-            )
             self._remote._pdirty = _pp.pdirty(self._remote.public_packet)
+            self._remote._ldirty = _pp.ldirty(
+                self._remote.cache["strip_level"], self._remote.cache["bus_level"]
+            )
 
-            if self._remote.event.ldirty and self._remote.ldirty:
-                self._remote.cache["strip_level"] = self._remote._strip_buf
-                self._remote.cache["bus_level"] = self._remote._bus_buf
-                self._remote.subject.notify("ldirty")
-            if self._remote.public_packet != _pp:
+            if self._remote.pdirty or self._remote.ldirty:
+                self.logger.debug("dirty state, updating public packet")
                 self._remote._public_packet = _pp
+
             if self._remote.event.pdirty and self._remote.pdirty:
                 self._remote.subject.notify("pdirty")
+            if self._remote.event.ldirty and self._remote.ldirty:
+                self._update_comps(_pp)
+                self._remote.cache["strip_level"], self._remote.cache["bus_level"] = (
+                    _pp.inputlevels,
+                    _pp.outputlevels,
+                )
+                self._remote.subject.notify("ldirty")
+
             elapsed = time.time() - start
             if self._remote.ratelimit - elapsed > 0:
                 time.sleep(self._remote.ratelimit - elapsed)

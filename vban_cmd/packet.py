@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Generator
 
+from .util import comp
+
 VBAN_SERVICE_RTPACKETREGISTER = 32
 VBAN_SERVICE_RTPACKET = 33
 MAX_PACKET_SIZE = 1436
@@ -11,37 +13,24 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 class VbanRtPacket:
     """Represents the body of a VBAN RT data packet"""
 
-    _voicemeeterType: bytes
-    _reserved: bytes
-    _buffersize: bytes
-    _voicemeeterVersion: bytes
-    _optionBits: bytes
-    _samplerate: bytes
-    _inputLeveldB100: bytes
-    _outputLeveldB100: bytes
-    _TransportBit: bytes
-    _stripState: bytes
-    _busState: bytes
-    _stripGaindB100Layer1: bytes
-    _stripGaindB100Layer2: bytes
-    _stripGaindB100Layer3: bytes
-    _stripGaindB100Layer4: bytes
-    _stripGaindB100Layer5: bytes
-    _stripGaindB100Layer6: bytes
-    _stripGaindB100Layer7: bytes
-    _stripGaindB100Layer8: bytes
-    _busGaindB100: bytes
-    _stripLabelUTF8c60: bytes
-    _busLabelUTF8c60: bytes
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self._strip_level = self._generate_levels(self._inputLeveldB100)
+        self._bus_level = self._generate_levels(self._outputLeveldB100)
 
-    def pdirty(self, other):
+    def _generate_levels(self, levelarray) -> tuple:
+        return tuple(
+            int.from_bytes(levelarray[i : i + 2], "little")
+            for i in range(0, len(levelarray), 2)
+        )
+
+    def pdirty(self, other) -> bool:
         """True iff any defined parameter has changed"""
 
         return not (
             self._stripState == other._stripState
             and self._busState == other._busState
-            and self._stripLabelUTF8c60 == other._stripLabelUTF8c60
-            and self._busLabelUTF8c60 == other._busLabelUTF8c60
             and self._stripGaindB100Layer1 == other._stripGaindB100Layer1
             and self._stripGaindB100Layer2 == other._stripGaindB100Layer2
             and self._stripGaindB100Layer3 == other._stripGaindB100Layer3
@@ -51,7 +40,16 @@ class VbanRtPacket:
             and self._stripGaindB100Layer7 == other._stripGaindB100Layer7
             and self._stripGaindB100Layer8 == other._stripGaindB100Layer8
             and self._busGaindB100 == other._busGaindB100
+            and self._stripLabelUTF8c60 == other._stripLabelUTF8c60
+            and self._busLabelUTF8c60 == other._busLabelUTF8c60
         )
+
+    def ldirty(self, strip_cache, bus_cache) -> bool:
+        self._strip_comp, self._bus_comp = (
+            tuple(not val for val in comp(strip_cache, self._strip_level)),
+            tuple(not val for val in comp(bus_cache, self._bus_level)),
+        )
+        return any(any(l) for l in (self._strip_comp, self._bus_comp))
 
     @property
     def voicemeetertype(self) -> str:
@@ -77,20 +75,14 @@ class VbanRtPacket:
         return int.from_bytes(self._samplerate, "little")
 
     @property
-    def inputlevels(self) -> Generator[float, None, None]:
-        """returns the entire level array across all inputs"""
-        for i in range(0, 68, 2):
-            val = int.from_bytes(self._inputLeveldB100[i : i + 2], "little")
-            if val != ((1 << 16) - 1):
-                yield val
+    def inputlevels(self) -> tuple:
+        """returns the entire level array across all inputs for a kind"""
+        return self._strip_level[0 : (2 * self._kind.phys_in + 8 * self._kind.virt_in)]
 
     @property
-    def outputlevels(self) -> Generator[float, None, None]:
-        """returns the entire level array across all outputs"""
-        for i in range(0, 128, 2):
-            val = int.from_bytes(self._outputLeveldB100[i : i + 2], "little")
-            if val != ((1 << 16) - 1):
-                yield val
+    def outputlevels(self) -> tuple:
+        """returns the entire level array across all outputs for a kind"""
+        return self._bus_level[0 : 8 * self._kind.num_bus]
 
     @property
     def stripstate(self) -> tuple:
