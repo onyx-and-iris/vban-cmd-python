@@ -7,7 +7,7 @@ from typing import Iterable, Optional, Union
 from .event import Event
 from .packet import RequestHeader
 from .subject import Subject
-from .util import Socket, comp, script
+from .util import Socket, script
 from .worker import Subscriber, Updater
 
 
@@ -37,7 +37,7 @@ class VbanCmd(metaclass=ABCMeta):
             socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in Socket
         )
         self.subject = Subject()
-        self.cache = dict()
+        self.cache = {}
         self.event = Event(self.subs)
 
     @abstractmethod
@@ -95,8 +95,7 @@ class VbanCmd(metaclass=ABCMeta):
     @property
     def version(self) -> str:
         """Returns Voicemeeter's version as a string"""
-        v1, v2, v3, v4 = self.public_packet.voicemeeterversion
-        return f"{v1}.{v2}.{v3}.{v4}"
+        return "{0}.{1}.{2}.{3}".format(*self.public_packet.voicemeeterversion)
 
     @property
     def pdirty(self):
@@ -106,11 +105,7 @@ class VbanCmd(metaclass=ABCMeta):
     @property
     def ldirty(self):
         """True iff a level value has changed."""
-        self._strip_comp, self._bus_comp = (
-            tuple(not x for x in comp(self.cache["strip_level"], self._strip_buf)),
-            tuple(not x for x in comp(self.cache["bus_level"], self._bus_buf)),
-        )
-        return any(any(l) for l in (self._strip_comp, self._bus_comp))
+        return self._ldirty
 
     @property
     def public_packet(self):
@@ -127,8 +122,8 @@ class VbanCmd(metaclass=ABCMeta):
         strip levels in PREFADER mode.
         """
         return (
-            tuple(((1 << 16) - 1) - val for val in packet.inputlevels),
-            tuple(((1 << 16) - 1) - val for val in packet.outputlevels),
+            packet.inputlevels,
+            packet.outputlevels,
         )
 
     def apply(self, data: dict):

@@ -61,10 +61,12 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
 
     Evaluates equality of each member in both tuples.
     """
+
     for a, b in zip(t0, t1):
-        if b <= 9500:
+        if ((1 << 16) - 1) - b <= 6000:
             yield a == b
-        yield True
+        else:
+            yield True
 
 
 Socket = IntEnum("Socket", "register request response", start=0)
