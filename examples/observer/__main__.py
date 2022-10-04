@@ -16,17 +16,9 @@ class Observer:
         if subject == "pdirty":
             print("pdirty!")
         elif subject == "ldirty":
-            info = (
-                f"[{self.vban.bus[0]} {self.vban.bus[0].levels.isdirty}]",
-                f"[{self.vban.bus[1]} {self.vban.bus[1].levels.isdirty}]",
-                f"[{self.vban.bus[2]} {self.vban.bus[2].levels.isdirty}]",
-                f"[{self.vban.bus[3]} {self.vban.bus[3].levels.isdirty}]",
-                f"[{self.vban.bus[4]} {self.vban.bus[4].levels.isdirty}]",
-                f"[{self.vban.bus[5]} {self.vban.bus[5].levels.isdirty}]",
-                f"[{self.vban.bus[6]} {self.vban.bus[6].levels.isdirty}]",
-                f"[{self.vban.bus[7]} {self.vban.bus[7].levels.isdirty}]",
-            )
-            print(" ".join(info))
+            for bus in self.vban.bus:
+                if bus.levels.isdirty:
+                    print(bus, bus.levels.all)
 
 
 def main():
