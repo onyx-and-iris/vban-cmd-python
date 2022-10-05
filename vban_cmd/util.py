@@ -63,7 +63,7 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
     """
 
     for a, b in zip(t0, t1):
-        if ((1 << 16) - 1) - b <= 6000:
+        if ((1 << 16) - 1) - b <= 7200:
             yield a == b
         else:
             yield True
