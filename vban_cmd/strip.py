@@ -1,3 +1,4 @@
+import time
 from abc import abstractmethod
 from typing import Union
 
@@ -39,6 +40,14 @@ class Strip(IRemote):
     @gain.setter
     def gain(self, val: float):
         self.setter("gain", val)
+
+    def fadeto(self, target: float, time_: int):
+        self.setter("FadeTo", f"({target}, {time_})")
+        time.sleep(self._remote.DELAY)
+
+    def fadeby(self, change: float, time_: int):
+        self.setter("FadeBy", f"({change}, {time_})")
+        time.sleep(self._remote.DELAY)
 
 
 class PhysicalStrip(Strip):
@@ -85,6 +94,12 @@ class VirtualStrip(Strip):
     @k.setter
     def k(self, val: int):
         self.setter("karaoke", val)
+
+    def appgain(self, name: str, gain: float):
+        self.setter("AppGain", f'("{name}", {gain})')
+
+    def appmute(self, name: str, mute: bool = None):
+        self.setter("AppMute", f'("{name}", {1 if mute else 0})')
 
 
 class StripLevel(IRemote):

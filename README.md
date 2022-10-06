@@ -124,7 +124,24 @@ example:
 
 ```python
 vban.strip[3].gain = 3.7
-print(strip[0].label)
+print(vban.strip[0].label)
+```
+
+The following methods are available.
+
+-   `appgain(name, value)`: string, float, from 0.0 to 1.0
+
+Set the gain in db by value for the app matching name.
+
+-   `appmute(name, value)`: string, bool
+
+Set mute state as value for the app matching name.
+
+example:
+
+```python
+vban.strip[5].appmute("Spotify", True)
+vban.strip[5].appgain("Spotify", 0.5)
 ```
 
 ##### Gainlayers
@@ -212,6 +229,22 @@ print(vban.bus[0].levels.all)
 ```
 
 `levels.all` will return -200.0 if no audio detected.
+
+### Strip | Bus
+
+The following methods are available.
+
+-   `fadeto(amount, time)`: float, int
+-   `fadeby(amount, time)`: float, int
+
+Modify gain to or by the selected amount in db over a time interval in ms.
+
+example:
+
+```python
+vban.strip[0].fadeto(-10.3, 1000)
+vban.bus[3].fadeby(-5.6, 500)
+```
 
 ### Command
 

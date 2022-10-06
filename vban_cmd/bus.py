@@ -43,6 +43,14 @@ class Bus(IRemote):
     def gain(self, val: float):
         self.setter("gain", val)
 
+    def fadeto(self, target: float, time_: int):
+        self.setter("FadeTo", f"({target}, {time_})")
+        time.sleep(self._remote.DELAY)
+
+    def fadeby(self, change: float, time_: int):
+        self.setter("FadeBy", f"({change}, {time_})")
+        time.sleep(self._remote.DELAY)
+
 
 class PhysicalBus(Bus):
     def __str__(self):
