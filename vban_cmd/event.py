@@ -24,7 +24,7 @@ class Event:
     @pdirty.setter
     def pdirty(self, val: bool):
         self.subs["pdirty"] = val
-        self.info(f"pdirty {'added to' if val else {'removed from'}}")
+        self.info(f"pdirty {'added to' if val else 'removed from'}")
 
     @property
     def ldirty(self) -> bool:
@@ -33,7 +33,7 @@ class Event:
     @ldirty.setter
     def ldirty(self, val: bool):
         self.subs["ldirty"] = val
-        self.info(f"ldirty {'added to' if val else {'removed from'}}")
+        self.info(f"ldirty {'added to' if val else 'removed from'}")
 
     def get(self) -> list:
         return [k for k, v in self.subs.items() if v]
