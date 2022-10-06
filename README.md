@@ -316,8 +316,6 @@ Use the event class to toggle updates as necessary.
 The following properties are available:
 
 -   `pdirty`: boolean
--   `mdirty`: boolean
--   `midi`: boolean
 -   `ldirty`: boolean
 
 example:
@@ -326,6 +324,20 @@ example:
 vban.event.ldirty = True
 
 vban.event.pdirty = False
+```
+
+Or add, remove a list of events.
+
+The following methods are available:
+
+-   `add()`
+-   `remove()`
+-   `get()`
+
+example:
+
+```python
+vban.event.remove(["pdirty", "ldirty"])
 
 # get a list of currently subscribed
 print(vban.event.get())
