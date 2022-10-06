@@ -302,20 +302,30 @@ The following methods are available:
 example:
 
 ```python
-# register the app self as an event observer
-self.vban.subject.add(self)
+# register an app to receive updates
+class App():
+    def __init__(self, vban):
+        vban.subject.add(self)
+        ...
 ```
 
 #### `vban.event`
 
-You may also add/remove event subscriptions as necessary with the Event class.
+Use the event class to toggle updates as necessary.
+
+The following properties are available:
+
+-   `pdirty`: boolean
+-   `mdirty`: boolean
+-   `midi`: boolean
+-   `ldirty`: boolean
 
 example:
 
 ```python
-vban.event.add("ldirty")
+vban.event.ldirty = True
 
-vban.event.remove("pdirty")
+vban.event.pdirty = False
 
 # get a list of currently subscribed
 print(vban.event.get())

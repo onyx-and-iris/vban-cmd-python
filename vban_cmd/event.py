@@ -18,12 +18,22 @@ class Event:
         self.logger.info(", ".join(info))
 
     @property
-    def pdirty(self):
+    def pdirty(self) -> bool:
         return self.subs["pdirty"]
 
+    @pdirty.setter
+    def pdirty(self, val: bool):
+        self.subs["pdirty"] = val
+        self.info(f"pdirty {'added to' if val else {'removed from'}}")
+
     @property
-    def ldirty(self):
+    def ldirty(self) -> bool:
         return self.subs["ldirty"]
+
+    @ldirty.setter
+    def ldirty(self, val: bool):
+        self.subs["ldirty"] = val
+        self.info(f"ldirty {'added to' if val else {'removed from'}}")
 
     def get(self) -> list:
         return [k for k, v in self.subs.items() if v]
@@ -32,9 +42,7 @@ class Event:
         return any(self.subs.values())
 
     def add(self, event):
-        self.subs[event] = True
-        self.info(f"{event} added to")
+        setattr(self, event, True)
 
     def remove(self, event):
-        self.subs[event] = False
-        self.info(f"{event} removed from")
+        setattr(self, event, False)
