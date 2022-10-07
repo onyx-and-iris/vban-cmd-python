@@ -52,15 +52,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     kind_id = "potato"
-    opts = {
-        "ip": "gamepc.local",
-        "streamname": "Command1",
-        "port": 6980,
-        "subs": {"pdirty": False},
-        "sync": True,
-    }
 
-    with vban_cmd.api(kind_id, **opts) as vban:
+    with vban_cmd.api(kind_id, sync=True) as vban:
         cl = obs.EventClient()
         cl.callback.register(on_current_program_scene_changed)
 
