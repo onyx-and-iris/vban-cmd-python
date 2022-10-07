@@ -2,7 +2,13 @@ import logging
 import socket
 import time
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
 from typing import Iterable, Optional, Union
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 from .event import Event
 from .packet import RequestHeader
@@ -27,6 +33,10 @@ class VbanCmd(metaclass=ABCMeta):
     def __init__(self, **kwargs):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
+        if self.ip is None:
+            conn = self._conn_from_toml()
+            for attr, val in conn.items():
+                setattr(self, attr, val)
 
         self.packet_request = RequestHeader(
             name=self.streamname,
@@ -44,6 +54,12 @@ class VbanCmd(metaclass=ABCMeta):
     def __str__(self):
         """Ensure subclasses override str magic method"""
         pass
+
+    def _conn_from_toml(self) -> str:
+        filepath = Path.cwd() / "vban.toml"
+        with open(filepath, "rb") as f:
+            conn = tomllib.load(f)
+        return conn["connection"]
 
     def __enter__(self):
         self.login()
