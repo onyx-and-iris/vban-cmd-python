@@ -21,7 +21,7 @@ This script assumes the following:
     password = "mystrongpass"
     ```
 
--   VBAN Connection info in a valid `config.toml`:
+-   VBAN Connection info in a valid `vban.toml`:
 
     ```toml
     [connection]
