@@ -10,31 +10,29 @@ With the vban-cmd and obsws-python packages you may sync a distant Voicemeeter w
 
 ## Configure
 
-This script assumes you have your OBS connection info saved in a config file named `config.toml`.
+This script assumes the following:
 
-A valid `config.toml` file might look like this:
+-   OBS Connection info in a valid `config.toml`:
 
-```toml
-[connection]
-host = "gamepc.local"
-port = 4455
-password = "mystrongpass"
-```
+    ```toml
+    [connection]
+    host = "gamepc.local"
+    port = 4455
+    password = "mystrongpass"
+    ```
 
-It also assumes you have your VBAN connection info saved in a config file named `vban.toml`.
+-   VBAN Connection info in a valid `config.toml`:
 
-A valid `vban.toml` file might look like this:
+    ```toml
+    [connection]
+    ip = "gamepc.local"
+    port = 6980
+    streamname = "Command1"
+    ```
 
-```toml
-[connection]
-ip = "gamepc.local"
-port = 6980
-streamname = "Command1"
-```
+-   Both configs should be placed next to `__main__.py`.
 
-Both configs should be placed next to `__main__.py`.
-
-The script also assumes four OBS scenes names "START", "BRB", "END" and "LIVE".
+-   Four OBS scenes named "START", "BRB", "END" and "LIVE".
 
 ## Use
 
