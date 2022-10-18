@@ -22,7 +22,9 @@ class Observer:
 
 
 def main():
-    with vban_cmd.api(kind_id, **opts) as vban:
+    kind_id = "potato"
+
+    with vban_cmd.api(kind_id) as vban:
         Observer(vban)
 
         while cmd := input("Press <Enter> to exit\n"):
@@ -32,12 +34,5 @@ def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
-    kind_id = "potato"
-    opts = {
-        "ip": "<ip address>",
-        "streamname": "Command1",
-        "port": 6980,
-    }
 
     main()
