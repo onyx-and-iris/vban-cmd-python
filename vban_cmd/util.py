@@ -10,6 +10,8 @@ def cache_bool(func, param):
         cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd) == 1
+        if self._remote.sync:
+            self._remote.clear_dirty()
         return func(*args, **kwargs)
 
     return wrapper
@@ -23,6 +25,8 @@ def cache_string(func, param):
         cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
+        if self._remote.sync:
+            self._remote.clear_dirty()
         return func(*args, **kwargs)
 
     return wrapper

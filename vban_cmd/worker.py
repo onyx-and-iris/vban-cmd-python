@@ -27,7 +27,7 @@ class Subscriber(threading.Thread):
                 count = int.from_bytes(self.packet.framecounter, "little") + 1
                 self.packet.framecounter = count.to_bytes(4, "little")
                 time.sleep(10)
-            except socket.gaierror as e:
+            except socket.gaierror:
                 err_msg = f"Unable to resolve hostname {self._remote.ip}"
                 print(err_msg)
                 raise VBANCMDError(err_msg)
@@ -55,9 +55,8 @@ class Updater(threading.Thread):
             self._remote.cache["strip_level"],
             self._remote.cache["bus_level"],
         ) = self._remote._get_levels(self._remote.public_packet)
-        self._remote._strip_comp = [False] * (
-            2 * self._remote.kind.phys_in + 8 * self._remote.kind.virt_in
-        )
+        p_in, v_in = self._remote.kind.ins
+        self._remote._strip_comp = [False] * (2 * p_in + 8 * v_in)
         self._remote._bus_comp = [False] * (self._remote.kind.num_bus * 8)
 
     def _fetch_rt_packet(self) -> Optional[VbanRtPacket]:
@@ -93,7 +92,7 @@ class Updater(threading.Thread):
                         _stripLabelUTF8c60=data[452:932],
                         _busLabelUTF8c60=data[932:1412],
                     )
-        except TimeoutError as e:
+        except TimeoutError:
             err_msg = f"Unable to establish connection with {self._remote.ip}"
             print(err_msg)
             raise VBANCMDError(err_msg)
@@ -110,27 +109,28 @@ class Updater(threading.Thread):
 
         return fget()
 
-    def _update_comps(self, _pp):
-        self._remote._strip_comp = _pp._strip_comp
-        self._remote._bus_comp = _pp._bus_comp
-
     def update(self):
         while self._remote.running:
             start = time.time()
             _pp = self._get_rt()
-            self._remote._pdirty = _pp.pdirty(self._remote.public_packet)
-            self._remote._ldirty = _pp.ldirty(
+            pdirty = _pp.pdirty(self._remote.public_packet)
+            ldirty = _pp.ldirty(
                 self._remote.cache["strip_level"], self._remote.cache["bus_level"]
             )
 
-            if self._remote.pdirty or self._remote.ldirty:
+            if pdirty or ldirty:
                 self.logger.debug("dirty state, updating public packet")
                 self._remote._public_packet = _pp
+                self._remote._pdirty = pdirty
+                self._remote._ldirty = ldirty
 
             if self._remote.event.pdirty and self._remote.pdirty:
                 self._remote.subject.notify("pdirty")
             if self._remote.event.ldirty and self._remote.ldirty:
-                self._update_comps(_pp)
+                self._remote._strip_comp, self._remote._bus_comp = (
+                    _pp._strip_comp,
+                    _pp._bus_comp,
+                )
                 self._remote.cache["strip_level"], self._remote.cache["bus_level"] = (
                     _pp.inputlevels,
                     _pp.outputlevels,

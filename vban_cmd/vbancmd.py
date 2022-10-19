@@ -49,6 +49,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.subject = Subject()
         self.cache = {}
         self.event = Event(self.subs)
+        self._pdirty = False
 
     @abstractmethod
     def __str__(self):
@@ -85,7 +86,7 @@ class VbanCmd(metaclass=ABCMeta):
         val: Optional[Union[int, float]] = None,
     ):
         """Sends a string request command over a network."""
-        cmd = id_ if not param else f"{id_}.{param}={val}"
+        cmd = id_ if not param else f"{id_}.{param}={val};"
         self.socks[Socket.request].sendto(
             self.packet_request.header + cmd.encode(),
             (socket.gethostbyname(self.ip), self.port),
@@ -94,8 +95,6 @@ class VbanCmd(metaclass=ABCMeta):
         self.packet_request.framecounter = count.to_bytes(4, "little")
         if param:
             self.cache[f"{id_}.{param}"] = val
-        if self.sync:
-            time.sleep(0.02)
 
     @script
     def sendtext(self, cmd):
@@ -129,7 +128,7 @@ class VbanCmd(metaclass=ABCMeta):
 
     def clear_dirty(self):
         while self.pdirty:
-            pass
+            time.sleep(self.DELAY)
 
     def _get_levels(self, packet) -> Iterable:
         """

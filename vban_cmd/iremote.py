@@ -91,6 +91,8 @@ class IRemote(metaclass=ABCMeta):
         cmd = f"{self.identifier}.{param}"
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
+        if self._remote.sync:
+            self._remote.clear_dirty()
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
@@ -120,8 +122,8 @@ class IRemote(metaclass=ABCMeta):
                 if isinstance(val, bool):
                     val = 1 if val else 0
 
-                self._remote.cache[f"{self.identifier}[{self.index}].{attr}"] = val
-                script += f"{self.identifier}[{self.index}].{attr}={val};"
+                self._remote.cache[f"{self.identifier}.{attr}"] = val
+                script += f"{self.identifier}.{attr}={val};"
 
         self._remote.sendtext(script)
         return self
