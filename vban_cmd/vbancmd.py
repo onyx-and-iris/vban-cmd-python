@@ -50,6 +50,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.cache = {}
         self.event = Event(self.subs)
         self._pdirty = False
+        self._ldirty = False
 
     @abstractmethod
     def __str__(self):
