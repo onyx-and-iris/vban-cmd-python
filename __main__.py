@@ -13,17 +13,19 @@ class ManyThings:
         )
 
     def other_things(self):
+        self.vban.bus[3].gain = -6.3
+        self.vban.bus[4].eq = True
         info = (
             f"bus 3 gain has been set to {self.vban.bus[3].gain}",
             f"bus 4 eq has been set to {self.vban.bus[4].eq}",
         )
-        self.vban.bus[3].gain = -6.3
-        self.vban.bus[4].eq = True
         print("\n".join(info))
 
 
 def main():
-    with vban_cmd.api(kind_id, **opts) as vban:
+    with vban_cmd.api(
+        kind_id, ip="gamepc.local", port=6980, streamname="Command1"
+    ) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
@@ -33,19 +35,11 @@ def main():
             {
                 "strip-2": {"A1": True, "B1": True, "gain": -6.0},
                 "bus-2": {"mute": True},
-                "button-0": {"state": True},
-                "vban-in-0": {"on": True},
-                "vban-out-1": {"name": "streamname"},
             }
         )
 
 
 if __name__ == "__main__":
     kind_id = "banana"
-    opts = {
-        "ip": "<ip address>",
-        "streamname": "Command1",
-        "port": 6980,
-    }
 
     main()

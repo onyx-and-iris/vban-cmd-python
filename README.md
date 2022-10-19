@@ -80,7 +80,9 @@ class ManyThings:
 
 
 def main():
-    with vban_cmd.api(kind_id, ip="gamepc.local", port=6980, streamname="Command1") as vban:
+    with vban_cmd.api(
+        kind_id, ip="gamepc.local", port=6980, streamname="Command1"
+    ) as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
