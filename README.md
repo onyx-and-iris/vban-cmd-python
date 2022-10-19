@@ -29,19 +29,30 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Installation
 
-### `Pip`
-
-Install vban-cmd package from your console
-
 `pip install vban-cmd`
 
 ## `Use`
 
+#### Connection
+
+Load VBAN connection info from toml config. A valid `vban.toml` might look like this:
+
+```toml
+[connection]
+ip = "gamepc.local"
+port = 6980
+streamname = "Command1"
+```
+
+It should be placed next to your `__main__.py` file.
+
+Alternatively you may pass `ip`, `port`, `streamname` as keyword arguments.
+
+#### `__main__.py`
+
 Simplest use case, use a context manager to request a VbanCmd class of a kind.
 
 Login and logout are handled for you in this scenario.
-
-#### `__main__.py`
 
 ```python
 import vban_cmd
@@ -59,17 +70,17 @@ class ManyThings:
         )
 
     def other_things(self):
+        self.vban.bus[3].gain = -6.3
+        self.vban.bus[4].eq = True
         info = (
             f"bus 3 gain has been set to {self.vban.bus[3].gain}",
             f"bus 4 eq has been set to {self.vban.bus[4].eq}",
         )
-        self.vban.bus[3].gain = -6.3
-        self.vban.bus[4].eq = True
         print("\n".join(info))
 
 
 def main():
-    with vban_cmd.api(kind_id, **opts) as vban:
+    with vban_cmd.api(kind_id, ip="gamepc.local", port=6980, streamname="Command1") as vban:
         do = ManyThings(vban)
         do.things()
         do.other_things()
@@ -85,11 +96,6 @@ def main():
 
 if __name__ == "__main__":
     kind_id = "banana"
-    opts = {
-        "ip": "<ip address>",
-        "streamname": "Command1",
-        "port": 6980,
-    }
 
     main()
 ```

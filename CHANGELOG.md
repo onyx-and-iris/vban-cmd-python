@@ -11,6 +11,50 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [1.8.0]
+
+### Added
+
+-   Connection section to README.
+
+### Changed
+
+-   now using clear_dirty() when sync enabled.
+
+### Fixed
+
+-   bug in set_rt() where multiple commands sent in single request packet.
+-   bug in apply where index was sent twice.
+
+## [1.7.0]
+
+### Added
+
+-   ability to read conn info from vban.toml config
+
+### Changed
+
+-   assume a vban.toml in examples. README's modified.
+
+## [1.6.0] - 2022-10-06
+
+### Added
+
+-   fadeto(), fadeby() methods added to strip/bus classes.
+-   OBS example added.
+
+### Changed
+
+-   Event class add/remove now accept iterables.
+-   property setters added to Event class.
+-   ldirty logic moved into VbanRtPacket class.
+-   in util, threshold a level is considered dirty moved to 7200 (-72.0)
+-   now print bus levels in observer example.
+
+### Fixed
+
+-   initialize comps in updater thread. fixes bug when switching to a kind before any level updates
+
 ## [1.5.0] - 2022-09-28
 
 ### Changed
