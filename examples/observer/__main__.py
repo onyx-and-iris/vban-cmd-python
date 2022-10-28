@@ -2,6 +2,8 @@ import logging
 
 import vban_cmd
 
+logging.basicConfig(level=logging.INFO)
+
 
 class Observer:
     def __init__(self, vban):
@@ -33,6 +35,4 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
     main()
