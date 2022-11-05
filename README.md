@@ -281,19 +281,19 @@ vban.command.showvbanchat = true
     Set many strip/bus parameters at once, for example:
 
 ```python
-vban.apply(
-    {
-        "strip-2": {"A1": True, "B1": True, "gain": -6.0},
-        "bus-2": {"mute": True},
-    }
-)
+    vban.apply(
+        {
+            "strip-0": {"A1": True, "B1": True, "gain": -6.0},
+            "bus-1": {"mute": True, "mode": "composite"},
+        }
+    )
 ```
 
 Or for each class you may do:
 
 ```python
 vban.strip[0].apply(mute: true, gain: 3.2, A1: true)
-vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
+vban.bus[0].apply(A1: true)
 ```
 
 ## Config Files
