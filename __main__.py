@@ -23,6 +23,8 @@ class ManyThings:
 
 
 def main():
+    kind_id = "banana"
+
     with vban_cmd.api(
         kind_id, ip="gamepc.local", port=6980, streamname="Command1"
     ) as vban:
@@ -40,6 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    kind_id = "banana"
-
     main()

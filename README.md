@@ -80,6 +80,8 @@ class ManyThings:
 
 
 def main():
+    kind_id = "banana"
+
     with vban_cmd.api(
         kind_id, ip="gamepc.local", port=6980, streamname="Command1"
     ) as vban:
@@ -97,8 +99,6 @@ def main():
 
 
 if __name__ == "__main__":
-    kind_id = "banana"
-
     main()
 ```
 
@@ -281,12 +281,12 @@ vban.command.showvbanchat = true
     Set many strip/bus parameters at once, for example:
 
 ```python
-    vban.apply(
-        {
-            "strip-0": {"A1": True, "B1": True, "gain": -6.0},
-            "bus-1": {"mute": True, "mode": "composite"},
-        }
-    )
+vban.apply(
+    {
+        "strip-0": {"A1": True, "B1": True, "gain": -6.0},
+        "bus-1": {"mute": True, "mode": "composite"},
+    }
+)
 ```
 
 Or for each class you may do:
