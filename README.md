@@ -293,7 +293,7 @@ Or for each class you may do:
 
 ```python
 vban.strip[0].apply(mute: true, gain: 3.2, A1: true)
-vban.vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
+vban.outstream[0].apply(on: true, name: 'streamname', bit: 24)
 ```
 
 ## Config Files
