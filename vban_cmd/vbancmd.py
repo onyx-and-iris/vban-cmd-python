@@ -63,8 +63,8 @@ class VbanCmd(metaclass=ABCMeta):
         def get_filepath():
             filepaths = [
                 Path.cwd() / "vban.toml",
-                Path.home() / "vban.toml",
                 Path.home() / ".config" / "vban-cmd" / "vban.toml",
+                Path.home() / "Documents" / "Voicemeeter" / "vban.toml",
             ]
             for filepath in filepaths:
                 if filepath.exists():
@@ -73,7 +73,9 @@ class VbanCmd(metaclass=ABCMeta):
         if filepath := get_filepath():
             with open(filepath, "rb") as f:
                 conn = tomllib.load(f)
-                assert "ip" in conn["connection"], "please provide ip, by kwarg or config"
+                assert (
+                    "ip" in conn["connection"]
+                ), "please provide ip, by kwarg or config"
             return conn["connection"]
         else:
             raise VBANCMDError("no ip provided and no vban.toml located.")
@@ -110,8 +112,9 @@ class VbanCmd(metaclass=ABCMeta):
             self.packet_request.header + cmd.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
-        count = int.from_bytes(self.packet_request.framecounter, "little") + 1
-        self.packet_request.framecounter = count.to_bytes(4, "little")
+        self.packet_request.framecounter = (
+            int.from_bytes(self.packet_request.framecounter, "little") + 1
+        ).to_bytes(4, "little")
         if param:
             self.cache[f"{id_}.{param}"] = val
 
@@ -122,8 +125,9 @@ class VbanCmd(metaclass=ABCMeta):
             self.packet_request.header + cmd.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
-        count = int.from_bytes(self.packet_request.framecounter, "little") + 1
-        self.packet_request.framecounter = count.to_bytes(4, "little")
+        self.packet_request.framecounter = (
+            int.from_bytes(self.packet_request.framecounter, "little") + 1
+        ).to_bytes(4, "little")
         time.sleep(self.DELAY)
 
     @property
