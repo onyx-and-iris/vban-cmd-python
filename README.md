@@ -18,9 +18,9 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Tested against
 
--   Basic 1.0.8.4
--   Banana 2.0.6.4
--   Potato 3.0.2.4
+-   Basic 1.0.8.8
+-   Banana 2.0.6.8
+-   Potato 3.0.2.8
 
 ## Requirements
 
@@ -71,19 +71,19 @@ class ManyThings:
 
     def other_things(self):
         self.vban.bus[3].gain = -6.3
-        self.vban.bus[4].eq = True
+        self.vban.bus[4].eq.on = True
         info = (
             f"bus 3 gain has been set to {self.vban.bus[3].gain}",
-            f"bus 4 eq has been set to {self.vban.bus[4].eq}",
+            f"bus 4 eq has been set to {self.vban.bus[4].eq.on}",
         )
         print("\n".join(info))
 
 
 def main():
-    kind_id = "banana"
+    KIND_ID = "banana"
 
     with vban_cmd.api(
-        kind_id, ip="gamepc.local", port=6980, streamname="Command1"
+        KIND_ID, ip="gamepc.local", port=6980, streamname="Command1"
     ) as vban:
         do = ManyThings(vban)
         do.things()
@@ -93,7 +93,7 @@ def main():
         vban.apply(
             {
                 "strip-2": {"A1": True, "B1": True, "gain": -6.0},
-                "bus-2": {"mute": True},
+                "bus-2": {"mute": True, "eq": {"on": True}},
             }
         )
 
@@ -104,9 +104,9 @@ if __name__ == "__main__":
 
 Otherwise you must remember to call `vban.login()`, `vban.logout()` at the start/end of your code.
 
-## `kind_id`
+## `KIND_ID`
 
-Pass the kind of Voicemeeter as an argument. kind_id may be:
+Pass the kind of Voicemeeter as an argument. KIND_ID may be:
 
 -   `basic`
 -   `banana`
@@ -124,8 +124,6 @@ The following properties are available.
 -   `label`: string
 -   `gain`: float, -60 to 12
 -   `A1 - A5`, `B1 - B3`: boolean
--   `comp`: float, from 0.0 to 10.0
--   `gate`: float, from 0.0 to 10.0
 -   `limit`: int, from -40 to 12
 
 example:
@@ -151,6 +149,69 @@ example:
 vban.strip[5].appmute("Spotify", True)
 vban.strip[5].appgain("Spotify", 0.5)
 ```
+
+##### Strip.Comp
+
+The following properties are available.
+
+-   `knob`: float, from 0.0 to 10.0
+-   `gainin`: float, from -24.0 to 24.0
+-   `ratio`: float, from 1.0 to 8.0
+-   `threshold`: float, from -40.0 to -3.0
+-   `attack`: float, from 0.0 to 200.0
+-   `release`: float, from 0.0 to 5000.0
+-   `knee`: float, from 0.0 to 1.0
+-   `gainout`: float, from -24.0 to 24.0
+-   `makeup`: boolean
+
+example:
+
+```python
+print(vm.strip[4].comp.knob)
+```
+
+Strip Comp properties are defined as write only.
+
+`knob` defined for all verions, all other parameters potato only.
+
+##### Strip.Gate
+
+The following properties are available.
+
+-   `knob`: float, from 0.0 to 10.0
+-   `threshold`: float, from -60.0 to -10.0
+-   `damping`: float, from -60.0 to -10.0
+-   `bpsidechain`: int, from 100 to 4000
+-   `attack`: float, from 0.0 to 1000.0
+-   `hold`: float, from 0.0 to 5000.0
+-   `release`: float, from 0.0 to 5000.0
+
+example:
+
+```python
+vm.strip[2].gate.attack = 300.8
+```
+
+Strip Gate properties are defined as write only, potato version only.
+
+`knob` defined for all verions, all other parameters potato only.
+
+##### Strip.Denoiser
+
+The following properties are available.
+
+-   `knob`: float, from 0.0 to 10.0
+
+strip.denoiser properties are defined as write only, potato version only.
+
+##### Strip.EQ
+
+The following properties are available.
+
+-   `on`: boolean
+-   `ab`: boolean
+
+Strip EQ properties are defined as write only, potato version only.
 
 ##### Gainlayers
 
@@ -183,8 +244,6 @@ Level properties will return -200.0 if no audio detected.
 The following properties are available.
 
 -   `mono`: boolean
--   `eq`: boolean
--   `eq_ab`: boolean
 -   `mute`: boolean
 -   `label`: string
 -   `gain`: float, -60 to 12
@@ -195,6 +254,13 @@ example:
 vban.bus[4].eq = true
 print(vban.bus[0].label)
 ```
+
+##### Bus.EQ
+
+The following properties are available.
+
+-   `on`: boolean
+-   `ab`: boolean
 
 ##### Modes
 
@@ -325,9 +391,8 @@ opts = {
     "ip": "<ip address>",
     "streamname": "Command1",
     "port": 6980,
-    "subs": {"ldirty": True},
 }
-with vban_cmd.api('banana', **opts) as vban:
+with vban_cmd.api('banana', ldirty=True, **opts) as vban:
     ...
 ```
 
@@ -386,16 +451,15 @@ print(vban.event.get())
 
 ## VbanCmd class
 
-`vban_cmd.api(kind_id: str, **opts: dict)`
+`vban_cmd.api(kind_id: str, **opts)`
 
 You may pass the following optional keyword arguments:
 
 -   `ip`: str, ip or hostname of remote machine
 -   `streamname`: str, name of the stream to connect to.
 -   `port`: int=6980, vban udp port of remote machine.
--   `subs`: dict={"pdirty": True, "ldirty": False}, controls which updates to listen for.
-    -   `pdirty`: parameter updates
-    -   `ldirty`: level updates
+-   `pdirty`: parameter updates
+-   `ldirty`: level updates
 
 #### `vban.pdirty`
 
@@ -415,7 +479,7 @@ vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
 
 #### `vban.public_packet`
 
-Returns a Voicemeeter rt data packet object. Designed to be used internally by the interface but available for parsing through this read only property object. States not guaranteed to be current (requires use of dirty parameters to confirm).
+Returns a `VbanRtPacket`. Designed to be used internally by the interface but available for parsing through this read only property object. States not guaranteed to be current (requires use of dirty parameters to confirm).
 
 ### `Errors`
 

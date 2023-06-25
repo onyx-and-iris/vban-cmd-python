@@ -11,6 +11,36 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.0.0] - 2023-06-25
+
+This update introduces some breaking changes:
+
+### Changed
+
+-   `strip[i].comp` now references StripComp class
+    -   To change the comp knob you should now use the property `strip[i].comp.knob`
+-   `strip[i].gate` now references StripGate class
+
+    -   To change the gate knob you should now use the property `strip[i].gate.knob`
+
+-   `bus[i].eq` now references BusEQ class
+
+    -   To set bus[i].{eq,eq_ab} as before you should now use bus[i].eq.on and bus[i].eq.ab
+
+-   new error class `VBANCMDConnectionError` raised when a connection fails or times out.
+
+There are other non-breaking changes:
+
+### Changed
+
+-   now using a producer thread to send events to the updater thread.
+-   factory.request_vbancmd_obj simply raises a `VBANCMDError` if passed an incorrect kind.
+-   module level loggers implemented (with class loggers as child loggers)
+
+### Added
+
+-   `strip[i].eq` added to PhysicalStrip
+
 ## [1.8.0]
 
 ### Added
