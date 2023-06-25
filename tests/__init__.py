@@ -3,23 +3,21 @@ import sys
 from dataclasses import dataclass
 
 import vban_cmd
-from vban_cmd.kinds import KindId, kinds_all
+from vban_cmd.kinds import KindId
 from vban_cmd.kinds import request_kind_map as kindmap
 
 # let's keep things random
-kind_id = random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
+KIND_ID = random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
 
 opts = {
-    "ip": "ws.local",
-    "streamname": "workstation",
+    "ip": "testing.local",
+    "streamname": "testing",
     "port": 6990,
     "bps": 0,
-    "sync": True,
 }
 
-vbans = {kind.name: vban_cmd.api(kind.name, **opts) for kind in kinds_all}
-tests = vbans[kind_id]
-kind = kindmap(kind_id)
+vban = vban_cmd.api(KIND_ID, **opts)
+kind = kindmap(KIND_ID)
 
 
 @dataclass
@@ -42,9 +40,9 @@ data = Data()
 
 def setup_module():
     print(f"\nRunning tests for kind [{data.name}]\n", file=sys.stdout)
-    tests.login()
-    tests.command.reset()
+    vban.login()
+    vban.command.reset()
 
 
 def teardown_module():
-    tests.logout()
+    vban.logout()

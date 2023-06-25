@@ -1,9 +1,9 @@
 import time
 
 import pytest
-from vban_cmd import kinds
 
-from tests import data, tests
+from tests import data, vban
+from vban_cmd import kinds
 
 
 class TestPublicPacketLower:
@@ -12,7 +12,7 @@ class TestPublicPacketLower:
     """Tests for a valid rt data packet"""
 
     def test_it_gets_an_rt_data_packet(self):
-        assert tests.public_packet.voicemeetertype in (
+        assert vban.public_packet.voicemeetertype in (
             kind.name for kind in kinds.kinds_all
         )
 
@@ -35,7 +35,7 @@ class TestSetRT:
         ],
     )
     def test_it_sends_a_text_request(self, kls, index, param, value):
-        tests._set_rt(f"{kls}[{index}]", param, value)
+        vban._set_rt(f"{kls}[{index}]", param, value)
         time.sleep(0.02)
-        target = getattr(tests, kls)[index]
+        target = getattr(vban, kls)[index]
         assert getattr(target, param) == bool(value)
