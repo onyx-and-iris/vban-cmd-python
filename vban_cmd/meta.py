@@ -16,7 +16,7 @@ def channel_bool_prop(param):
                 )[self.index],
                 "little",
             )
-            & getattr(self._modes, f'_{param.replace(".", "_").lower()}')
+            & getattr(self._modes, f"_{param.lower()}")
             == 0
         )
 
@@ -91,8 +91,8 @@ def bus_mode_prop(param):
     return property(fget, fset)
 
 
-def action_prop(param, val=1):
-    """A param that performs an action"""
+def action_fn(param, val=1):
+    """A function that performs an action"""
 
     def fdo(self):
         self.setter(param, val)
