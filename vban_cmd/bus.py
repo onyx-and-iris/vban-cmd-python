@@ -52,6 +52,23 @@ class Bus(IRemote):
         time.sleep(self._remote.DELAY)
 
 
+class BusEQ(IRemote):
+    @classmethod
+    def make(cls, remote, index):
+        BUSEQ_cls = type(
+            f"BusEQ{remote.kind}",
+            (cls,),
+            {
+                **{param: channel_bool_prop(param) for param in ["on", "ab"]},
+            },
+        )
+        return BUSEQ_cls(remote, index)
+
+    @property
+    def identifier(self) -> str:
+        return f"Bus[{self.index}].eq"
+
+
 class PhysicalBus(Bus):
     def __str__(self):
         return f"{type(self).__name__}{self.index}"
@@ -167,11 +184,10 @@ def bus_factory(phys_bus, remote, i) -> Union[PhysicalBus, VirtualBus]:
         f"{BUS_cls.__name__}{remote.kind}",
         (BUS_cls,),
         {
+            "eq": BusEQ.make(remote, i),
             "levels": BusLevel(remote, i),
             "mode": BUSMODEMIXIN_cls(remote, i),
             **{param: channel_bool_prop(param) for param in ["mute", "mono"]},
-            "eq": channel_bool_prop("eq.On"),
-            "eq_ab": channel_bool_prop("eq.ab"),
             "label": channel_label_prop(),
         },
     )(remote, i)
