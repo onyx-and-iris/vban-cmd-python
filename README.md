@@ -172,7 +172,7 @@ print(vm.strip[4].comp.knob)
 
 Strip Comp properties are defined as write only.
 
-`knob` defined for all verions, all other parameters potato only.
+`knob` defined for all versions, all other parameters potato only.
 
 ##### Strip.Gate
 
@@ -194,7 +194,7 @@ vm.strip[2].gate.attack = 300.8
 
 Strip Gate properties are defined as write only, potato version only.
 
-`knob` defined for all verions, all other parameters potato only.
+`knob` defined for all versions, all other parameters potato only.
 
 ##### Strip.Denoiser
 
