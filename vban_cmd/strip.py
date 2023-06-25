@@ -51,24 +51,21 @@ class Strip(IRemote):
 
 
 class PhysicalStrip(Strip):
+    @classmethod
+    def make(cls, remote, index):
+        return type(
+            f"PhysicalStrip{remote.kind}",
+            (cls,),
+            {
+                "comp": StripComp(remote, index),
+                "gate": StripGate(remote, index),
+                "denoiser": StripDenoiser(remote, index),
+                "eq": StripEQ(remote, index),
+            },
+        )
+
     def __str__(self):
         return f"{type(self).__name__}{self.index}"
-
-    @property
-    def comp(self) -> float:
-        return
-
-    @comp.setter
-    def comp(self, val: float):
-        self.setter("Comp", val)
-
-    @property
-    def gate(self) -> float:
-        return
-
-    @gate.setter
-    def gate(self, val: float):
-        self.setter("gate", val)
 
     @property
     def device(self):
@@ -77,6 +74,70 @@ class PhysicalStrip(Strip):
     @property
     def sr(self):
         return
+
+
+class StripComp(IRemote):
+    @property
+    def identifier(self) -> str:
+        return f"Strip[{self.index}].comp"
+
+    @property
+    def knob(self) -> float:
+        return
+
+    @knob.setter
+    def knob(self, val: float):
+        self.setter("", val)
+
+
+class StripGate(IRemote):
+    @property
+    def identifier(self) -> str:
+        return f"Strip[{self.index}].gate"
+
+    @property
+    def knob(self) -> float:
+        return
+
+    @knob.setter
+    def knob(self, val: float):
+        self.setter("", val)
+
+
+class StripDenoiser(IRemote):
+    @property
+    def identifier(self) -> str:
+        return f"Strip[{self.index}].denoiser"
+
+    @property
+    def knob(self) -> float:
+        return
+
+    @knob.setter
+    def knob(self, val: float):
+        self.setter("", val)
+
+
+class StripEQ(IRemote):
+    @property
+    def identifier(self) -> str:
+        return f"Strip[{self.index}].eq"
+
+    @property
+    def on(self):
+        return
+
+    @on.setter
+    def on(self, val: bool):
+        self.setter("on", 1 if val else 0)
+
+    @property
+    def ab(self):
+        return
+
+    @ab.setter
+    def ab(self, val: bool):
+        self.setter("ab", 1 if val else 0)
 
 
 class VirtualStrip(Strip):
@@ -232,7 +293,7 @@ def strip_factory(is_phys_strip, remote, i) -> Union[PhysicalStrip, VirtualStrip
 
     Returns a physical or virtual strip subclass
     """
-    STRIP_cls = PhysicalStrip if is_phys_strip else VirtualStrip
+    STRIP_cls = PhysicalStrip.make(remote, i) if is_phys_strip else VirtualStrip
     CHANNELOUTMIXIN_cls = _make_channelout_mixins[remote.kind.name]
     GAINLAYERMIXIN_cls = _make_gainlayer_mixin(remote, i)
 
