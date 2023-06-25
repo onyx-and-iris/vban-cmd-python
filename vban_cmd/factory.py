@@ -72,7 +72,7 @@ class FactoryBase(VbanCmd):
             "ratelimit": 0.01,
             "timeout": 5,
             "sync": False,
-            "pdirty": True,
+            "pdirty": False,
             "ldirty": False,
         }
         if "subs" in kwargs:
