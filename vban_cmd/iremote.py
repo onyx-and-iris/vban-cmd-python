@@ -1,6 +1,9 @@
+import logging
 import time
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,9 +29,9 @@ class Modes:
 
     _mask: hex = 0x000000F0
 
-    _eq_on: hex = 0x00000100
+    _on: hex = 0x00000100  # eq.on
     _cross: hex = 0x00000200
-    _eq_ab: hex = 0x00000800
+    _ab: hex = 0x00000800  # eq.ab
 
     _busa: hex = 0x00001000
     _busa1: hex = 0x00001000
@@ -85,10 +88,12 @@ class IRemote(metaclass=ABCMeta):
     def __init__(self, remote, index=None):
         self._remote = remote
         self.index = index
+        self.logger = logger.getChild(self.__class__.__name__)
         self._modes = Modes()
 
     def getter(self, param):
-        cmd = f"{self.identifier}.{param}"
+        cmd = self._cmd(param)
+        self.logger.debug(f"getter: {cmd}")
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
         if self._remote.sync:
@@ -96,7 +101,14 @@ class IRemote(metaclass=ABCMeta):
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
-        self._remote._set_rt(f"{self.identifier}", param, val)
+        self.logger.debug(f"setter: {self._cmd(param)}={val}")
+        self._remote._set_rt(self.identifier, param, val)
+
+    def _cmd(self, param):
+        cmd = (self.identifier,)
+        if param:
+            cmd += (f".{param}",)
+        return "".join(cmd)
 
     @abstractmethod
     def identifier(self):
@@ -113,20 +125,26 @@ class IRemote(metaclass=ABCMeta):
         def fget(attr, val):
             if attr == "mode":
                 return (f"mode.{val}", 1)
+            elif attr == "knob":
+                return ("", val)
             return (attr, val)
 
-        script = str()
         for attr, val in data.items():
-            if hasattr(self, attr):
-                attr, val = fget(attr, val)
-                if isinstance(val, bool):
-                    val = 1 if val else 0
+            if not isinstance(val, dict):
+                if attr in dir(self):  # avoid calling getattr (with hasattr)
+                    attr, val = fget(attr, val)
+                    if isinstance(val, bool):
+                        val = 1 if val else 0
 
-                self._remote.cache[f"{self.identifier}.{attr}"] = val
-                script += f"{self.identifier}.{attr}={val};"
-
-        self._remote.sendtext(script)
+                    self._remote.cache[self._cmd(attr)] = val
+                    self._remote._script += f"{self._cmd(attr)}={val};"
+            else:
+                target = getattr(self, attr)
+                target.apply(val)
         return self
 
     def then_wait(self):
+        self.logger.debug(self._remote._script)
+        self._remote.sendtext(self._remote._script)
+        self._remote._script = str()
         time.sleep(self._remote.DELAY)
