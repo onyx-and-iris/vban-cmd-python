@@ -7,10 +7,13 @@ from typing import Iterable, NoReturn
 from .bus import request_bus_obj as bus
 from .command import Command
 from .config import request_config as configs
+from .error import VBANCMDError
 from .kinds import KindMapClass
 from .kinds import request_kind_map as kindmap
 from .strip import request_strip_obj as strip
 from .vbancmd import VbanCmd
+
+logger = logging.getLogger(__name__)
 
 
 class FactoryBuilder:
@@ -20,7 +23,6 @@ class FactoryBuilder:
     Separates construction from representation.
     """
 
-    logger = logging.getLogger("vbancmd.factorybuilder")
     BuilderProgress = IntEnum("BuilderProgress", "strip bus command", start=0)
 
     def __init__(self, factory, kind: KindMapClass):
@@ -31,6 +33,7 @@ class FactoryBuilder:
             f"Finished building buses for {self._factory}",
             f"Finished building commands for {self._factory}",
         )
+        self.logger = logger.getChild(self.__class__.__name__)
 
     def _pinfo(self, name: str) -> NoReturn:
         """prints progress status for each step"""
@@ -60,9 +63,6 @@ class FactoryBase(VbanCmd):
     """Base class for factories, subclasses VbanCmd."""
 
     def __init__(self, kind_id: str, **kwargs):
-        defaultsubs = {"pdirty": True, "ldirty": False}
-        if "subs" in kwargs:
-            defaultsubs = defaultsubs | kwargs.pop("subs")
         defaultkwargs = {
             "ip": None,
             "port": 6980,
@@ -70,9 +70,13 @@ class FactoryBase(VbanCmd):
             "bps": 0,
             "channel": 0,
             "ratelimit": 0.01,
+            "timeout": 5,
             "sync": False,
-            "subs": defaultsubs,
+            "pdirty": True,
+            "ldirty": False,
         }
+        if "subs" in kwargs:
+            defaultkwargs |= kwargs.pop("subs")  # for backwards compatibility
         kwargs = defaultkwargs | kwargs
         self.kind = kindmap(kind_id)
         super().__init__(**kwargs)
@@ -188,9 +192,12 @@ def request_vbancmd_obj(kind_id: str, **kwargs) -> VbanCmd:
 
     Returns a reference to a VbanCmd class of a kind
     """
+    logger_entry = logger.getChild("factory.request_vbancmd_obj")
+
     VBANCMD_obj = None
     try:
         VBANCMD_obj = vbancmd_factory(kind_id, **kwargs)
     except (ValueError, TypeError) as e:
-        raise SystemExit(e)
+        logger_entry.exception(f"{type(e).__name__}: {e}")
+        raise VBANCMDError(str(e)) from e
     return VBANCMD_obj
