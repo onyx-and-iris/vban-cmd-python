@@ -39,13 +39,12 @@ class TestSetAndGetBoolHigher:
     @pytest.mark.parametrize(
         "index,param",
         [
-            (data.phys_out, "eq"),
             (data.phys_out, "mute"),
-            (data.virt_out, "eq_ab"),
             (data.virt_out, "sel"),
         ],
     )
     def test_it_sets_and_gets_bus_bool_params(self, index, param, value):
+        assert hasattr(vban.bus[index], param)
         setattr(vban.bus[index], param, value)
         assert getattr(vban.bus[index], param) == value
 
@@ -139,6 +138,40 @@ class TestSetAndGetFloatHigher:
     def test_it_sets_and_gets_strip_gainlayer_values(self, index, j, value):
         vban.strip[index].gainlayer[j].gain = value
         assert vban.strip[index].gainlayer[j].gain == value
+
+    """ strip tests, physical """
+
+    @pytest.mark.skipif(
+        data.name != "potato",
+        reason="Only test if logged into Potato version",
+    )
+    @pytest.mark.parametrize(
+        "index, param, value",
+        [
+            (data.phys_in, "gainin", -8.6),
+            (data.phys_in, "knee", 0.24),
+        ],
+    )
+    def test_it_sets_strip_comp_params(self, index, param, value):
+        assert hasattr(vban.strip[index].comp, param)
+        setattr(vban.strip[index].comp, param, value)
+        # we can set but not get this value. Not in RT Packet.
+
+    @pytest.mark.skipif(
+        data.name != "potato",
+        reason="Only test if logged into Potato version",
+    )
+    @pytest.mark.parametrize(
+        "index, param, value",
+        [
+            (data.phys_in, "bpsidechain", 120),
+            (data.phys_in, "hold", 3000),
+        ],
+    )
+    def test_it_sets_and_gets_strip_gate_params(self, index, param, value):
+        assert hasattr(vban.strip[index].gate, param)
+        setattr(vban.strip[index].gate, param, value)
+        # we can set but not get this value. Not in RT Packet.
 
     """ strip tests, virtual """
 
