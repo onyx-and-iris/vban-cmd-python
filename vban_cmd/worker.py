@@ -72,7 +72,31 @@ class Producer(threading.Thread):
             if len(data) > HEADER_SIZE:
                 # check if packet is of type rt packet response
                 if self.packet_expected.header == data[: HEADER_SIZE - 4]:
-                    return VbanRtPacket(kind=self._remote.kind, data=data)
+                    return VbanRtPacket(
+                        _kind=self._remote.kind,
+                        _voicemeeterType=data[28:29],
+                        _reserved=data[29:30],
+                        _buffersize=data[30:32],
+                        _voicemeeterVersion=data[32:36],
+                        _optionBits=data[36:40],
+                        _samplerate=data[40:44],
+                        _inputLeveldB100=data[44:112],
+                        _outputLeveldB100=data[112:240],
+                        _TransportBit=data[240:244],
+                        _stripState=data[244:276],
+                        _busState=data[276:308],
+                        _stripGaindB100Layer1=data[308:324],
+                        _stripGaindB100Layer2=data[324:340],
+                        _stripGaindB100Layer3=data[340:356],
+                        _stripGaindB100Layer4=data[356:372],
+                        _stripGaindB100Layer5=data[372:388],
+                        _stripGaindB100Layer6=data[388:404],
+                        _stripGaindB100Layer7=data[404:420],
+                        _stripGaindB100Layer8=data[420:436],
+                        _busGaindB100=data[436:452],
+                        _stripLabelUTF8c60=data[452:932],
+                        _busLabelUTF8c60=data[932:1412],
+                    )
         except TimeoutError as e:
             self.logger.exception(f"{type(e).__name__}: {e}")
             raise VBANCMDConnectionError(

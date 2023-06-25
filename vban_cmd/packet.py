@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from .kinds import KindMapClass
 from .util import comp
 
 VBAN_SERVICE_RTPACKETREGISTER = 32
@@ -12,38 +13,43 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 class VbanRtPacket:
     """Represents the body of a VBAN RT data packet"""
 
-    def __init__(self, kind=None, data=None):
-        self._kind = kind
-        self._voicemeeterType = data[28:29]
-        self._reserved = data[29:30]
-        self._buffersize = data[30:32]
-        self._voicemeeterVersion = data[32:36]
-        self._optionBits = data[36:40]
-        self._samplerate = data[40:44]
-        self._inputLeveldB100 = data[44:112]
-        self._outputLeveldB100 = data[112:240]
-        self._TransportBit = data[240:244]
-        self._stripState = data[244:276]
-        self._busState = data[276:308]
-        self._stripGaindB100Layer1 = data[308:324]
-        self._stripGaindB100Layer2 = data[324:340]
-        self._stripGaindB100Layer3 = data[340:356]
-        self._stripGaindB100Layer4 = data[356:372]
-        self._stripGaindB100Layer5 = data[372:388]
-        self._stripGaindB100Layer6 = data[388:404]
-        self._stripGaindB100Layer7 = data[404:420]
-        self._stripGaindB100Layer8 = data[420:436]
-        self._busGaindB100 = data[436:452]
-        self._stripLabelUTF8c60 = data[452:932]
-        self._busLabelUTF8c60 = data[932:1412]
-        self._strip_level = self._generate_levels(self._inputLeveldB100)
-        self._bus_level = self._generate_levels(self._outputLeveldB100)
+    _kind: KindMapClass
+    _voicemeeterType: bytes
+    _reserved: bytes
+    _buffersize: bytes
+    _voicemeeterVersion: bytes
+    _optionBits: bytes
+    _samplerate: bytes
+    _inputLeveldB100: bytes
+    _outputLeveldB100: bytes
+    _TransportBit: bytes
+    _stripState: bytes
+    _busState: bytes
+    _stripGaindB100Layer1: bytes
+    _stripGaindB100Layer2: bytes
+    _stripGaindB100Layer3: bytes
+    _stripGaindB100Layer4: bytes
+    _stripGaindB100Layer5: bytes
+    _stripGaindB100Layer6: bytes
+    _stripGaindB100Layer7: bytes
+    _stripGaindB100Layer8: bytes
+    _busGaindB100: bytes
+    _stripLabelUTF8c60: bytes
+    _busLabelUTF8c60: bytes
 
     def _generate_levels(self, levelarray) -> tuple:
         return tuple(
             int.from_bytes(levelarray[i : i + 2], "little")
             for i in range(0, len(levelarray), 2)
         )
+
+    @property
+    def strip_levels(self):
+        return self._generate_levels(self._inputLeveldB100)
+
+    @property
+    def bus_levels(self):
+        return self._generate_levels(self._outputLeveldB100)
 
     def pdirty(self, other) -> bool:
         """True iff any defined parameter has changed"""
@@ -66,8 +72,8 @@ class VbanRtPacket:
 
     def ldirty(self, strip_cache, bus_cache) -> bool:
         self._strip_comp, self._bus_comp = (
-            tuple(not val for val in comp(strip_cache, self._strip_level)),
-            tuple(not val for val in comp(bus_cache, self._bus_level)),
+            tuple(not val for val in comp(strip_cache, self.strip_levels)),
+            tuple(not val for val in comp(bus_cache, self.bus_levels)),
         )
         return any(any(l) for l in (self._strip_comp, self._bus_comp))
 
@@ -97,12 +103,12 @@ class VbanRtPacket:
     @property
     def inputlevels(self) -> tuple:
         """returns the entire level array across all inputs for a kind"""
-        return self._strip_level[0 : (2 * self._kind.phys_in + 8 * self._kind.virt_in)]
+        return self.strip_levels[0 : (2 * self._kind.phys_in + 8 * self._kind.virt_in)]
 
     @property
     def outputlevels(self) -> tuple:
         """returns the entire level array across all outputs for a kind"""
-        return self._bus_level[0 : 8 * self._kind.num_bus]
+        return self.bus_levels[0 : 8 * self._kind.num_bus]
 
     @property
     def stripstate(self) -> tuple:
