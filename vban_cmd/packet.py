@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Generator
 
 from .util import comp
 
@@ -13,9 +12,30 @@ HEADER_SIZE = 4 + 1 + 1 + 1 + 1 + 16 + 4
 class VbanRtPacket:
     """Represents the body of a VBAN RT data packet"""
 
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+    def __init__(self, kind=None, data=None):
+        self._kind = kind
+        self._voicemeeterType = data[28:29]
+        self._reserved = data[29:30]
+        self._buffersize = data[30:32]
+        self._voicemeeterVersion = data[32:36]
+        self._optionBits = data[36:40]
+        self._samplerate = data[40:44]
+        self._inputLeveldB100 = data[44:112]
+        self._outputLeveldB100 = data[112:240]
+        self._TransportBit = data[240:244]
+        self._stripState = data[244:276]
+        self._busState = data[276:308]
+        self._stripGaindB100Layer1 = data[308:324]
+        self._stripGaindB100Layer2 = data[324:340]
+        self._stripGaindB100Layer3 = data[340:356]
+        self._stripGaindB100Layer4 = data[356:372]
+        self._stripGaindB100Layer5 = data[372:388]
+        self._stripGaindB100Layer6 = data[388:404]
+        self._stripGaindB100Layer7 = data[404:420]
+        self._stripGaindB100Layer8 = data[420:436]
+        self._busGaindB100 = data[436:452]
+        self._stripLabelUTF8c60 = data[452:932]
+        self._busLabelUTF8c60 = data[932:1412]
         self._strip_level = self._generate_levels(self._inputLeveldB100)
         self._bus_level = self._generate_levels(self._outputLeveldB100)
 
