@@ -1,16 +1,41 @@
-import logging
+import time
+from logging import config
 
-import obsws_python as obs
+import obsws_python as obsws
+
 import vban_cmd
 
-logging.basicConfig(level=logging.INFO)
+config.dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s"
+            }
+        },
+        "handlers": {
+            "stream": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
+                "formatter": "standard",
+            }
+        },
+        "loggers": {"vban_cmd.iremote": {"handlers": ["stream"], "level": "DEBUG"}},
+    }
+)
 
 
 class Observer:
     def __init__(self, vban):
         self.vban = vban
-        self.client = obs.EventClient()
-        self.client.callback.register(self.on_current_program_scene_changed)
+        self.client = obsws.EventClient()
+        self.client.callback.register(
+            (
+                self.on_current_program_scene_changed,
+                self.on_exit_started,
+            )
+        )
+        self.is_running = True
 
     def on_start(self):
         self.vban.strip[0].mute = True
@@ -50,13 +75,16 @@ class Observer:
         if fn := fget(scene):
             fn()
 
+    def on_exit_started(self, _):
+        self.client.unsubscribe()
+        self.is_running = False
+
 
 def main():
-    with vban_cmd.api("potato", sync=True) as vban:
-        obs = Observer(vban)
-        while cmd := input("<Enter> to exit\n"):
-            if not cmd:
-                break
+    with vban_cmd.api("potato") as vban:
+        observer = Observer(vban)
+        while observer.is_running:
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":

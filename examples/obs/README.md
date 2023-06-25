@@ -40,9 +40,11 @@ Make sure you have established a working connection to OBS and the remote Voicem
 
 Run the script, change OBS scenes and watch Voicemeeter parameters change.
 
-Pressing `<Enter>` will exit.
+Closing OBS will end the script.
 
 ## Notes
+
+All but `vban_cmd.iremote` logs are filtered out. Log in DEBUG mode.
 
 This script can be run from a Linux host since the vban-cmd interface relies on UDP packets and obsws-python runs over websockets.
 
