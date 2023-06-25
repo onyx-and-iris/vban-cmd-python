@@ -33,7 +33,9 @@ class Subscriber(threading.Thread):
                 time.sleep(10)
             except socket.gaierror as e:
                 self.logger.exception(f"{type(e).__name__}: {e}")
-                raise VBANCMDConnectionError(f"unable to resolve hostname {self._remote.ip}") from e
+                raise VBANCMDConnectionError(
+                    f"unable to resolve hostname {self._remote.ip}"
+                ) from e
 
 
 class Producer(threading.Thread):
@@ -73,7 +75,9 @@ class Producer(threading.Thread):
                     return VbanRtPacket(kind=self._remote.kind, data=data)
         except TimeoutError as e:
             self.logger.exception(f"{type(e).__name__}: {e}")
-            raise VBANCMDConnectionError(f"timeout waiting for RtPacket from {self._remote.ip}") from e
+            raise VBANCMDConnectionError(
+                f"timeout waiting for RtPacket from {self._remote.ip}"
+            ) from e
 
     def run(self):
         while self._remote.running:
