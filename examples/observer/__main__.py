@@ -5,33 +5,30 @@ import vban_cmd
 logging.basicConfig(level=logging.INFO)
 
 
-class Observer:
+class App:
     def __init__(self, vban):
         self.vban = vban
         # register your app as event observer
-        self.vban.subject.add(self)
-        # enable level updates, since they are disabled by default.
-        self.vban.event.ldirty = True
+        self.vban.observer.add(self)
 
     # define an 'on_update' callback function to receive event updates
-    def on_update(self, subject):
-        if subject == "pdirty":
+    def on_update(self, event):
+        if event == "pdirty":
             print("pdirty!")
-        elif subject == "ldirty":
+        elif event == "ldirty":
             for bus in self.vban.bus:
                 if bus.levels.isdirty:
                     print(bus, bus.levels.all)
 
 
 def main():
-    kind_id = "potato"
+    KIND_ID = "banana"
 
-    with vban_cmd.api(kind_id) as vban:
-        Observer(vban)
+    with vban_cmd.api(KIND_ID, pdirty=True, ldirty=True) as vban:
+        App(vban)
 
         while cmd := input("Press <Enter> to exit\n"):
-            if not cmd:
-                break
+            pass
 
 
 if __name__ == "__main__":
