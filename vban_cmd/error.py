@@ -1,4 +1,5 @@
 class VBANCMDError(Exception):
-    """general errors"""
+    """Exception raised when general errors occur"""
 
-    pass
+class VBANCMDConnectionError(Exception):
+    """Exception raised when connection/timeout errors occur"""
