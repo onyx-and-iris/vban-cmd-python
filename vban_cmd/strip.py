@@ -89,6 +89,70 @@ class StripComp(IRemote):
     def knob(self, val: float):
         self.setter("", val)
 
+    @property
+    def gainin(self) -> float:
+        return
+
+    @gainin.setter
+    def gainin(self, val: float):
+        self.setter("GainIn", val)
+
+    @property
+    def ratio(self) -> float:
+        return
+
+    @ratio.setter
+    def ratio(self, val: float):
+        self.setter("Ratio", val)
+
+    @property
+    def threshold(self) -> float:
+        return
+
+    @threshold.setter
+    def threshold(self, val: float):
+        self.setter("Threshold", val)
+
+    @property
+    def attack(self) -> float:
+        return
+
+    @attack.setter
+    def attack(self, val: float):
+        self.setter("Attack", val)
+
+    @property
+    def release(self) -> float:
+        return
+
+    @release.setter
+    def release(self, val: float):
+        self.setter("Release", val)
+
+    @property
+    def knee(self) -> float:
+        return
+
+    @knee.setter
+    def knee(self, val: float):
+        self.setter("Knee", val)
+
+    @property
+    def gainout(self) -> float:
+        return
+
+    @gainout.setter
+    def gainout(self, val: float):
+        self.setter("GainOut", val)
+
+    @property
+    def makeup(self) -> bool:
+        return
+
+    @makeup.setter
+    def makeup(self, val: bool):
+        self.setter("makeup", 1 if val else 0)
+
 
 class StripGate(IRemote):
     @property
@@ -102,6 +166,54 @@ class StripGate(IRemote):
     @knob.setter
     def knob(self, val: float):
         self.setter("", val)
+
+    @property
+    def threshold(self) -> float:
+        return
+
+    @threshold.setter
+    def threshold(self, val: float):
+        self.setter("Threshold", val)
+
+    @property
+    def damping(self) -> float:
+        return
+
+    @damping.setter
+    def damping(self, val: float):
+        self.setter("Damping", val)
+
+    @property
+    def bpsidechain(self) -> int:
+        return
+
+    @bpsidechain.setter
+    def bpsidechain(self, val: int):
+        self.setter("BPSidechain", val)
+
+    @property
+    def attack(self) -> float:
+        return
+
+    @attack.setter
+    def attack(self, val: float):
+        self.setter("Attack", val)
+
+    @property
+    def hold(self) -> float:
+        return
+
+    @hold.setter
+    def hold(self, val: float):
+        self.setter("Hold", val)
+
+    @property
+    def release(self) -> float:
+        return
+
+    @release.setter
+    def release(self, val: float):
+        self.setter("Release", val)
 
 
 class StripDenoiser(IRemote):
