@@ -3,18 +3,17 @@ import socket
 import time
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+from queue import Queue
 from typing import Iterable, Optional, Union
 
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli as tomllib
-
+from .error import VBANCMDError
 from .event import Event
 from .packet import RequestHeader
 from .subject import Subject
 from .util import Socket, script
-from .worker import Subscriber, Updater
+from .worker import Producer, Subscriber, Updater
+
+logger = logging.getLogger(__name__)
 
 
 class VbanCmd(metaclass=ABCMeta):
@@ -28,15 +27,14 @@ class VbanCmd(metaclass=ABCMeta):
         1000000, 1500000, 2000000, 3000000,
     ]
     # fmt: on
-    logger = logging.getLogger("vbancmd.vbancmd")
 
     def __init__(self, **kwargs):
+        self.logger = logger.getChild(self.__class__.__name__)
+        self.event = Event({k: kwargs.pop(k) for k in ("pdirty", "ldirty")})
+        if not kwargs["ip"]:
+            kwargs |= self._conn_from_toml()
         for attr, val in kwargs.items():
             setattr(self, attr, val)
-        if self.ip is None:
-            conn = self._conn_from_toml()
-            for attr, val in conn.items():
-                setattr(self, attr, val)
 
         self.packet_request = RequestHeader(
             name=self.streamname,
@@ -46,9 +44,8 @@ class VbanCmd(metaclass=ABCMeta):
         self.socks = tuple(
             socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in Socket
         )
-        self.subject = Subject()
+        self.subject = self.observer = Subject()
         self.cache = {}
-        self.event = Event(self.subs)
         self._pdirty = False
         self._ldirty = False
 
@@ -57,11 +54,29 @@ class VbanCmd(metaclass=ABCMeta):
         """Ensure subclasses override str magic method"""
         pass
 
-    def _conn_from_toml(self) -> str:
-        filepath = Path.cwd() / "vban.toml"
-        with open(filepath, "rb") as f:
-            conn = tomllib.load(f)
-        return conn["connection"]
+    def _conn_from_toml(self) -> dict:
+        try:
+            import tomllib
+        except ModuleNotFoundError:
+            import tomli as tomllib
+
+        def get_filepath():
+            filepaths = [
+                Path.cwd() / "vban.toml",
+                Path.home() / "vban.toml",
+                Path.home() / ".config" / "vban-cmd" / "vban.toml",
+            ]
+            for filepath in filepaths:
+                if filepath.exists():
+                    return filepath
+
+        if filepath := get_filepath():
+            with open(filepath, "rb") as f:
+                conn = tomllib.load(f)
+                assert "ip" in conn["connection"], "please provide ip, by kwarg or config"
+            return conn["connection"]
+        else:
+            raise VBANCMDError("no ip provided and no vban.toml located.")
 
     def __enter__(self):
         self.login()
@@ -75,8 +90,11 @@ class VbanCmd(metaclass=ABCMeta):
         self.subscriber = Subscriber(self)
         self.subscriber.start()
 
-        self.updater = Updater(self)
+        queue = Queue()
+        self.updater = Updater(self, queue)
         self.updater.start()
+        self.producer = Producer(self, queue)
+        self.producer.start()
 
         self.logger.info(f"{type(self).__name__}: Successfully logged into {self}")
 
@@ -87,7 +105,7 @@ class VbanCmd(metaclass=ABCMeta):
         val: Optional[Union[int, float]] = None,
     ):
         """Sends a string request command over a network."""
-        cmd = id_ if not param else f"{id_}.{param}={val};"
+        cmd = f"{id_}={val};" if not param else f"{id_}.{param}={val};"
         self.socks[Socket.request].sendto(
             self.packet_request.header + cmd.encode(),
             (socket.gethostbyname(self.ip), self.port),
@@ -100,7 +118,12 @@ class VbanCmd(metaclass=ABCMeta):
     @script
     def sendtext(self, cmd):
         """Sends a multiple parameter string over a network."""
-        self._set_rt(cmd)
+        self.socks[Socket.request].sendto(
+            self.packet_request.header + cmd.encode(),
+            (socket.gethostbyname(self.ip), self.port),
+        )
+        count = int.from_bytes(self.packet_request.framecounter, "little") + 1
+        self.packet_request.framecounter = count.to_bytes(4, "little")
         time.sleep(self.DELAY)
 
     @property
@@ -157,6 +180,7 @@ class VbanCmd(metaclass=ABCMeta):
             else:
                 raise ValueError(obj)
 
+        self._script = str()
         [param(key).apply(datum).then_wait() for key, datum in data.items()]
 
     def apply_config(self, name):
@@ -168,7 +192,7 @@ class VbanCmd(metaclass=ABCMeta):
         try:
             self.apply(self.configs[name])
             self.logger.info(f"Profile '{name}' applied!")
-        except KeyError as e:
+        except KeyError:
             self.logger.error(("\n").join(error_msg))
 
     def logout(self):
