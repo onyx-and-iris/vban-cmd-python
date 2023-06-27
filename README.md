@@ -167,7 +167,7 @@ The following properties are available.
 example:
 
 ```python
-print(vm.strip[4].comp.knob)
+print(vban.strip[4].comp.knob)
 ```
 
 Strip Comp properties are defined as write only.
@@ -189,7 +189,7 @@ The following properties are available.
 example:
 
 ```python
-vm.strip[2].gate.attack = 300.8
+vban.strip[2].gate.attack = 300.8
 ```
 
 Strip Gate properties are defined as write only, potato version only.
@@ -351,6 +351,7 @@ vban.apply(
     {
         "strip-0": {"A1": True, "B1": True, "gain": -6.0},
         "bus-1": {"mute": True, "mode": "composite"},
+        "bus-2": {"eq": {"on": True}},
     }
 )
 ```
@@ -386,7 +387,6 @@ example:
 
 ```python
 import vban_cmd
-# Listen for level updates
 opts = {
     "ip": "<ip address>",
     "streamname": "Command1",
@@ -483,7 +483,8 @@ Returns a `VbanRtPacket`. Designed to be used internally by the interface but av
 
 ### `Errors`
 
--   `errors.VBANCMDError`: Base VMCMD error class.
+-   `errors.VBANCMDError`: Exception raised when general errors occur.
+-   `errors.VBANCMDConnectionError`: Exception raised when connection/timeout errors occur.
 
 ### `Tests`
 
