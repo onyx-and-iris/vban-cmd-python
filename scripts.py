@@ -1,20 +1,21 @@
 import subprocess
+import sys
 from pathlib import Path
 
 
 def ex_gui():
-    path = Path.cwd() / "examples" / "gui" / "."
-    subprocess.run(["py", str(path)])
+    scriptpath = Path.cwd() / "examples" / "gui" / "."
+    subprocess.run([sys.executable, str(scriptpath)])
 
 
 def ex_obs():
-    path = Path.cwd() / "examples" / "obs" / "."
-    subprocess.run(["py", str(path)])
+    scriptpath = Path.cwd() / "examples" / "obs" / "."
+    subprocess.run([sys.executable, str(scriptpath)])
 
 
 def ex_observer():
-    path = Path.cwd() / "examples" / "observer" / "."
-    subprocess.run(["py", str(path)])
+    scriptpath = Path.cwd() / "examples" / "observer" / "."
+    subprocess.run([sys.executable, str(scriptpath)])
 
 
 def test():
