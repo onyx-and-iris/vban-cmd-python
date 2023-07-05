@@ -11,7 +11,7 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
-## [2.1.1] - 2023-07-05
+## [2.1.2] - 2023-07-05
 
 ### Added
 
@@ -20,6 +20,12 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 This is useful if you are only interested in sending commands out to voicemeeter but don't need to receive parameter states.
 
 By default outbound is False.
+
+-   sendtext logging added in base class.
+
+### Fixed
+
+-   Bug in apply() if invoked from a higher class (not base class)
 
 ## [2.0.0] - 2023-06-25
 

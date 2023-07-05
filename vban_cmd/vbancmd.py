@@ -48,6 +48,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.cache = {}
         self._pdirty = False
         self._ldirty = False
+        self._script = str()
 
     @abstractmethod
     def __str__(self):
@@ -101,34 +102,28 @@ class VbanCmd(metaclass=ABCMeta):
 
         self.logger.info(f"{type(self).__name__}: Successfully logged into {self}")
 
-    def _set_rt(
-        self,
-        id_: str,
-        param: Optional[str] = None,
-        val: Optional[Union[int, float]] = None,
-    ):
+    def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
-        cmd = f"{id_}={val};" if not param else f"{id_}.{param}={val};"
         self.socks[Socket.request].sendto(
-            self.packet_request.header + cmd.encode(),
+            self.packet_request.header + f"{cmd}={val};".encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
         self.packet_request.framecounter = (
             int.from_bytes(self.packet_request.framecounter, "little") + 1
         ).to_bytes(4, "little")
-        if param:
-            self.cache[f"{id_}.{param}"] = val
+        self.cache[cmd] = val
 
     @script
-    def sendtext(self, cmd):
+    def sendtext(self, script):
         """Sends a multiple parameter string over a network."""
         self.socks[Socket.request].sendto(
-            self.packet_request.header + cmd.encode(),
+            self.packet_request.header + script.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
         self.packet_request.framecounter = (
             int.from_bytes(self.packet_request.framecounter, "little") + 1
         ).to_bytes(4, "little")
+        self.logger.debug(f"sendtext: [{self.ip}:{self.port}] {script}")
         time.sleep(self.DELAY)
 
     @property
@@ -185,7 +180,6 @@ class VbanCmd(metaclass=ABCMeta):
             else:
                 raise ValueError(obj)
 
-        self._script = str()
         [param(key).apply(datum).then_wait() for key, datum in data.items()]
 
     def apply_config(self, name):

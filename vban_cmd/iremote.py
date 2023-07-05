@@ -102,7 +102,7 @@ class IRemote(metaclass=ABCMeta):
     def setter(self, param, val):
         """Sends a string request RT packet."""
         self.logger.debug(f"setter: {self._cmd(param)}={val}")
-        self._remote._set_rt(self.identifier, param, val)
+        self._remote._set_rt(self._cmd(param), val)
 
     def _cmd(self, param):
         cmd = (self.identifier,)
@@ -141,10 +141,10 @@ class IRemote(metaclass=ABCMeta):
             else:
                 target = getattr(self, attr)
                 target.apply(val)
+
+        self._remote.sendtext(self._remote._script)
         return self
 
     def then_wait(self):
-        self.logger.debug(self._remote._script)
-        self._remote.sendtext(self._remote._script)
         self._remote._script = str()
         time.sleep(self._remote.DELAY)
