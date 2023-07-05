@@ -85,8 +85,8 @@ class VbanCmd(metaclass=ABCMeta):
         return self
 
     def login(self):
-        """Starts the subscriber and updater threads (unless sendtext_only mode)"""
-        if not self.sendtext_only:
+        """Starts the subscriber and updater threads (unless in outbound mode)"""
+        if not self.outbound:
             self.running = True
             self.event.info()
 

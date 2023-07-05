@@ -11,15 +11,15 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
-## [2.1.0] - 2023-07-05
+## [2.1.1] - 2023-07-05
 
 ### Added
 
--   `sendtext_only` kwarg let's you disable incoming rt packets. Essentially the interface will work only in one direction (out).
+-   `outbound` kwarg let's you disable incoming rt packets. Essentially the interface will work only in one direction.
 
-This is useful if you are only interested in sending script commands out to voicemeeter but don't need to receive parameter states.
+This is useful if you are only interested in sending commands out to voicemeeter but don't need to receive parameter states.
 
-By default sendtext_only is False.
+By default outbound is False.
 
 ## [2.0.0] - 2023-06-25
 

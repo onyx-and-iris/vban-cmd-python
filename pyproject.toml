@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vban-cmd"
-version = "2.1.0"
+version = "2.1.1"
 description = "Python interface for the VBAN RT Packet Service (Sendtext)"
 authors = ["onyx-and-iris <code@onyxandiris.online>"]
 license = "MIT"

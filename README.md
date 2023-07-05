@@ -461,7 +461,7 @@ You may pass the following optional keyword arguments:
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
 -   `timeout`: int=5, amount of time (seconds) to wait for an incoming RT data packet (parameter states).
--   `sendtext_only`: boolean=False, set `True` if you are only interested in sending script commands (no rt packets will be received)
+-   `outbound`: boolean=False, set `True` if you are only interested in sending commands. (no rt packets will be received)
 
 #### `vban.pdirty`
 
@@ -478,8 +478,6 @@ Sends a script block as a string request, for example:
 ```python
 vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
 ```
-
-note. if you are ONLY interested in sending script commands you may set sendtext_only kwarg to True
 
 #### `vban.public_packet`
 
