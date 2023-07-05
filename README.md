@@ -460,7 +460,7 @@ You may pass the following optional keyword arguments:
 -   `port`: int=6980, vban udp port of remote machine.
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
--   `timeout`: int=5, amount of time (seconds) you will wait for subscription response
+-   `timeout`: int=5, amount of time (seconds) to wait for an incoming RT data packet (parameter states).
 -   `sendtext_only`: boolean=False, set `True` if you are only interested in sending script commands (no rt packets will be received)
 
 #### `vban.pdirty`
