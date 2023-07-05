@@ -85,18 +85,19 @@ class VbanCmd(metaclass=ABCMeta):
         return self
 
     def login(self):
-        """Starts the subscriber and updater threads"""
-        self.running = True
-        self.event.info()
+        """Starts the subscriber and updater threads (unless sendtext_only mode)"""
+        if not self.sendtext_only:
+            self.running = True
+            self.event.info()
 
-        self.subscriber = Subscriber(self)
-        self.subscriber.start()
+            self.subscriber = Subscriber(self)
+            self.subscriber.start()
 
-        queue = Queue()
-        self.updater = Updater(self, queue)
-        self.updater.start()
-        self.producer = Producer(self, queue)
-        self.producer.start()
+            queue = Queue()
+            self.updater = Updater(self, queue)
+            self.updater.start()
+            self.producer = Producer(self, queue)
+            self.producer.start()
 
         self.logger.info(f"{type(self).__name__}: Successfully logged into {self}")
 

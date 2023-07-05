@@ -458,8 +458,10 @@ You may pass the following optional keyword arguments:
 -   `ip`: str, ip or hostname of remote machine
 -   `streamname`: str, name of the stream to connect to.
 -   `port`: int=6980, vban udp port of remote machine.
--   `pdirty`: parameter updates
--   `ldirty`: level updates
+-   `pdirty`: boolean=False, parameter updates
+-   `ldirty`: boolean=False, level updates
+-   `timeout`: int=5, amount of time (seconds) you will wait for subscription response
+-   `sendtext_only`: boolean=False, set `True` if you are only interested in sending script commands (no rt packets will be received)
 
 #### `vban.pdirty`
 
@@ -477,9 +479,13 @@ Sends a script block as a string request, for example:
 vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
 ```
 
+note. if you are ONLY interested in sending script commands you may set sendtext_only kwarg to True
+
 #### `vban.public_packet`
 
-Returns a `VbanRtPacket`. Designed to be used internally by the interface but available for parsing through this read only property object. States not guaranteed to be current (requires use of dirty parameters to confirm).
+Returns a `VbanRtPacket`. Designed to be used internally by the interface but available for parsing through this read only property object. 
+
+States not guaranteed to be current (requires use of dirty parameters to confirm).
 
 ### `Errors`
 

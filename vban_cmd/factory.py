@@ -71,6 +71,7 @@ class FactoryBase(VbanCmd):
             "channel": 0,
             "ratelimit": 0.01,
             "timeout": 5,
+            "sendtext_only": False,
             "sync": False,
             "pdirty": False,
             "ldirty": False,
