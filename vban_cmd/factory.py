@@ -10,7 +10,9 @@ from .config import request_config as configs
 from .error import VBANCMDError
 from .kinds import KindMapClass
 from .kinds import request_kind_map as kindmap
+from .macrobutton import MacroButton
 from .strip import request_strip_obj as strip
+from .vban import request_vban_obj as vban
 from .vbancmd import VbanCmd
 
 logger = logging.getLogger(__name__)
@@ -23,7 +25,9 @@ class FactoryBuilder:
     Separates construction from representation.
     """
 
-    BuilderProgress = IntEnum("BuilderProgress", "strip bus command", start=0)
+    BuilderProgress = IntEnum(
+        "BuilderProgress", "strip bus command macrobutton vban", start=0
+    )
 
     def __init__(self, factory, kind: KindMapClass):
         self._factory = factory
@@ -32,6 +36,8 @@ class FactoryBuilder:
             f"Finished building strips for {self._factory}",
             f"Finished building buses for {self._factory}",
             f"Finished building commands for {self._factory}",
+            f"Finished building macrobuttons for {self._factory}",
+            f"Finished building vban in/out streams for {self._factory}",
         )
         self.logger = logger.getChild(self.__class__.__name__)
 
@@ -56,6 +62,14 @@ class FactoryBuilder:
 
     def make_command(self):
         self._factory.command = Command.make(self._factory)
+        return self
+
+    def make_macrobutton(self):
+        self._factory.button = tuple(MacroButton(self._factory, i) for i in range(80))
+        return self
+
+    def make_vban(self):
+        self._factory.vban = vban(self._factory)
         return self
 
 
@@ -86,6 +100,8 @@ class FactoryBase(VbanCmd):
             self.builder.make_strip,
             self.builder.make_bus,
             self.builder.make_command,
+            self.builder.make_macrobutton,
+            self.builder.make_vban,
         )
         self._configs = None
 
