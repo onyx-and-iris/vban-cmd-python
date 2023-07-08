@@ -175,8 +175,10 @@ class VbanCmd(metaclass=ABCMeta):
         def param(key):
             obj, m2, *rem = key.split("-")
             index = int(m2) if m2.isnumeric() else int(*rem)
-            if obj in ("strip", "bus"):
+            if obj in ("strip", "bus", "button"):
                 return getattr(self, obj)[index]
+            elif obj == "vban":
+                return getattr(getattr(self, obj), f"{m2}stream")[index]
             else:
                 raise ValueError(obj)
 
