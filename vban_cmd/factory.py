@@ -108,6 +108,12 @@ class FactoryBase(VbanCmd):
     def __str__(self) -> str:
         return f"Voicemeeter {self.kind}"
 
+    def __repr__(self):
+        return (
+            type(self).__name__
+            + f"({self.kind}, ip='{self.ip}', port={self.port}, streamname='{self.streamname}')"
+        )
+
     @property
     @abstractmethod
     def steps(self):
