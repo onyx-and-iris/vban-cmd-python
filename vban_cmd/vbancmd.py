@@ -100,7 +100,11 @@ class VbanCmd(metaclass=ABCMeta):
             self.producer = Producer(self, queue)
             self.producer.start()
 
-        self.logger.info(f"{type(self).__name__}: Successfully logged into {self}")
+        self.logger.info(
+            "Successfully logged into {kind} with ip='{ip}', port={port}, streamname='{streamname}'".format(
+                **self.__dict__
+            )
+        )
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
@@ -123,7 +127,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.packet_request.framecounter = (
             int.from_bytes(self.packet_request.framecounter, "little") + 1
         ).to_bytes(4, "little")
-        self.logger.debug(f"sendtext: [{self.ip}:{self.port}] {script}")
+        self.logger.debug(f"sendtext: {script}")
         time.sleep(self.DELAY)
 
     @property
@@ -179,8 +183,7 @@ class VbanCmd(metaclass=ABCMeta):
                 return getattr(self, obj)[index]
             elif obj == "vban":
                 return getattr(getattr(self, obj), f"{m2}stream")[index]
-            else:
-                raise ValueError(obj)
+            raise ValueError(obj)
 
         [param(key).apply(datum).then_wait() for key, datum in data.items()]
 
@@ -193,8 +196,9 @@ class VbanCmd(metaclass=ABCMeta):
         try:
             self.apply(self.configs[name])
             self.logger.info(f"Profile '{name}' applied!")
-        except KeyError:
+        except KeyError as e:
             self.logger.error(("\n").join(error_msg))
+            raise VBANCMDError(("\n").join(error_msg)) from e
 
     def logout(self):
         self.running = False
