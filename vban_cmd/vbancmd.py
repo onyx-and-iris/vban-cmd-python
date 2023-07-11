@@ -64,8 +64,9 @@ class VbanCmd(metaclass=ABCMeta):
         def get_filepath():
             filepaths = [
                 Path.cwd() / "vban.toml",
+                Path.cwd() / "configs" / "vban.toml",
                 Path.home() / ".config" / "vban-cmd" / "vban.toml",
-                Path.home() / "Documents" / "Voicemeeter" / "vban.toml",
+                Path.home() / "Documents" / "Voicemeeter" / "configs" / "vban.toml",
             ]
             for filepath in filepaths:
                 if filepath.exists():
@@ -75,11 +76,10 @@ class VbanCmd(metaclass=ABCMeta):
             with open(filepath, "rb") as f:
                 conn = tomllib.load(f)
                 assert (
-                    "ip" in conn["connection"]
-                ), "please provide ip, by kwarg or config"
+                    "connection" in conn and "ip" in conn["connection"]
+                ), "expected [connection][ip] in vban config"
             return conn["connection"]
-        else:
-            raise VBANCMDError("no ip provided and no vban.toml located.")
+        raise VBANCMDError("no ip provided and no vban.toml located.")
 
     def __enter__(self):
         self.login()
@@ -101,7 +101,7 @@ class VbanCmd(metaclass=ABCMeta):
             self.producer.start()
 
         self.logger.info(
-            "Successfully logged into {kind} with ip='{ip}', port={port}, streamname='{streamname}'".format(
+            "Successfully logged into VBANCMD {kind} with ip='{ip}', port={port}, streamname='{streamname}'".format(
                 **self.__dict__
             )
         )
@@ -189,16 +189,24 @@ class VbanCmd(metaclass=ABCMeta):
 
     def apply_config(self, name):
         """applies a config from memory"""
-        error_msg = (
+        ERR_MSG = (
             f"No config with name '{name}' is loaded into memory",
             f"Known configs: {list(self.configs.keys())}",
         )
         try:
-            self.apply(self.configs[name])
-            self.logger.info(f"Profile '{name}' applied!")
+            config = self.configs[name].copy()
         except KeyError as e:
-            self.logger.error(("\n").join(error_msg))
-            raise VBANCMDError(("\n").join(error_msg)) from e
+            self.logger.error(("\n").join(ERR_MSG))
+            raise VBANCMDError(("\n").join(ERR_MSG)) from e
+
+        if "extends" in config:
+            extended = config.pop("extends")
+            config = self.configs[extended] | config
+            self.logger.debug(
+                f"profile '{name}' extends '{extended}', profiles merged.."
+            )
+        self.apply(config)
+        self.logger.info(f"Profile '{name}' applied!")
 
     def logout(self):
         self.running = False

@@ -44,7 +44,7 @@ port = 6980
 streamname = "Command1"
 ```
 
-It should be placed next to your `__main__.py` file.
+It should be placed in \<user home directory\> / "Documents" / "Voicemeeter" / "configs"
 
 Alternatively you may pass `ip`, `port`, `streamname` as keyword arguments.
 
@@ -359,8 +359,8 @@ vban.apply(
 Or for each class you may do:
 
 ```python
-vban.strip[0].apply(mute: true, gain: 3.2, A1: true)
-vban.bus[0].apply(A1: true)
+vban.strip[0].apply({"mute": True, "gain": 3.2, "A1": True})
+vban.vban.outstream[0].apply({"on": True, "name": "streamname", "bit": 24})
 ```
 
 ## Config Files
@@ -369,7 +369,7 @@ vban.bus[0].apply(A1: true)
 
 You may load config files in TOML format.
 Three example configs have been included with the package. Remember to save
-current settings before loading a user config. To set one you may do:
+current settings before loading a user config. To load one you may do:
 
 ```python
 import vban_cmd
@@ -378,6 +378,27 @@ with vban_cmd.api('banana') as vban:
 ```
 
 will load a config file at configs/banana/example.toml for Voicemeeter Banana.
+
+Your configs may be located in one of the following paths:
+-   \<current working directory\> / "configs" / kind_id
+-   \<user home directory\> / ".config" / "vban-cmd" / kind_id
+-   \<user home directory\> / "Documents" / "Voicemeeter" / "configs" / kind_id
+
+If a config with the same name is located in multiple locations, only the first one found is loaded into memory, in the above order.
+
+#### `config extends`
+
+You may also load a config that extends another config with overrides or additional parameters.
+
+You just need to define a key `extends` in the config TOML, that names the config to be extended.
+
+Three example 'extender' configs are included with the repo. You may load them with:
+
+```python
+import voicemeeterlib
+with voicemeeterlib.api('banana') as vm:
+    vm.apply_config('extender')
+```
 
 ## Events
 
