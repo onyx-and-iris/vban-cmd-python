@@ -4,13 +4,13 @@ import time
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from queue import Queue
-from typing import Iterable, Optional, Union
+from typing import Iterable, Union
 
 from .error import VBANCMDError
 from .event import Event
 from .packet import RequestHeader
 from .subject import Subject
-from .util import Socket, script
+from .util import Socket, deep_merge, script
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -194,14 +194,18 @@ class VbanCmd(metaclass=ABCMeta):
             f"Known configs: {list(self.configs.keys())}",
         )
         try:
-            config = self.configs[name].copy()
+            config = self.configs[name]
         except KeyError as e:
             self.logger.error(("\n").join(ERR_MSG))
             raise VBANCMDError(("\n").join(ERR_MSG)) from e
 
         if "extends" in config:
-            extended = config.pop("extends")
-            config = self.configs[extended] | config
+            extended = config["extends"]
+            config = {
+                k: v
+                for k, v in deep_merge(self.configs[extended], config)
+                if k not in ("extends")
+            }
             self.logger.debug(
                 f"profile '{name}' extends '{extended}', profiles merged.."
             )

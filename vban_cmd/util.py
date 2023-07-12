@@ -73,4 +73,18 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
             yield True
 
 
+def deep_merge(dict1, dict2):
+    """Generator function for deep merging two dicts"""
+    for k in set(dict1) | set(dict2):
+        if k in dict1 and k in dict2:
+            if isinstance(dict1[k], dict) and isinstance(dict2[k], dict):
+                yield k, dict(deep_merge(dict1[k], dict2[k]))
+            else:
+                yield k, dict2[k]
+        elif k in dict1:
+            yield k, dict1[k]
+        else:
+            yield k, dict2[k]
+
+
 Socket = IntEnum("Socket", "register request response", start=0)
