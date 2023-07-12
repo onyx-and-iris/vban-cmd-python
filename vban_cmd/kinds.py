@@ -62,7 +62,7 @@ class BasicMap(KindMapClass):
     name: str
     ins: tuple = (2, 1)
     outs: tuple = (1, 1)
-    vban: tuple = (4, 4)
+    vban: tuple = (4, 4, 1, 1)
 
 
 @dataclass
@@ -70,7 +70,7 @@ class BananaMap(KindMapClass):
     name: str
     ins: tuple = (3, 2)
     outs: tuple = (3, 2)
-    vban: tuple = (8, 8)
+    vban: tuple = (8, 8, 1, 1)
 
 
 @dataclass
@@ -78,7 +78,7 @@ class PotatoMap(KindMapClass):
     name: str
     ins: tuple = (5, 3)
     outs: tuple = (5, 3)
-    vban: tuple = (8, 8)
+    vban: tuple = (8, 8, 1, 1)
 
 
 def kind_factory(kind_id):
