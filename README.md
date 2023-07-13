@@ -506,7 +506,7 @@ Returns a `VbanRtPacket`. Designed to be used internally by the interface but av
 
 States not guaranteed to be current (requires use of dirty parameters to confirm).
 
-## `Errors`
+## Errors
 
 -   `errors.VBANCMDError`: Exception raised when general errors occur.
 -   `errors.VBANCMDConnectionError`: Exception raised when connection/timeout errors occur.
@@ -526,7 +526,7 @@ with vban_cmd.api('banana', **opts) as vban:
         ...
 ```
 
-### `Tests`
+## Tests
 
 First make sure you installed the [development dependencies](https://github.com/onyx-and-iris/vban-cmd-python#installation)
 
