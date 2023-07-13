@@ -517,11 +517,12 @@ It's possible to see the messages sent by the interface's setters and getters, m
 
 example:
 ```python
-import voicemeeterlib
+import vban_cmd
 
 logging.basicConfig(level=logging.DEBUG)
 
-with voicemeeterlib.api("banana") as vm:
+opts = {"ip": "ip.local", "port": 6980, "streamname": "Command1"}
+with vban_cmd.api('banana', **opts) as vban:
         ...
 ```
 
