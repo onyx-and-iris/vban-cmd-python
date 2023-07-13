@@ -506,10 +506,24 @@ Returns a `VbanRtPacket`. Designed to be used internally by the interface but av
 
 States not guaranteed to be current (requires use of dirty parameters to confirm).
 
-### `Errors`
+## `Errors`
 
 -   `errors.VBANCMDError`: Exception raised when general errors occur.
 -   `errors.VBANCMDConnectionError`: Exception raised when connection/timeout errors occur.
+
+## Logging
+
+It's possible to see the messages sent by the interface's setters and getters, may be useful for debugging.
+
+example:
+```python
+import voicemeeterlib
+
+logging.basicConfig(level=logging.DEBUG)
+
+with voicemeeterlib.api("banana") as vm:
+        ...
+```
 
 ### `Tests`
 
