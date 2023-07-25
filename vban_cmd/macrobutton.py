@@ -9,7 +9,7 @@ class MacroButton(IRemote):
 
     @property
     def identifier(self):
-        return f"button[{self.index}]"
+        return f"command.button[{self.index}]"
 
     @property
     def state(self) -> bool:

@@ -103,12 +103,12 @@ class VbanRtPacket:
     @property
     def inputlevels(self) -> tuple:
         """returns the entire level array across all inputs for a kind"""
-        return self.strip_levels[0 : (2 * self._kind.phys_in + 8 * self._kind.virt_in)]
+        return self.strip_levels[0 : self._kind.num_strip_levels]
 
     @property
     def outputlevels(self) -> tuple:
         """returns the entire level array across all outputs for a kind"""
-        return self.bus_levels[0 : 8 * self._kind.num_bus]
+        return self.bus_levels[0 : self._kind.num_bus_levels]
 
     @property
     def stripstate(self) -> tuple:

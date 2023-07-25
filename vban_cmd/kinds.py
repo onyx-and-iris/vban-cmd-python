@@ -53,6 +53,14 @@ class KindMapClass(metaclass=SingletonType):
     def num_bus(self):
         return sum(self.outs)
 
+    @property
+    def num_strip_levels(self) -> int:
+        return 2 * self.phys_in + 8 * self.virt_in
+
+    @property
+    def num_bus_levels(self) -> int:
+        return 8 * (self.phys_out + self.virt_out)
+
     def __str__(self) -> str:
         return self.name.capitalize()
 

@@ -141,9 +141,8 @@ class Updater(threading.Thread):
         self._remote.socks[Socket.response].bind(
             (socket.gethostbyname(socket.gethostname()), self._remote.port)
         )
-        p_in, v_in = self._remote.kind.ins
-        self._remote._strip_comp = [False] * (2 * p_in + 8 * v_in)
-        self._remote._bus_comp = [False] * (self._remote.kind.num_bus * 8)
+        self._remote._strip_comp = [False] * (self._remote.kind.num_strip_levels)
+        self._remote._bus_comp = [False] * (self._remote.kind.num_bus_levels)
 
     def run(self):
         """
