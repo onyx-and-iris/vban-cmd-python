@@ -85,7 +85,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.login()
         return self
 
-    def login(self):
+    def login(self) -> None:
         """Starts the subscriber and updater threads (unless in outbound mode)"""
         if not self.outbound:
             self.running = True
@@ -154,7 +154,7 @@ class VbanCmd(metaclass=ABCMeta):
     def public_packet(self):
         return self._public_packet
 
-    def clear_dirty(self):
+    def clear_dirty(self) -> None:
         while self.pdirty:
             time.sleep(self.DELAY)
 
@@ -212,11 +212,11 @@ class VbanCmd(metaclass=ABCMeta):
         self.apply(config)
         self.logger.info(f"Profile '{name}' applied!")
 
-    def logout(self):
+    def logout(self) -> None:
         self.running = False
         time.sleep(0.2)
         [sock.close() for sock in self.socks]
         self.logger.info(f"{type(self).__name__}: Successfully logged out of {self}")
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback) -> None:
         self.logout()

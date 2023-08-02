@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from enum import IntEnum
 from functools import cached_property
-from typing import Iterable, NoReturn
+from typing import Iterable
 
 from .bus import request_bus_obj as bus
 from .command import Command
@@ -41,7 +41,7 @@ class FactoryBuilder:
         )
         self.logger = logger.getChild(self.__class__.__name__)
 
-    def _pinfo(self, name: str) -> NoReturn:
+    def _pinfo(self, name: str) -> None:
         """prints progress status for each step"""
         name = name.split("_")[1]
         self.logger.info(self._info[int(getattr(self.BuilderProgress, name))])
