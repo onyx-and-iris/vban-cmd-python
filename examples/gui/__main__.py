@@ -8,6 +8,8 @@ from tkinter import ttk
 
 
 class App(tk.Tk):
+    INDEX = 3
+
     def __init__(self, vban):
         super().__init__()
         self.vban = vban
@@ -15,8 +17,8 @@ class App(tk.Tk):
         self.vban.observer.add(self.on_ldirty)
 
         # create widget variables
-        self.button_var = tk.BooleanVar(value=vban.strip[3].mute)
-        self.slider_var = tk.DoubleVar(value=vban.strip[3].gain)
+        self.button_var = tk.BooleanVar(value=vban.strip[self.INDEX].mute)
+        self.slider_var = tk.DoubleVar(value=vban.strip[self.INDEX].gain)
         self.meter_var = tk.DoubleVar(value=self._get_level())
         self.gainlabel_var = tk.StringVar(value=self.slider_var.get())
 
@@ -24,11 +26,12 @@ class App(tk.Tk):
         self.style = ttk.Style()
         self.style.theme_use("clam")
         self.style.configure(
-            "Mute.TButton", foreground="#cd5c5c" if vban.strip[3].mute else "#5a5a5a"
+            "Mute.TButton",
+            foreground="#cd5c5c" if vban.strip[self.INDEX].mute else "#5a5a5a",
         )
 
         # create labelframe and grid it onto the mainframe
-        self.labelframe = tk.LabelFrame(text=self.vban.strip[3].label)
+        self.labelframe = tk.LabelFrame(text=self.vban.strip[self.INDEX].label)
         self.labelframe.grid(padx=1)
 
         # create slider and grid it onto the labelframe
@@ -44,6 +47,7 @@ class App(tk.Tk):
             column=0,
             row=0,
         )
+        slider.bind("<Double-Button-1>", self.on_button_double_click)
 
         # create level meter and grid it onto the labelframe
         level_meter = ttk.Progressbar(
@@ -72,18 +76,23 @@ class App(tk.Tk):
 
     def on_slider_move(self, *args):
         val = round(self.slider_var.get(), 1)
-        self.vban.strip[3].gain = val
+        self.vban.strip[self.INDEX].gain = val
         self.gainlabel_var.set(val)
 
     def on_button_press(self):
         self.button_var.set(not self.button_var.get())
-        self.vban.strip[3].mute = self.button_var.get()
+        self.vban.strip[self.INDEX].mute = self.button_var.get()
         self.style.configure(
             "Mute.TButton", foreground="#cd5c5c" if self.button_var.get() else "#5a5a5a"
         )
 
+    def on_button_double_click(self, e):
+        self.slider_var.set(0)
+        self.gainlabel_var.set(0)
+        self.vban.strip[self.INDEX].gain = 0
+
     def _get_level(self):
-        val = max(self.vban.strip[3].levels.prefader)
+        val = max(self.vban.strip[self.INDEX].levels.prefader)
         return 0 if self.button_var.get() else 72 + val - 12 + self.slider_var.get()
 
     def on_ldirty(self):
