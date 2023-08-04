@@ -1,5 +1,6 @@
 import logging
 import socket
+import threading
 import time
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
@@ -88,16 +89,17 @@ class VbanCmd(metaclass=ABCMeta):
     def login(self) -> None:
         """Starts the subscriber and updater threads (unless in outbound mode)"""
         if not self.outbound:
-            self.running = True
             self.event.info()
 
-            self.subscriber = Subscriber(self)
+            self.stop_event = threading.Event()
+            self.stop_event.clear()
+            self.subscriber = Subscriber(self, self.stop_event)
             self.subscriber.start()
 
             queue = Queue()
             self.updater = Updater(self, queue)
             self.updater.start()
-            self.producer = Producer(self, queue)
+            self.producer = Producer(self, queue, self.stop_event)
             self.producer.start()
 
         self.logger.info(
@@ -105,6 +107,9 @@ class VbanCmd(metaclass=ABCMeta):
                 **self.__dict__
             )
         )
+
+    def stopped(self):
+        return self.stop_event.is_set()
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
@@ -213,8 +218,10 @@ class VbanCmd(metaclass=ABCMeta):
         self.logger.info(f"Profile '{name}' applied!")
 
     def logout(self) -> None:
-        self.running = False
-        time.sleep(0.2)
+        if not self.stopped():
+            self.logger.debug("events thread shutdown started")
+            self.stop_event.set()
+            self.subscriber.join()  # wait for subscriber thread to complete cycle
         [sock.close() for sock in self.socks]
         self.logger.info(f"{type(self).__name__}: Successfully logged out of {self}")
 

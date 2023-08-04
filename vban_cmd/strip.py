@@ -296,7 +296,7 @@ class StripLevel(IRemote):
         def fget(i):
             return round((((1 << 16) - 1) - i) * -0.01, 1)
 
-        if self._remote.running and self._remote.event.ldirty:
+        if not self._remote.stopped() and self._remote.event.ldirty:
             return tuple(
                 fget(i)
                 for i in self._remote.cache["strip_level"][
