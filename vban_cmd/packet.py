@@ -265,7 +265,7 @@ class VbanRtPacketHeader:
 
 @dataclass
 class RequestHeader:
-    """Represents the header of an REQUEST RT PACKET"""
+    """Represents the header of a REQUEST RT PACKET"""
 
     name: str
     bps_index: int
