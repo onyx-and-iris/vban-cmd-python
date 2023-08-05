@@ -50,6 +50,7 @@ class VbanCmd(metaclass=ABCMeta):
         self._pdirty = False
         self._ldirty = False
         self._script = str()
+        self.stop_event = None
 
     @abstractmethod
     def __str__(self):
@@ -109,7 +110,7 @@ class VbanCmd(metaclass=ABCMeta):
         )
 
     def stopped(self):
-        return self.stop_event.is_set()
+        return self.stop_event is None or self.stop_event.is_set()
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
