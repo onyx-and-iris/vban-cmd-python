@@ -31,7 +31,7 @@ class Subscriber(threading.Thread):
                 self.packet.framecounter = (
                     int.from_bytes(self.packet.framecounter, "little") + 1
                 ).to_bytes(4, "little")
-                self.until_stopped(10)
+                self.wait_until_stopped(10)
             except socket.gaierror as e:
                 self.logger.exception(f"{type(e).__name__}: {e}")
                 raise VBANCMDConnectionError(
@@ -42,7 +42,7 @@ class Subscriber(threading.Thread):
     def stopped(self):
         return self.stop_event.is_set()
 
-    def until_stopped(self, timeout, period=0.2):
+    def wait_until_stopped(self, timeout, period=0.2):
         must_end = time.time() + timeout
         while time.time() < must_end:
             if self.stopped():
