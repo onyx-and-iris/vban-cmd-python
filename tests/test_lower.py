@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 from tests import data, vban
@@ -17,10 +15,6 @@ class TestPublicPacketLower:
         )
 
 
-@pytest.mark.skipif(
-    "not config.getoption('--run-slow')",
-    reason="Only run when --run-slow is given",
-)
 @pytest.mark.parametrize("value", [0, 1])
 class TestSetRT:
     __test__ = True
@@ -35,7 +29,6 @@ class TestSetRT:
         ],
     )
     def test_it_sends_a_text_request(self, kls, index, param, value):
-        vban._set_rt(f"{kls}[{index}]", param, value)
-        time.sleep(0.02)
+        vban._set_rt(f"{kls}[{index}].{param}", value)
         target = getattr(vban, kls)[index]
         assert getattr(target, param) == bool(value)
