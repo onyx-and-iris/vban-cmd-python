@@ -20,7 +20,7 @@ class Strip(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}]"
+        return f"strip[{self.index}]"
 
     @property
     def limit(self) -> int:
@@ -79,7 +79,7 @@ class PhysicalStrip(Strip):
 class StripComp(IRemote):
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}].comp"
+        return f"strip[{self.index}].comp"
 
     @property
     def knob(self) -> float:
@@ -157,7 +157,7 @@ class StripComp(IRemote):
 class StripGate(IRemote):
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}].gate"
+        return f"strip[{self.index}].gate"
 
     @property
     def knob(self) -> float:
@@ -219,7 +219,7 @@ class StripGate(IRemote):
 class StripDenoiser(IRemote):
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}].denoiser"
+        return f"strip[{self.index}].denoiser"
 
     @property
     def knob(self) -> float:
@@ -233,7 +233,7 @@ class StripDenoiser(IRemote):
 class StripEQ(IRemote):
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}].eq"
+        return f"strip[{self.index}].eq"
 
     @property
     def on(self):
@@ -312,7 +312,7 @@ class StripLevel(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}]"
+        return f"strip[{self.index}]"
 
     @property
     def prefader(self) -> tuple:
@@ -345,7 +345,7 @@ class GainLayer(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Strip[{self.index}]"
+        return f"strip[{self.index}]"
 
     @property
     def gain(self) -> float:

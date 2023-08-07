@@ -26,7 +26,7 @@ class Bus(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Bus[{self.index}]"
+        return f"bus[{self.index}]"
 
     @property
     def gain(self) -> float:
@@ -66,7 +66,7 @@ class BusEQ(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Bus[{self.index}].eq"
+        return f"bus[{self.index}].eq"
 
 
 class PhysicalBus(Bus):
@@ -116,7 +116,7 @@ class BusLevel(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"Bus[{self.index}]"
+        return f"bus[{self.index}]"
 
     @property
     def all(self) -> tuple:
@@ -138,7 +138,7 @@ def _make_bus_mode_mixin():
     """Creates a mixin of Bus Modes."""
 
     def identifier(self) -> str:
-        return f"Bus[{self.index}].mode"
+        return f"bus[{self.index}].mode"
 
     def get(self):
         time.sleep(0.01)

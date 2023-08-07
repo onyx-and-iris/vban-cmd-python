@@ -30,7 +30,7 @@ class Command(IRemote):
 
     @property
     def identifier(self) -> str:
-        return "Command"
+        return "command"
 
     def set_showvbanchat(self, val: bool):
         self.setter("DialogShow.VBANCHAT", 1 if val else 0)
