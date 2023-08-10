@@ -1,3 +1,4 @@
+import os
 import random
 import sys
 from dataclasses import dataclass
@@ -6,8 +7,10 @@ import vban_cmd
 from vban_cmd.kinds import KindId
 from vban_cmd.kinds import request_kind_map as kindmap
 
-# let's keep things random
-KIND_ID = random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
+# get KIND_ID from env var, otherwise set to random
+KIND_ID = os.environ.get(
+    "KIND", random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
+)
 
 opts = {
     "ip": "testing.local",
