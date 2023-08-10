@@ -37,6 +37,7 @@ def main():
             {
                 "strip-2": {"A1": True, "B1": True, "gain": -6.0},
                 "bus-2": {"mute": True},
+                "vban-in-0": {"on": True},
             }
         )
 

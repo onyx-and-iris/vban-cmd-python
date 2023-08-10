@@ -94,6 +94,7 @@ def main():
             {
                 "strip-2": {"A1": True, "B1": True, "gain": -6.0},
                 "bus-2": {"mute": True, "eq": {"on": True}},
+                "vban-in-0": {"on": True},
             }
         )
 
@@ -355,6 +356,7 @@ vban.apply(
         "strip-0": {"A1": True, "B1": True, "gain": -6.0},
         "bus-1": {"mute": True, "mode": "composite"},
         "bus-2": {"eq": {"on": True}},
+        "vban-in-0": {"on": True},
     }
 )
 ```
