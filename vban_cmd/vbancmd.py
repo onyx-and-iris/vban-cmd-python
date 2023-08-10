@@ -183,17 +183,13 @@ class VbanCmd(metaclass=ABCMeta):
         """
 
         def target(key):
-            kls, m2, *rem = key.split("-")
-            match kls:
-                case "strip" | "bus" | "button":
-                    index = m2
+            match key.split("-"):
+                case ["strip" | "bus" | "button" as kls, index]:
                     target = getattr(self, kls)
-                case "vban":
-                    dir = f"{m2.rstrip('stream')}stream"
-                    index = rem[0]
-                    target = getattr(self.vban, dir)
+                case ["vban", direction, index]:
+                    target = getattr(self.vban, f"{direction.rstrip('stream')}stream")
                 case _:
-                    ERR_MSG = f"invalid config key '{kls}'"
+                    ERR_MSG = f"invalid config key '{key}'"
                     self.logger.error(ERR_MSG)
                     raise ValueError(ERR_MSG)
             return target[int(index)]
@@ -229,7 +225,8 @@ class VbanCmd(metaclass=ABCMeta):
         if not self.stopped():
             self.logger.debug("events thread shutdown started")
             self.stop_event.set()
-            self.subscriber.join()  # wait for subscriber thread to complete cycle
+            for t in (self.producer, self.subscriber):
+                t.join()
         [sock.close() for sock in self.socks]
         self.logger.info(f"{type(self).__name__}: Successfully logged out of {self}")
 
