@@ -11,6 +11,18 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.4.9] - 2023-08-13
+
+### Added
+
+-   Error tests added in tests/test_errors.py
+-   Errors section in README updated.
+
+### Changed
+
+-   VBANCMDConnectionError class now subclasses VBANCMDError
+-   If the configs loader is passed an invalid config TOML it will log an error but continue to load further configs into memory.
+
 ## [2.3.2] - 2023-07-12
 
 ### Added
