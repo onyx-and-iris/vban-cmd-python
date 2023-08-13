@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 import vban_cmd
@@ -15,15 +17,14 @@ class TestErrors:
             vban_cmd.api("unknown_kind")
 
     def test_it_tests_an_unknown_config_name(self):
-        EXPECTED_MSG = (
-            f"No config with name 'unknown' is loaded into memory",
-            f"Known configs: {list(vban.configs.keys())}",
+        EXPECTED_MSG = "\n".join(
+            (
+                f"No config with name 'unknown' is loaded into memory",
+                f"Known configs: {list(vban.configs.keys())}",
+            )
         )
-        with pytest.raises(vban_cmd.error.VBANCMDError) as exc_info:
+        with pytest.raises(vban_cmd.error.VBANCMDError, match=re.escape(EXPECTED_MSG)):
             vban.apply_config("unknown")
-
-        e = exc_info.value
-        assert e.message == "\n".join(EXPECTED_MSG)
 
     def test_it_tests_an_invalid_config_key(self):
         CONFIG = {
