@@ -1,5 +1,5 @@
 class VBANCMDError(Exception):
-    """Base VBANCMD Exception class. Raised when general errors occur"""
+    """Base VBANCMD Exception class."""
 
 
 class VBANCMDConnectionError(VBANCMDError):
