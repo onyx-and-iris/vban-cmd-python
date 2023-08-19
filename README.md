@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/vban-cmd.svg)](https://badge.fury.io/py/vban-cmd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/onyx-and-iris/vban-cmd-python/blob/dev/LICENSE)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 ![Tests Status](./tests/basic.svg?dummy=8484744)
@@ -513,7 +514,7 @@ States not guaranteed to be current (requires use of dirty parameters to confirm
 
 ## Errors
 
--   `errors.VBANCMDError`: Exception raised when general errors occur.
+-   `errors.VBANCMDError`: Base VBANCMD Exception class.
 -   `errors.VBANCMDConnectionError`: Exception raised when connection/timeout errors occur.
 
 ## Logging
