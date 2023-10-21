@@ -8,6 +8,8 @@ def channel_bool_prop(param):
 
     @partial(cache_bool, param=param)
     def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f"getter: {cmd}")
         return (
             not int.from_bytes(
                 getattr(
@@ -47,6 +49,8 @@ def strip_output_prop(param):
 
     @partial(cache_bool, param=param)
     def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f"getter: {cmd}")
         return (
             not int.from_bytes(self.public_packet.stripstate[self.index], "little")
             & getattr(self._modes, f"_bus{param.lower()}")
@@ -64,6 +68,8 @@ def bus_mode_prop(param):
 
     @partial(cache_bool, param=param)
     def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f"getter: {cmd}")
         modelist = {
             "amix": (1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1),
             "repeat": (0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2),
