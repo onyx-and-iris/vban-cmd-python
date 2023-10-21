@@ -51,6 +51,7 @@ class VbanCmd(metaclass=ABCMeta):
         self._ldirty = False
         self._script = str()
         self.stop_event = None
+        self.producer = None
 
     @abstractmethod
     def __str__(self):
@@ -231,8 +232,9 @@ class VbanCmd(metaclass=ABCMeta):
         if not self.stopped():
             self.logger.debug("events thread shutdown started")
             self.stop_event.set()
-            for t in (self.producer, self.subscriber):
-                t.join()
+            if self.producer is not None:
+                for t in (self.producer, self.subscriber):
+                    t.join()
         [sock.close() for sock in self.socks]
         self.logger.info(f"{type(self).__name__}: Successfully logged out of {self}")
 
