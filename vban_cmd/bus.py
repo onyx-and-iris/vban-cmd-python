@@ -137,35 +137,40 @@ class BusLevel(IRemote):
 def _make_bus_mode_mixin():
     """Creates a mixin of Bus Modes."""
 
+    modestates = {
+        "normal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "amix": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+        "repeat": [0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2],
+        "bmix": [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        "composite": [0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0],
+        "tvmix": [1, 0, 1, 4, 5, 4, 5, 0, 1, 0, 1],
+        "upmix21": [0, 2, 2, 4, 4, 6, 6, 0, 0, 2, 2],
+        "upmix41": [1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3],
+        "upmix61": [0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8],
+        "centeronly": [1, 0, 1, 0, 1, 0, 1, 8, 9, 8, 9],
+        "lfeonly": [0, 2, 2, 0, 0, 2, 2, 8, 8, 10, 10],
+        "rearonly": [1, 2, 3, 0, 1, 2, 3, 8, 9, 10, 11],
+    }
+
     def identifier(self) -> str:
         return f"bus[{self.index}].mode"
 
     def get(self):
-        time.sleep(0.01)
-        for i, val in enumerate(
-            [
-                self.amix,
-                self.bmix,
-                self.repeat,
-                self.composite,
-                self.tvmix,
-                self.upmix21,
-                self.upmix41,
-                self.upmix61,
-                self.centeronly,
-                self.lfeonly,
-                self.rearonly,
-            ]
-        ):
-            if val:
-                return BusModes(i + 1).name
-        return "normal"
+        states = [
+            (int.from_bytes(self.public_packet.busstate[self.index], "little") & val)
+            >> 4
+            for val in self._modes.modevals
+        ]
+        for k, v in modestates.items():
+            if states == v:
+                return k
 
     return type(
         "BusModeMixin",
         (IRemote,),
         {
             "identifier": property(identifier),
+            "modestates": modestates,
             **{mode.name: bus_mode_prop(mode.name) for mode in BusModes},
             "get": get,
         },

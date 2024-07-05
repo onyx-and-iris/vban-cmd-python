@@ -506,12 +506,6 @@ Sends a script block as a string request, for example:
 vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
 ```
 
-#### `vban.public_packet`
-
-Returns a `VbanRtPacket`. Designed to be used internally by the interface but available for parsing through this read only property object. 
-
-States not guaranteed to be current (requires use of dirty parameters to confirm).
-
 ## Errors
 
 -   `errors.VBANCMDError`: Base VBANCMD Exception class.
