@@ -63,27 +63,27 @@ class ManyThings:
         self.vban = vban
 
     def things(self):
-        self.vban.strip[0].label = "podmic"
+        self.vban.strip[0].label = 'podmic'
         self.vban.strip[0].mute = True
         print(
-            f"strip 0 ({self.vban.strip[0].label}) mute has been set to {self.vban.strip[0].mute}"
+            f'strip 0 ({self.vban.strip[0].label}) mute has been set to {self.vban.strip[0].mute}'
         )
 
     def other_things(self):
         self.vban.bus[3].gain = -6.3
-        self.vban.bus[4].eq.on = True
+        self.vban.bus[4].eq = True
         info = (
-            f"bus 3 gain has been set to {self.vban.bus[3].gain}",
-            f"bus 4 eq has been set to {self.vban.bus[4].eq.on}",
+            f'bus 3 gain has been set to {self.vban.bus[3].gain}',
+            f'bus 4 eq has been set to {self.vban.bus[4].eq}',
         )
-        print("\n".join(info))
+        print('\n'.join(info))
 
 
 def main():
-    KIND_ID = "banana"
+    kind_id = 'banana'
 
     with vban_cmd.api(
-        KIND_ID, ip="gamepc.local", port=6980, streamname="Command1"
+        kind_id, ip='gamepc.local', port=6980, streamname='Command1'
     ) as vban:
         do = ManyThings(vban)
         do.things()
@@ -92,14 +92,14 @@ def main():
         # set many parameters at once
         vban.apply(
             {
-                "strip-2": {"A1": True, "B1": True, "gain": -6.0},
-                "bus-2": {"mute": True, "eq": {"on": True}},
-                "vban-in-0": {"on": True},
+                'strip-2': {'A1': True, 'B1': True, 'gain': -6.0},
+                'bus-2': {'mute': True},
+                'vban-in-0': {'on': True},
             }
         )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
 ```
 
@@ -147,8 +147,8 @@ Set mute state as value for the app matching name.
 example:
 
 ```python
-vban.strip[5].appmute("Spotify", True)
-vban.strip[5].appgain("Spotify", 0.5)
+vban.strip[5].appmute('Spotify', True)
+vban.strip[5].appgain('Spotify', 0.5)
 ```
 
 ##### Strip.Comp
@@ -353,10 +353,10 @@ vban.command.showvbanchat = true
 ```python
 vban.apply(
     {
-        "strip-0": {"A1": True, "B1": True, "gain": -6.0},
-        "bus-1": {"mute": True, "mode": "composite"},
-        "bus-2": {"eq": {"on": True}},
-        "vban-in-0": {"on": True},
+        'strip-0': {'A1': True, 'B1': True, 'gain': -6.0},
+        'bus-1': {'mute': True, 'mode': 'composite'},
+        'bus-2': {'eq': {'on': True}},
+        'vban-in-0': {'on': True},
     }
 )
 ```
@@ -364,8 +364,8 @@ vban.apply(
 Or for each class you may do:
 
 ```python
-vban.strip[0].apply({"mute": True, "gain": 3.2, "A1": True})
-vban.vban.outstream[0].apply({"on": True, "name": "streamname", "bit": 24})
+vban.strip[0].apply({'mute': True, 'gain': 3.2, 'A1': True})
+vban.vban.outstream[0].apply({'on': True, 'name': 'streamname', 'bit': 24})
 ```
 
 ## Config Files
@@ -413,10 +413,11 @@ example:
 
 ```python
 import vban_cmd
+
 opts = {
-    "ip": "<ip address>",
-    "streamname": "Command1",
-    "port": 6980,
+    'ip': '<ip address>',
+    'streamname': 'Command1',
+    'port': 6980,
 }
 with vban_cmd.api('banana', ldirty=True, **opts) as vban:
     ...
@@ -469,7 +470,7 @@ The following methods are available:
 example:
 
 ```python
-vban.event.remove(["pdirty", "ldirty"])
+vban.event.remove(['pdirty', 'ldirty'])
 
 # get a list of currently subscribed
 print(vban.event.get())
@@ -502,7 +503,7 @@ True iff a level value has been changed.
 Sends a script block as a string request, for example:
 
 ```python
-vban.sendtext("Strip[0].Mute=1;Bus[0].Mono=1")
+vban.sendtext('Strip[0].Mute=1;Bus[0].Mono=1')
 ```
 
 ## Errors
@@ -520,9 +521,9 @@ import vban_cmd
 
 logging.basicConfig(level=logging.DEBUG)
 
-opts = {"ip": "ip.local", "port": 6980, "streamname": "Command1"}
+opts = {'ip': 'ip.local', 'port': 6980, 'streamname': 'Command1'}
 with vban_cmd.api('banana', **opts) as vban:
-        ...
+    ...
 ```
 
 ## Tests
