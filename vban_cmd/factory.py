@@ -78,7 +78,7 @@ class FactoryBase(VbanCmd):
 
     def __init__(self, kind_id: str, **kwargs):
         defaultkwargs = {
-            'ip': None,
+            'ip': 'localhost',
             'port': 6980,
             'streamname': 'Command1',
             'bps': 0,

@@ -12,27 +12,27 @@ class TestSetAndGetBoolHigher:
 
     @classmethod
     def setup_class(cls):
-        vban.apply_config("example")
+        vban.apply_config('example')
         time.sleep(0.1)
 
     @pytest.mark.skipif(
         "not config.getoption('--run-slow')",
-        reason="Only run when --run-slow is given",
+        reason='Only run when --run-slow is given',
     )
     def test_it_tests_config_string(self):
-        assert "PhysStrip" in vban.strip[data.phys_in].label
-        assert "VirtStrip" in vban.strip[data.virt_in].label
+        assert 'PhysStrip' in vban.strip[data.phys_in].label
+        assert 'VirtStrip' in vban.strip[data.virt_in].label
 
     @pytest.mark.skipif(
         "not config.getoption('--run-slow')",
-        reason="Only run when --run-slow is given",
+        reason='Only run when --run-slow is given',
     )
     def test_it_tests_config_bool(self):
-        assert vban.strip[0].A1 == True
+        assert vban.strip[0].A1
 
     @pytest.mark.skipif(
         "not config.getoption('--run-slow')",
-        reason="Only run when --run-slow is given",
+        reason='Only run when --run-slow is given',
     )
     def test_it_tests_config_busmode(self):
-        assert vban.bus[data.phys_out].mode.get() == "composite"
+        assert vban.bus[data.phys_out].mode.get() == 'composite'

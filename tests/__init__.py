@@ -13,8 +13,8 @@ KIND_ID = os.environ.get(
 )
 
 opts = {
-    'ip': 'ws.local',
-    'streamname': 'workstation',
+    'ip': 'localhost',
+    'streamname': 'onyx',
     'port': 6980,
     'bps': 0,
 }
