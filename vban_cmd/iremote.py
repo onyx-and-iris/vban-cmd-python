@@ -93,7 +93,7 @@ class IRemote(metaclass=ABCMeta):
 
     def getter(self, param):
         cmd = self._cmd(param)
-        self.logger.debug(f"getter: {cmd}")
+        self.logger.debug(f'getter: {cmd}')
         if cmd in self._remote.cache:
             return self._remote.cache.pop(cmd)
         if self._remote.sync:
@@ -101,14 +101,14 @@ class IRemote(metaclass=ABCMeta):
 
     def setter(self, param, val):
         """Sends a string request RT packet."""
-        self.logger.debug(f"setter: {self._cmd(param)}={val}")
+        self.logger.debug(f'setter: {self._cmd(param)}={val}')
         self._remote._set_rt(self._cmd(param), val)
 
     def _cmd(self, param):
         cmd = (self.identifier,)
         if param:
-            cmd += (f".{param}",)
-        return "".join(cmd)
+            cmd += (f'.{param}',)
+        return ''.join(cmd)
 
     @property
     @abstractmethod
@@ -124,10 +124,10 @@ class IRemote(metaclass=ABCMeta):
         """Sets all parameters of a dict for the channel."""
 
         def fget(attr, val):
-            if attr == "mode":
-                return (f"mode.{val}", 1)
-            elif attr == "knob":
-                return ("", val)
+            if attr == 'mode':
+                return (f'mode.{val}', 1)
+            elif attr == 'knob':
+                return ('', val)
             return (attr, val)
 
         for attr, val in data.items():
@@ -138,7 +138,7 @@ class IRemote(metaclass=ABCMeta):
                         val = 1 if val else 0
 
                     self._remote.cache[self._cmd(attr)] = val
-                    self._remote._script += f"{self._cmd(attr)}={val};"
+                    self._remote._script += f'{self._cmd(attr)}={val};'
             else:
                 target = getattr(self, attr)
                 target.apply(val)

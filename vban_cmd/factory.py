@@ -26,24 +26,24 @@ class FactoryBuilder:
     """
 
     BuilderProgress = IntEnum(
-        "BuilderProgress", "strip bus command macrobutton vban", start=0
+        'BuilderProgress', 'strip bus command macrobutton vban', start=0
     )
 
     def __init__(self, factory, kind: KindMapClass):
         self._factory = factory
         self.kind = kind
         self._info = (
-            f"Finished building strips for {self._factory}",
-            f"Finished building buses for {self._factory}",
-            f"Finished building commands for {self._factory}",
-            f"Finished building macrobuttons for {self._factory}",
-            f"Finished building vban in/out streams for {self._factory}",
+            f'Finished building strips for {self._factory}',
+            f'Finished building buses for {self._factory}',
+            f'Finished building commands for {self._factory}',
+            f'Finished building macrobuttons for {self._factory}',
+            f'Finished building vban in/out streams for {self._factory}',
         )
         self.logger = logger.getChild(self.__class__.__name__)
 
     def _pinfo(self, name: str) -> None:
         """prints progress status for each step"""
-        name = name.split("_")[1]
+        name = name.split('_')[1]
         self.logger.info(self._info[int(getattr(self.BuilderProgress, name))])
 
     def make_strip(self):
@@ -78,20 +78,20 @@ class FactoryBase(VbanCmd):
 
     def __init__(self, kind_id: str, **kwargs):
         defaultkwargs = {
-            "ip": None,
-            "port": 6980,
-            "streamname": "Command1",
-            "bps": 0,
-            "channel": 0,
-            "ratelimit": 0.01,
-            "timeout": 5,
-            "outbound": False,
-            "sync": False,
-            "pdirty": False,
-            "ldirty": False,
+            'ip': None,
+            'port': 6980,
+            'streamname': 'Command1',
+            'bps': 0,
+            'channel': 0,
+            'ratelimit': 0.01,
+            'timeout': 5,
+            'outbound': False,
+            'sync': False,
+            'pdirty': False,
+            'ldirty': False,
         }
-        if "subs" in kwargs:
-            defaultkwargs |= kwargs.pop("subs")  # for backwards compatibility
+        if 'subs' in kwargs:
+            defaultkwargs |= kwargs.pop('subs')  # for backwards compatibility
         kwargs = defaultkwargs | kwargs
         self.kind = kindmap(kind_id)
         super().__init__(**kwargs)
@@ -106,7 +106,7 @@ class FactoryBase(VbanCmd):
         self._configs = None
 
     def __str__(self) -> str:
-        return f"Voicemeeter {self.kind}"
+        return f'Voicemeeter {self.kind}'
 
     def __repr__(self):
         return (
@@ -198,15 +198,15 @@ def vbancmd_factory(kind_id: str, **kwargs) -> VbanCmd:
     Returns a VbanCmd class of a kind
     """
     match kind_id:
-        case "basic":
+        case 'basic':
             _factory = BasicFactory
-        case "banana":
+        case 'banana':
             _factory = BananaFactory
-        case "potato":
+        case 'potato':
             _factory = PotatoFactory
         case _:
             raise ValueError(f"Unknown Voicemeeter kind '{kind_id}'")
-    return type(f"VbanCmd{kind_id.capitalize()}", (_factory,), {})(kind_id, **kwargs)
+    return type(f'VbanCmd{kind_id.capitalize()}', (_factory,), {})(kind_id, **kwargs)
 
 
 def request_vbancmd_obj(kind_id: str, **kwargs) -> VbanCmd:
@@ -215,12 +215,12 @@ def request_vbancmd_obj(kind_id: str, **kwargs) -> VbanCmd:
 
     Returns a reference to a VbanCmd class of a kind
     """
-    logger_entry = logger.getChild("factory.request_vbancmd_obj")
+    logger_entry = logger.getChild('factory.request_vbancmd_obj')
 
     VBANCMD_obj = None
     try:
         VBANCMD_obj = vbancmd_factory(kind_id, **kwargs)
     except (ValueError, TypeError) as e:
-        logger_entry.exception(f"{type(e).__name__}: {e}")
+        logger_entry.exception(f'{type(e).__name__}: {e}')
         raise VBANCMDError(str(e)) from e
     return VBANCMD_obj

@@ -6,7 +6,6 @@ from typing import Optional
 
 from .error import VBANCMDConnectionError
 from .packet import HEADER_SIZE, SubscribeHeader, VbanRtPacket, VbanRtPacketHeader
-from .util import Socket
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +14,7 @@ class Subscriber(threading.Thread):
     """fire a subscription packet every 10 seconds"""
 
     def __init__(self, remote, stop_event):
-        super().__init__(name="subscriber", daemon=False)
+        super().__init__(name='subscriber', daemon=False)
         self._remote = remote
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
@@ -24,20 +23,20 @@ class Subscriber(threading.Thread):
     def run(self):
         while not self.stopped():
             try:
-                self._remote.socks[Socket.register].sendto(
+                self._remote.sock.sendto(
                     self.packet.header,
                     (socket.gethostbyname(self._remote.ip), self._remote.port),
                 )
                 self.packet.framecounter = (
-                    int.from_bytes(self.packet.framecounter, "little") + 1
-                ).to_bytes(4, "little")
+                    int.from_bytes(self.packet.framecounter, 'little') + 1
+                ).to_bytes(4, 'little')
                 self.wait_until_stopped(10)
             except socket.gaierror as e:
-                self.logger.exception(f"{type(e).__name__}: {e}")
+                self.logger.exception(f'{type(e).__name__}: {e}')
                 raise VBANCMDConnectionError(
-                    f"unable to resolve hostname {self._remote.ip}"
+                    f'unable to resolve hostname {self._remote.ip}'
                 ) from e
-        self.logger.debug(f"terminating {self.name} thread")
+        self.logger.debug(f'terminating {self.name} thread')
 
     def stopped(self):
         return self.stop_event.is_set()
@@ -54,20 +53,17 @@ class Producer(threading.Thread):
     """Continously send job queue to the Updater thread at a rate of self._remote.ratelimit."""
 
     def __init__(self, remote, queue, stop_event):
-        super().__init__(name="producer", daemon=False)
+        super().__init__(name='producer', daemon=False)
         self._remote = remote
         self.queue = queue
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
         self.packet_expected = VbanRtPacketHeader()
-        self._remote.socks[Socket.response].settimeout(self._remote.timeout)
-        self._remote.socks[Socket.response].bind(
-            (socket.gethostbyname(socket.gethostname()), self._remote.port)
-        )
+        self._remote.sock.settimeout(self._remote.timeout)
         self._remote._public_packet = self._get_rt()
         (
-            self._remote.cache["strip_level"],
-            self._remote.cache["bus_level"],
+            self._remote.cache['strip_level'],
+            self._remote.cache['bus_level'],
         ) = self._remote._get_levels(self._remote.public_packet)
 
     def _get_rt(self) -> VbanRtPacket:
@@ -83,7 +79,7 @@ class Producer(threading.Thread):
 
     def _fetch_rt_packet(self) -> Optional[VbanRtPacket]:
         try:
-            data, _ = self._remote.socks[Socket.response].recvfrom(2048)
+            data, _ = self._remote.sock.recvfrom(2048)
             # do we have packet data?
             if len(data) > HEADER_SIZE:
                 # is the packet of type VBAN RT response?
@@ -114,9 +110,9 @@ class Producer(threading.Thread):
                         _busLabelUTF8c60=data[932:1412],
                     )
         except TimeoutError as e:
-            self.logger.exception(f"{type(e).__name__}: {e}")
+            self.logger.exception(f'{type(e).__name__}: {e}')
             raise VBANCMDConnectionError(
-                f"timeout waiting for RtPacket from {self._remote.ip}"
+                f'timeout waiting for RtPacket from {self._remote.ip}'
             ) from e
 
     def stopped(self):
@@ -127,7 +123,7 @@ class Producer(threading.Thread):
             _pp = self._get_rt()
             pdirty = _pp.pdirty(self._remote.public_packet)
             ldirty = _pp.ldirty(
-                self._remote.cache["strip_level"], self._remote.cache["bus_level"]
+                self._remote.cache['strip_level'], self._remote.cache['bus_level']
             )
 
             if pdirty or ldirty:
@@ -136,11 +132,11 @@ class Producer(threading.Thread):
             self._remote._ldirty = ldirty
 
             if self._remote.event.pdirty:
-                self.queue.put("pdirty")
+                self.queue.put('pdirty')
             if self._remote.event.ldirty:
-                self.queue.put("ldirty")
+                self.queue.put('ldirty')
             time.sleep(self._remote.ratelimit)
-        self.logger.debug(f"terminating {self.name} thread")
+        self.logger.debug(f'terminating {self.name} thread')
         self.queue.put(None)
 
 
@@ -152,7 +148,7 @@ class Updater(threading.Thread):
     """
 
     def __init__(self, remote, queue):
-        super().__init__(name="updater", daemon=True)
+        super().__init__(name='updater', daemon=True)
         self._remote = remote
         self.queue = queue
         self.logger = logger.getChild(self.__class__.__name__)
@@ -166,19 +162,19 @@ class Updater(threading.Thread):
         Generate _strip_comp, _bus_comp and update level cache if ldirty.
         """
         while event := self.queue.get():
-            if event == "pdirty" and self._remote.pdirty:
+            if event == 'pdirty' and self._remote.pdirty:
                 self._remote.subject.notify(event)
-            elif event == "ldirty" and self._remote.ldirty:
+            elif event == 'ldirty' and self._remote.ldirty:
                 self._remote._strip_comp, self._remote._bus_comp = (
                     self._remote._public_packet._strip_comp,
                     self._remote._public_packet._bus_comp,
                 )
                 (
-                    self._remote.cache["strip_level"],
-                    self._remote.cache["bus_level"],
+                    self._remote.cache['strip_level'],
+                    self._remote.cache['bus_level'],
                 ) = (
                     self._remote._public_packet.inputlevels,
                     self._remote._public_packet.outputlevels,
                 )
                 self._remote.subject.notify(event)
-        self.logger.debug(f"terminating {self.name} thread")
+        self.logger.debug(f'terminating {self.name} thread')

@@ -9,14 +9,14 @@ from vban_cmd.kinds import request_kind_map as kindmap
 
 # get KIND_ID from env var, otherwise set to random
 KIND_ID = os.environ.get(
-    "KIND", random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
+    'KIND', random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
 )
 
 opts = {
-    "ip": "testing.local",
-    "streamname": "testing",
-    "port": 6990,
-    "bps": 0,
+    'ip': 'ws.local',
+    'streamname': 'workstation',
+    'port': 6980,
+    'bps': 0,
 }
 
 vban = vban_cmd.api(KIND_ID, **opts)
@@ -42,7 +42,7 @@ data = Data()
 
 
 def setup_module():
-    print(f"\nRunning tests for kind [{data.name}]\n", file=sys.stdout)
+    print(f'\nRunning tests for kind [{data.name}]\n', file=sys.stdout)
     vban.login()
     vban.command.reset()
 

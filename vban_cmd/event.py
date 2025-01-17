@@ -12,30 +12,30 @@ class Event:
         self.logger = logger.getChild(self.__class__.__name__)
 
     def info(self, msg=None):
-        info = (f"{msg} events",) if msg else ()
+        info = (f'{msg} events',) if msg else ()
         if self.any():
-            info += (f"now listening for {', '.join(self.get())} events",)
+            info += (f'now listening for {", ".join(self.get())} events',)
         else:
-            info += (f"not listening for any events",)
-        self.logger.info(", ".join(info))
+            info += ('not listening for any events',)
+        self.logger.info(', '.join(info))
 
     @property
     def pdirty(self) -> bool:
-        return self.subs["pdirty"]
+        return self.subs['pdirty']
 
     @pdirty.setter
     def pdirty(self, val: bool):
-        self.subs["pdirty"] = val
-        self.info(f"pdirty {'added to' if val else 'removed from'}")
+        self.subs['pdirty'] = val
+        self.info(f'pdirty {"added to" if val else "removed from"}')
 
     @property
     def ldirty(self) -> bool:
-        return self.subs["ldirty"]
+        return self.subs['ldirty']
 
     @ldirty.setter
     def ldirty(self, val: bool):
-        self.subs["ldirty"] = val
-        self.info(f"ldirty {'added to' if val else 'removed from'}")
+        self.subs['ldirty'] = val
+        self.info(f'ldirty {"added to" if val else "removed from"}')
 
     def get(self) -> list:
         return [k for k, v in self.subs.items() if v]

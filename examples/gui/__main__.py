@@ -1,10 +1,10 @@
 import logging
+import tkinter as tk
+from tkinter import ttk
 
 import vban_cmd
 
 logging.basicConfig(level=logging.DEBUG)
-import tkinter as tk
-from tkinter import ttk
 
 
 class App(tk.Tk):
@@ -13,7 +13,7 @@ class App(tk.Tk):
     def __init__(self, vban):
         super().__init__()
         self.vban = vban
-        self.title(f"{vban} - version {vban.version}")
+        self.title(f'{vban} - version {vban.version}')
         self.vban.observer.add(self.on_ldirty)
 
         # create widget variables
@@ -24,10 +24,10 @@ class App(tk.Tk):
 
         # initialize style table
         self.style = ttk.Style()
-        self.style.theme_use("clam")
+        self.style.theme_use('clam')
         self.style.configure(
-            "Mute.TButton",
-            foreground="#cd5c5c" if vban.strip[self.INDEX].mute else "#5a5a5a",
+            'Mute.TButton',
+            foreground='#cd5c5c' if vban.strip[self.INDEX].mute else '#5a5a5a',
         )
 
         # create labelframe and grid it onto the mainframe
@@ -39,7 +39,7 @@ class App(tk.Tk):
             self.labelframe,
             from_=12,
             to_=-60,
-            orient="vertical",
+            orient='vertical',
             variable=self.slider_var,
             command=lambda arg: self.on_slider_move(arg),
         )
@@ -47,15 +47,15 @@ class App(tk.Tk):
             column=0,
             row=0,
         )
-        slider.bind("<Double-Button-1>", self.on_button_double_click)
+        slider.bind('<Double-Button-1>', self.on_button_double_click)
 
         # create level meter and grid it onto the labelframe
         level_meter = ttk.Progressbar(
             self.labelframe,
-            orient="vertical",
+            orient='vertical',
             variable=self.meter_var,
             maximum=72,
-            mode="determinate",
+            mode='determinate',
         )
         level_meter.grid(column=1, row=0)
 
@@ -66,8 +66,8 @@ class App(tk.Tk):
         # create button and grid it onto the labelframe
         button = ttk.Button(
             self.labelframe,
-            text="Mute",
-            style="Mute.TButton",
+            text='Mute',
+            style='Mute.TButton',
             command=lambda: self.on_button_press(),
         )
         button.grid(column=0, row=2, columnspan=2, padx=1, pady=2)
@@ -83,7 +83,7 @@ class App(tk.Tk):
         self.button_var.set(not self.button_var.get())
         self.vban.strip[self.INDEX].mute = self.button_var.get()
         self.style.configure(
-            "Mute.TButton", foreground="#cd5c5c" if self.button_var.get() else "#5a5a5a"
+            'Mute.TButton', foreground='#cd5c5c' if self.button_var.get() else '#5a5a5a'
         )
 
     def on_button_double_click(self, e):
@@ -100,10 +100,10 @@ class App(tk.Tk):
 
 
 def main():
-    with vban_cmd.api("banana", ldirty=True) as vban:
+    with vban_cmd.api('banana', ldirty=True) as vban:
         app = App(vban)
         app.mainloop()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

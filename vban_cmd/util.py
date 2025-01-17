@@ -1,4 +1,3 @@
-from enum import IntEnum
 from typing import Iterator
 
 
@@ -42,15 +41,15 @@ def script(func):
     def wrapper(*args):
         remote, script = args
         if isinstance(script, dict):
-            params = ""
+            params = ''
             for key, val in script.items():
-                obj, m2, *rem = key.split("-")
+                obj, m2, *rem = key.split('-')
                 index = int(m2) if m2.isnumeric() else int(*rem)
-                params += ";".join(
-                    f"{obj}{f'.{m2}stream' if not m2.isnumeric() else ''}[{index}].{k}={int(v) if isinstance(v, bool) else v}"
+                params += ';'.join(
+                    f'{obj}{f".{m2}stream" if not m2.isnumeric() else ""}[{index}].{k}={int(v) if isinstance(v, bool) else v}'
                     for k, v in val.items()
                 )
-                params += ";"
+                params += ';'
             script = params
         return func(remote, script)
 
@@ -83,6 +82,3 @@ def deep_merge(dict1, dict2):
             yield k, dict1[k]
         else:
             yield k, dict2[k]
-
-
-Socket = IntEnum("Socket", "register request response", start=0)

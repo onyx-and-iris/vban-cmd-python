@@ -20,7 +20,7 @@ class Strip(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}]"
+        return f'strip[{self.index}]'
 
     @property
     def limit(self) -> int:
@@ -28,25 +28,25 @@ class Strip(IRemote):
 
     @limit.setter
     def limit(self, val: int):
-        self.setter("limit", val)
+        self.setter('limit', val)
 
     @property
     def gain(self) -> float:
-        val = self.getter("gain")
+        val = self.getter('gain')
         if val is None:
             val = self.gainlayer[0].gain
         return round(val, 1)
 
     @gain.setter
     def gain(self, val: float):
-        self.setter("gain", val)
+        self.setter('gain', val)
 
     def fadeto(self, target: float, time_: int):
-        self.setter("FadeTo", f"({target}, {time_})")
+        self.setter('FadeTo', f'({target}, {time_})')
         time.sleep(self._remote.DELAY)
 
     def fadeby(self, change: float, time_: int):
-        self.setter("FadeBy", f"({change}, {time_})")
+        self.setter('FadeBy', f'({change}, {time_})')
         time.sleep(self._remote.DELAY)
 
 
@@ -54,18 +54,18 @@ class PhysicalStrip(Strip):
     @classmethod
     def make(cls, remote, index):
         return type(
-            f"PhysicalStrip{remote.kind}",
+            f'PhysicalStrip{remote.kind}',
             (cls,),
             {
-                "comp": StripComp(remote, index),
-                "gate": StripGate(remote, index),
-                "denoiser": StripDenoiser(remote, index),
-                "eq": StripEQ(remote, index),
+                'comp': StripComp(remote, index),
+                'gate': StripGate(remote, index),
+                'denoiser': StripDenoiser(remote, index),
+                'eq': StripEQ(remote, index),
             },
         )
 
     def __str__(self):
-        return f"{type(self).__name__}{self.index}"
+        return f'{type(self).__name__}{self.index}'
 
     @property
     def device(self):
@@ -79,7 +79,7 @@ class PhysicalStrip(Strip):
 class StripComp(IRemote):
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}].comp"
+        return f'strip[{self.index}].comp'
 
     @property
     def knob(self) -> float:
@@ -87,7 +87,7 @@ class StripComp(IRemote):
 
     @knob.setter
     def knob(self, val: float):
-        self.setter("", val)
+        self.setter('', val)
 
     @property
     def gainin(self) -> float:
@@ -95,7 +95,7 @@ class StripComp(IRemote):
 
     @gainin.setter
     def gainin(self, val: float):
-        self.setter("GainIn", val)
+        self.setter('GainIn', val)
 
     @property
     def ratio(self) -> float:
@@ -103,7 +103,7 @@ class StripComp(IRemote):
 
     @ratio.setter
     def ratio(self, val: float):
-        self.setter("Ratio", val)
+        self.setter('Ratio', val)
 
     @property
     def threshold(self) -> float:
@@ -111,7 +111,7 @@ class StripComp(IRemote):
 
     @threshold.setter
     def threshold(self, val: float):
-        self.setter("Threshold", val)
+        self.setter('Threshold', val)
 
     @property
     def attack(self) -> float:
@@ -119,7 +119,7 @@ class StripComp(IRemote):
 
     @attack.setter
     def attack(self, val: float):
-        self.setter("Attack", val)
+        self.setter('Attack', val)
 
     @property
     def release(self) -> float:
@@ -127,7 +127,7 @@ class StripComp(IRemote):
 
     @release.setter
     def release(self, val: float):
-        self.setter("Release", val)
+        self.setter('Release', val)
 
     @property
     def knee(self) -> float:
@@ -135,7 +135,7 @@ class StripComp(IRemote):
 
     @knee.setter
     def knee(self, val: float):
-        self.setter("Knee", val)
+        self.setter('Knee', val)
 
     @property
     def gainout(self) -> float:
@@ -143,7 +143,7 @@ class StripComp(IRemote):
 
     @gainout.setter
     def gainout(self, val: float):
-        self.setter("GainOut", val)
+        self.setter('GainOut', val)
 
     @property
     def makeup(self) -> bool:
@@ -151,13 +151,13 @@ class StripComp(IRemote):
 
     @makeup.setter
     def makeup(self, val: bool):
-        self.setter("makeup", 1 if val else 0)
+        self.setter('makeup', 1 if val else 0)
 
 
 class StripGate(IRemote):
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}].gate"
+        return f'strip[{self.index}].gate'
 
     @property
     def knob(self) -> float:
@@ -165,7 +165,7 @@ class StripGate(IRemote):
 
     @knob.setter
     def knob(self, val: float):
-        self.setter("", val)
+        self.setter('', val)
 
     @property
     def threshold(self) -> float:
@@ -173,7 +173,7 @@ class StripGate(IRemote):
 
     @threshold.setter
     def threshold(self, val: float):
-        self.setter("Threshold", val)
+        self.setter('Threshold', val)
 
     @property
     def damping(self) -> float:
@@ -181,7 +181,7 @@ class StripGate(IRemote):
 
     @damping.setter
     def damping(self, val: float):
-        self.setter("Damping", val)
+        self.setter('Damping', val)
 
     @property
     def bpsidechain(self) -> int:
@@ -189,7 +189,7 @@ class StripGate(IRemote):
 
     @bpsidechain.setter
     def bpsidechain(self, val: int):
-        self.setter("BPSidechain", val)
+        self.setter('BPSidechain', val)
 
     @property
     def attack(self) -> float:
@@ -197,7 +197,7 @@ class StripGate(IRemote):
 
     @attack.setter
     def attack(self, val: float):
-        self.setter("Attack", val)
+        self.setter('Attack', val)
 
     @property
     def hold(self) -> float:
@@ -205,7 +205,7 @@ class StripGate(IRemote):
 
     @hold.setter
     def hold(self, val: float):
-        self.setter("Hold", val)
+        self.setter('Hold', val)
 
     @property
     def release(self) -> float:
@@ -213,13 +213,13 @@ class StripGate(IRemote):
 
     @release.setter
     def release(self, val: float):
-        self.setter("Release", val)
+        self.setter('Release', val)
 
 
 class StripDenoiser(IRemote):
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}].denoiser"
+        return f'strip[{self.index}].denoiser'
 
     @property
     def knob(self) -> float:
@@ -227,13 +227,13 @@ class StripDenoiser(IRemote):
 
     @knob.setter
     def knob(self, val: float):
-        self.setter("", val)
+        self.setter('', val)
 
 
 class StripEQ(IRemote):
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}].eq"
+        return f'strip[{self.index}].eq'
 
     @property
     def on(self):
@@ -241,7 +241,7 @@ class StripEQ(IRemote):
 
     @on.setter
     def on(self, val: bool):
-        self.setter("on", 1 if val else 0)
+        self.setter('on', 1 if val else 0)
 
     @property
     def ab(self):
@@ -249,14 +249,14 @@ class StripEQ(IRemote):
 
     @ab.setter
     def ab(self, val: bool):
-        self.setter("ab", 1 if val else 0)
+        self.setter('ab', 1 if val else 0)
 
 
 class VirtualStrip(Strip):
     def __str__(self):
-        return f"{type(self).__name__}{self.index}"
+        return f'{type(self).__name__}{self.index}'
 
-    mc = channel_bool_prop("mc")
+    mc = channel_bool_prop('mc')
 
     mono = mc
 
@@ -266,13 +266,13 @@ class VirtualStrip(Strip):
 
     @k.setter
     def k(self, val: int):
-        self.setter("karaoke", val)
+        self.setter('karaoke', val)
 
     def appgain(self, name: str, gain: float):
-        self.setter("AppGain", f'("{name}", {gain})')
+        self.setter('AppGain', f'("{name}", {gain})')
 
     def appmute(self, name: str, mute: bool = None):
-        self.setter("AppMute", f'("{name}", {1 if mute else 0})')
+        self.setter('AppMute', f'("{name}", {1 if mute else 0})')
 
 
 class StripLevel(IRemote):
@@ -299,7 +299,7 @@ class StripLevel(IRemote):
         if not self._remote.stopped() and self._remote.event.ldirty:
             return tuple(
                 fget(i)
-                for i in self._remote.cache["strip_level"][
+                for i in self._remote.cache['strip_level'][
                     self.range[0] : self.range[-1]
                 ]
             )
@@ -312,7 +312,7 @@ class StripLevel(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}]"
+        return f'strip[{self.index}]'
 
     @property
     def prefader(self) -> tuple:
@@ -345,31 +345,33 @@ class GainLayer(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"strip[{self.index}]"
+        return f'strip[{self.index}]'
 
     @property
     def gain(self) -> float:
         def fget():
-            val = getattr(self.public_packet, f"stripgainlayer{self._i+1}")[self.index]
+            val = getattr(self.public_packet, f'stripgainlayer{self._i + 1}')[
+                self.index
+            ]
             if 0 <= val <= 1200:
                 return val * 0.01
             return (((1 << 16) - 1) - val) * -0.01
 
-        val = self.getter(f"GainLayer[{self._i}]")
+        val = self.getter(f'GainLayer[{self._i}]')
         return round(val if val else fget(), 1)
 
     @gain.setter
     def gain(self, val: float):
-        self.setter(f"GainLayer[{self._i}]", val)
+        self.setter(f'GainLayer[{self._i}]', val)
 
 
 def _make_gainlayer_mixin(remote, index):
     """Creates a GainLayer mixin"""
     return type(
-        f"GainlayerMixin",
+        'GainlayerMixin',
         (),
         {
-            "gainlayer": tuple(
+            'gainlayer': tuple(
                 GainLayer(remote, index, i) for i in range(remote.kind.num_bus)
             )
         },
@@ -379,14 +381,14 @@ def _make_gainlayer_mixin(remote, index):
 def _make_channelout_mixin(kind):
     """Creates a channel out property mixin"""
     return type(
-        f"ChannelOutMixin{kind}",
+        f'ChannelOutMixin{kind}',
         (),
         {
             **{
-                f"A{i}": strip_output_prop(f"A{i}") for i in range(1, kind.phys_out + 1)
+                f'A{i}': strip_output_prop(f'A{i}') for i in range(1, kind.phys_out + 1)
             },
             **{
-                f"B{i}": strip_output_prop(f"B{i}") for i in range(1, kind.virt_out + 1)
+                f'B{i}': strip_output_prop(f'B{i}') for i in range(1, kind.virt_out + 1)
             },
         },
     )
@@ -410,12 +412,12 @@ def strip_factory(is_phys_strip, remote, i) -> Union[PhysicalStrip, VirtualStrip
     GAINLAYERMIXIN_cls = _make_gainlayer_mixin(remote, i)
 
     return type(
-        f"{STRIP_cls.__name__}{remote.kind}",
+        f'{STRIP_cls.__name__}{remote.kind}',
         (STRIP_cls, CHANNELOUTMIXIN_cls, GAINLAYERMIXIN_cls),
         {
-            "levels": StripLevel(remote, i),
-            **{param: channel_bool_prop(param) for param in ["mono", "solo", "mute"]},
-            "label": channel_label_prop(),
+            'levels': StripLevel(remote, i),
+            **{param: channel_bool_prop(param) for param in ['mono', 'solo', 'mute']},
+            'label': channel_label_prop(),
         },
     )(remote, i)
 

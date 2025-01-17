@@ -9,16 +9,16 @@ def channel_bool_prop(param):
     @partial(cache_bool, param=param)
     def fget(self):
         cmd = self._cmd(param)
-        self.logger.debug(f"getter: {cmd}")
+        self.logger.debug(f'getter: {cmd}')
         return (
             not int.from_bytes(
                 getattr(
                     self.public_packet,
-                    f"{'strip' if 'strip' in type(self).__name__.lower() else 'bus'}state",
+                    f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}state',
                 )[self.index],
-                "little",
+                'little',
             )
-            & getattr(self._modes, f"_{param.lower()}")
+            & getattr(self._modes, f'_{param.lower()}')
             == 0
         )
 
@@ -31,15 +31,15 @@ def channel_bool_prop(param):
 def channel_label_prop():
     """meta function for channel label parameters"""
 
-    @partial(cache_string, param="label")
+    @partial(cache_string, param='label')
     def fget(self) -> str:
         return getattr(
             self.public_packet,
-            f"{'strip' if 'strip' in type(self).__name__.lower() else 'bus'}labels",
+            f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}labels',
         )[self.index]
 
     def fset(self, val: str):
-        self.setter("label", str(val))
+        self.setter('label', str(val))
 
     return property(fget, fset)
 
@@ -50,10 +50,10 @@ def strip_output_prop(param):
     @partial(cache_bool, param=param)
     def fget(self):
         cmd = self._cmd(param)
-        self.logger.debug(f"getter: {cmd}")
+        self.logger.debug(f'getter: {cmd}')
         return (
-            not int.from_bytes(self.public_packet.stripstate[self.index], "little")
-            & getattr(self._modes, f"_bus{param.lower()}")
+            not int.from_bytes(self.public_packet.stripstate[self.index], 'little')
+            & getattr(self._modes, f'_bus{param.lower()}')
             == 0
         )
 
@@ -69,9 +69,9 @@ def bus_mode_prop(param):
     @partial(cache_bool, param=param)
     def fget(self):
         cmd = self._cmd(param)
-        self.logger.debug(f"getter: {cmd}")
+        self.logger.debug(f'getter: {cmd}')
         return [
-            (int.from_bytes(self.public_packet.busstate[self.index], "little") & val)
+            (int.from_bytes(self.public_packet.busstate[self.index], 'little') & val)
             >> 4
             for val in self._modes.modevals
         ] == self.modestates[param]

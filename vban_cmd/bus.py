@@ -7,8 +7,8 @@ from .iremote import IRemote
 from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
 
 BusModes = IntEnum(
-    "BusModes",
-    "normal amix bmix repeat composite tvmix upmix21 upmix41 upmix61 centeronly lfeonly rearonly",
+    'BusModes',
+    'normal amix bmix repeat composite tvmix upmix21 upmix41 upmix61 centeronly lfeonly rearonly',
     start=0,
 )
 
@@ -26,7 +26,7 @@ class Bus(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"bus[{self.index}]"
+        return f'bus[{self.index}]'
 
     @property
     def gain(self) -> float:
@@ -36,19 +36,19 @@ class Bus(IRemote):
                 return val * 0.01
             return (((1 << 16) - 1) - val) * -0.01
 
-        val = self.getter("gain")
+        val = self.getter('gain')
         return round(val if val else fget(), 1)
 
     @gain.setter
     def gain(self, val: float):
-        self.setter("gain", val)
+        self.setter('gain', val)
 
     def fadeto(self, target: float, time_: int):
-        self.setter("FadeTo", f"({target}, {time_})")
+        self.setter('FadeTo', f'({target}, {time_})')
         time.sleep(self._remote.DELAY)
 
     def fadeby(self, change: float, time_: int):
-        self.setter("FadeBy", f"({change}, {time_})")
+        self.setter('FadeBy', f'({change}, {time_})')
         time.sleep(self._remote.DELAY)
 
 
@@ -56,22 +56,22 @@ class BusEQ(IRemote):
     @classmethod
     def make(cls, remote, index):
         BUSEQ_cls = type(
-            f"BusEQ{remote.kind}",
+            f'BusEQ{remote.kind}',
             (cls,),
             {
-                **{param: channel_bool_prop(param) for param in ["on", "ab"]},
+                **{param: channel_bool_prop(param) for param in ['on', 'ab']},
             },
         )
         return BUSEQ_cls(remote, index)
 
     @property
     def identifier(self) -> str:
-        return f"bus[{self.index}].eq"
+        return f'bus[{self.index}].eq'
 
 
 class PhysicalBus(Bus):
     def __str__(self):
-        return f"{type(self).__name__}{self.index}"
+        return f'{type(self).__name__}{self.index}'
 
     @property
     def device(self) -> str:
@@ -84,7 +84,7 @@ class PhysicalBus(Bus):
 
 class VirtualBus(Bus):
     def __str__(self):
-        return f"{type(self).__name__}{self.index}"
+        return f'{type(self).__name__}{self.index}'
 
 
 class BusLevel(IRemote):
@@ -105,7 +105,7 @@ class BusLevel(IRemote):
         if not self._remote.stopped() and self._remote.event.ldirty:
             return tuple(
                 fget(i)
-                for i in self._remote.cache["bus_level"][self.range[0] : self.range[-1]]
+                for i in self._remote.cache['bus_level'][self.range[0] : self.range[-1]]
             )
         return tuple(
             fget(i)
@@ -116,7 +116,7 @@ class BusLevel(IRemote):
 
     @property
     def identifier(self) -> str:
-        return f"bus[{self.index}]"
+        return f'bus[{self.index}]'
 
     @property
     def all(self) -> tuple:
@@ -138,26 +138,26 @@ def _make_bus_mode_mixin():
     """Creates a mixin of Bus Modes."""
 
     modestates = {
-        "normal": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        "amix": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-        "repeat": [0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2],
-        "bmix": [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
-        "composite": [0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0],
-        "tvmix": [1, 0, 1, 4, 5, 4, 5, 0, 1, 0, 1],
-        "upmix21": [0, 2, 2, 4, 4, 6, 6, 0, 0, 2, 2],
-        "upmix41": [1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3],
-        "upmix61": [0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8],
-        "centeronly": [1, 0, 1, 0, 1, 0, 1, 8, 9, 8, 9],
-        "lfeonly": [0, 2, 2, 0, 0, 2, 2, 8, 8, 10, 10],
-        "rearonly": [1, 2, 3, 0, 1, 2, 3, 8, 9, 10, 11],
+        'normal': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        'amix': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+        'repeat': [0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2],
+        'bmix': [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
+        'composite': [0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0],
+        'tvmix': [1, 0, 1, 4, 5, 4, 5, 0, 1, 0, 1],
+        'upmix21': [0, 2, 2, 4, 4, 6, 6, 0, 0, 2, 2],
+        'upmix41': [1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3],
+        'upmix61': [0, 0, 0, 0, 0, 0, 0, 8, 8, 8, 8],
+        'centeronly': [1, 0, 1, 0, 1, 0, 1, 8, 9, 8, 9],
+        'lfeonly': [0, 2, 2, 0, 0, 2, 2, 8, 8, 10, 10],
+        'rearonly': [1, 2, 3, 0, 1, 2, 3, 8, 9, 10, 11],
     }
 
     def identifier(self) -> str:
-        return f"bus[{self.index}].mode"
+        return f'bus[{self.index}].mode'
 
     def get(self):
         states = [
-            (int.from_bytes(self.public_packet.busstate[self.index], "little") & val)
+            (int.from_bytes(self.public_packet.busstate[self.index], 'little') & val)
             >> 4
             for val in self._modes.modevals
         ]
@@ -166,13 +166,13 @@ def _make_bus_mode_mixin():
                 return k
 
     return type(
-        "BusModeMixin",
+        'BusModeMixin',
         (IRemote,),
         {
-            "identifier": property(identifier),
-            "modestates": modestates,
+            'identifier': property(identifier),
+            'modestates': modestates,
             **{mode.name: bus_mode_prop(mode.name) for mode in BusModes},
-            "get": get,
+            'get': get,
         },
     )
 
@@ -186,14 +186,14 @@ def bus_factory(phys_bus, remote, i) -> Union[PhysicalBus, VirtualBus]:
     BUS_cls = PhysicalBus if phys_bus else VirtualBus
     BUSMODEMIXIN_cls = _make_bus_mode_mixin()
     return type(
-        f"{BUS_cls.__name__}{remote.kind}",
+        f'{BUS_cls.__name__}{remote.kind}',
         (BUS_cls,),
         {
-            "eq": BusEQ.make(remote, i),
-            "levels": BusLevel(remote, i),
-            "mode": BUSMODEMIXIN_cls(remote, i),
-            **{param: channel_bool_prop(param) for param in ["mute", "mono"]},
-            "label": channel_label_prop(),
+            'eq': BusEQ.make(remote, i),
+            'levels': BusLevel(remote, i),
+            'mode': BUSMODEMIXIN_cls(remote, i),
+            **{param: channel_bool_prop(param) for param in ['mute', 'mono']},
+            'label': channel_label_prop(),
         },
     )(remote, i)
 

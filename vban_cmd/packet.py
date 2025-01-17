@@ -43,7 +43,7 @@ class VbanRtPacket:
 
     def _generate_levels(self, levelarray) -> tuple:
         return tuple(
-            int.from_bytes(levelarray[i : i + 2], "little")
+            int.from_bytes(levelarray[i : i + 2], 'little')
             for i in range(0, len(levelarray), 2)
         )
 
@@ -79,13 +79,13 @@ class VbanRtPacket:
             tuple(not val for val in comp(strip_cache, self.strip_levels)),
             tuple(not val for val in comp(bus_cache, self.bus_levels)),
         )
-        return any(any(l) for l in (self._strip_comp, self._bus_comp))
+        return any(any(li) for li in (self._strip_comp, self._bus_comp))
 
     @property
     def voicemeetertype(self) -> str:
         """returns voicemeeter type as a string"""
-        type_ = ("basic", "banana", "potato")
-        return type_[int.from_bytes(self._voicemeeterType, "little") - 1]
+        type_ = ('basic', 'banana', 'potato')
+        return type_[int.from_bytes(self._voicemeeterType, 'little') - 1]
 
     @property
     def voicemeeterversion(self) -> tuple:
@@ -93,7 +93,7 @@ class VbanRtPacket:
         return tuple(
             reversed(
                 tuple(
-                    int.from_bytes(self._voicemeeterVersion[i : i + 1], "little")
+                    int.from_bytes(self._voicemeeterVersion[i : i + 1], 'little')
                     for i in range(4)
                 )
             )
@@ -102,7 +102,7 @@ class VbanRtPacket:
     @property
     def samplerate(self) -> int:
         """returns samplerate as an int"""
-        return int.from_bytes(self._samplerate, "little")
+        return int.from_bytes(self._samplerate, 'little')
 
     @property
     def inputlevels(self) -> tuple:
@@ -132,56 +132,56 @@ class VbanRtPacket:
     @property
     def stripgainlayer1(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer1[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer1[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer2(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer2[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer2[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer3(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer3[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer3[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer4(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer4[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer4[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer5(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer5[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer5[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer6(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer6[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer6[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer7(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer7[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer7[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
     @property
     def stripgainlayer8(self) -> tuple:
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer8[i : i + 2], "little")
+            int.from_bytes(self._stripGaindB100Layer8[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
@@ -189,7 +189,7 @@ class VbanRtPacket:
     def busgain(self) -> tuple:
         """returns tuple of bus gains"""
         return tuple(
-            int.from_bytes(self._busGaindB100[i : i + 2], "little")
+            int.from_bytes(self._busGaindB100[i : i + 2], 'little')
             for i in range(0, 16, 2)
         )
 
@@ -197,7 +197,7 @@ class VbanRtPacket:
     def striplabels(self) -> tuple:
         """returns tuple of strip labels"""
         return tuple(
-            self._stripLabelUTF8c60[i : i + 60].decode().split("\x00")[0]
+            self._stripLabelUTF8c60[i : i + 60].decode().split('\x00')[0]
             for i in range(0, 480, 60)
         )
 
@@ -205,7 +205,7 @@ class VbanRtPacket:
     def buslabels(self) -> tuple:
         """returns tuple of bus labels"""
         return tuple(
-            self._busLabelUTF8c60[i : i + 60].decode().split("\x00")[0]
+            self._busLabelUTF8c60[i : i + 60].decode().split('\x00')[0]
             for i in range(0, 480, 60)
         )
 
@@ -214,15 +214,15 @@ class VbanRtPacket:
 class SubscribeHeader:
     """Represents the header an RT Packet Service subscription packet"""
 
-    name = "Register RTP"
+    name = 'Register RTP'
     timeout = 15
-    vban: bytes = "VBAN".encode()
-    format_sr: bytes = (VBAN_PROTOCOL_SERVICE).to_bytes(1, "little")
-    format_nbs: bytes = (0).to_bytes(1, "little")
-    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, "little")
-    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, "little")  # timeout
-    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
-    framecounter: bytes = (0).to_bytes(4, "little")
+    vban: bytes = 'VBAN'.encode()
+    format_sr: bytes = (VBAN_PROTOCOL_SERVICE).to_bytes(1, 'little')
+    format_nbs: bytes = (0).to_bytes(1, 'little')
+    format_nbc: bytes = (VBAN_SERVICE_RTPACKETREGISTER).to_bytes(1, 'little')
+    format_bit: bytes = (timeout & 0x000000FF).to_bytes(1, 'little')  # timeout
+    streamname: bytes = name.encode('ascii') + bytes(16 - len(name))
+    framecounter: bytes = (0).to_bytes(4, 'little')
 
     @property
     def header(self):
@@ -233,9 +233,9 @@ class SubscribeHeader:
         header += self.format_bit
         header += self.streamname
         header += self.framecounter
-        assert (
-            len(header) == HEADER_SIZE + 4
-        ), f"expected header size {HEADER_SIZE} bytes + 4 bytes framecounter ({HEADER_SIZE +4} bytes total)"
+        assert len(header) == HEADER_SIZE + 4, (
+            f'expected header size {HEADER_SIZE} bytes + 4 bytes framecounter ({HEADER_SIZE + 4} bytes total)'
+        )
         return header
 
 
@@ -243,13 +243,13 @@ class SubscribeHeader:
 class VbanRtPacketHeader:
     """Represents the header of a VBAN RT response packet"""
 
-    name = "Voicemeeter-RTP"
-    vban: bytes = "VBAN".encode()
-    format_sr: bytes = (VBAN_PROTOCOL_SERVICE).to_bytes(1, "little")
-    format_nbs: bytes = (0).to_bytes(1, "little")
-    format_nbc: bytes = (VBAN_SERVICE_RTPACKET).to_bytes(1, "little")
-    format_bit: bytes = (0).to_bytes(1, "little")
-    streamname: bytes = name.encode("ascii") + bytes(16 - len(name))
+    name = 'Voicemeeter-RTP'
+    vban: bytes = 'VBAN'.encode()
+    format_sr: bytes = (VBAN_PROTOCOL_SERVICE).to_bytes(1, 'little')
+    format_nbs: bytes = (0).to_bytes(1, 'little')
+    format_nbc: bytes = (VBAN_SERVICE_RTPACKET).to_bytes(1, 'little')
+    format_bit: bytes = (0).to_bytes(1, 'little')
+    streamname: bytes = name.encode('ascii') + bytes(16 - len(name))
 
     @property
     def header(self):
@@ -259,7 +259,7 @@ class VbanRtPacketHeader:
         header += self.format_nbc
         header += self.format_bit
         header += self.streamname
-        assert len(header) == HEADER_SIZE, f"expected header size {HEADER_SIZE} bytes"
+        assert len(header) == HEADER_SIZE, f'expected header size {HEADER_SIZE} bytes'
         return header
 
 
@@ -270,18 +270,18 @@ class RequestHeader:
     name: str
     bps_index: int
     channel: int
-    vban: bytes = "VBAN".encode()
-    nbs: bytes = (0).to_bytes(1, "little")
-    bit: bytes = (0x10).to_bytes(1, "little")
-    framecounter: bytes = (0).to_bytes(4, "little")
+    vban: bytes = 'VBAN'.encode()
+    nbs: bytes = (0).to_bytes(1, 'little')
+    bit: bytes = (0x10).to_bytes(1, 'little')
+    framecounter: bytes = (0).to_bytes(4, 'little')
 
     @property
     def sr(self):
-        return (VBAN_PROTOCOL_TXT + self.bps_index).to_bytes(1, "little")
+        return (VBAN_PROTOCOL_TXT + self.bps_index).to_bytes(1, 'little')
 
     @property
     def nbc(self):
-        return (self.channel).to_bytes(1, "little")
+        return (self.channel).to_bytes(1, 'little')
 
     @property
     def streamname(self):
@@ -296,7 +296,7 @@ class RequestHeader:
         header += self.bit
         header += self.streamname
         header += self.framecounter
-        assert (
-            len(header) == HEADER_SIZE + 4
-        ), f"expected header size {HEADER_SIZE} bytes + 4 bytes framecounter ({HEADER_SIZE +4} bytes total)"
+        assert len(header) == HEADER_SIZE + 4, (
+            f'expected header size {HEADER_SIZE} bytes + 4 bytes framecounter ({HEADER_SIZE + 4} bytes total)'
+        )
         return header
