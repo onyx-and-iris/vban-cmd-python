@@ -44,7 +44,7 @@ class FactoryBuilder:
     def _pinfo(self, name: str) -> None:
         """prints progress status for each step"""
         name = name.split('_')[1]
-        self.logger.info(self._info[int(getattr(self.BuilderProgress, name))])
+        self.logger.debug(self._info[int(getattr(self.BuilderProgress, name))])
 
     def make_strip(self):
         self._factory.strip = tuple(
