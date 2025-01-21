@@ -80,10 +80,10 @@ class ManyThings:
 
 
 def main():
-    kind_id = 'banana'
+    KIND_ID = 'banana'
 
     with vban_cmd.api(
-        kind_id, ip='gamepc.local', port=6980, streamname='Command1'
+        KIND_ID, ip='gamepc.local', port=6980, streamname='Command1'
     ) as vban:
         do = ManyThings(vban)
         do.things()
@@ -482,9 +482,9 @@ print(vban.event.get())
 
 You may pass the following optional keyword arguments:
 
--   `ip`: str, ip or hostname of remote machine
--   `streamname`: str, name of the stream to connect to.
+-   `ip`: str='localhost', ip or hostname of remote machine
 -   `port`: int=6980, vban udp port of remote machine.
+-   `streamname`: str='Command1', name of the stream to connect to.
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
 -   `timeout`: int=5, amount of time (seconds) to wait for an incoming RT data packet (parameter states).
