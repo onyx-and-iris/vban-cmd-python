@@ -81,7 +81,7 @@ class FactoryBase(VbanCmd):
             'ip': 'localhost',
             'port': 6980,
             'streamname': 'Command1',
-            'bps': 0,
+            'bps': 256000,
             'channel': 0,
             'ratelimit': 0.01,
             'timeout': 5,

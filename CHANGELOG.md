@@ -11,6 +11,15 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.5.2] - 2025-01-25
+
+### Changed
+
+-   ip kwargs defaults to 'localhost'
+-   bps kwarg defaults to 256000.
+-   factory builder steps now logged at `DEBUG` level.
+-   Internal socket changes, they don't affect interface usage.
+
 ## [2.4.9] - 2023-08-13
 
 ### Added
