@@ -30,10 +30,10 @@ build-backend = "poetry.core.masonry.api"
 gui.script = "scripts:ex_gui"
 obs.script = "scripts:ex_obs"
 observer.script = "scripts:ex_observer"
-basic.script = "scripts:test_basic"
-banana.script = "scripts:test_banana"
-potato.script = "scripts:test_potato"
-all.script = "scripts:test_all"
+test_basic.script = "scripts:test_basic"
+test_banana.script = "scripts:test_banana"
+test_potato.script = "scripts:test_potato"
+test_all.script = "scripts:test_all"
 
 [tool.tox]
 legacy_tox_ini = """
@@ -41,6 +41,7 @@ legacy_tox_ini = """
 envlist = py310,py311,py312
 
 [testenv]
+passenv = *
 setenv = VIRTUALENV_DISCOVERY=pyenv
 allowlist_externals = poetry
 commands =

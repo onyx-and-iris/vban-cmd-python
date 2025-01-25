@@ -7,16 +7,13 @@ import vban_cmd
 from vban_cmd.kinds import KindId
 from vban_cmd.kinds import request_kind_map as kindmap
 
-# get KIND_ID from env var, otherwise set to random
-KIND_ID = os.environ.get(
-    'KIND', random.choice(tuple(kind_id.name.lower() for kind_id in KindId))
-)
+# get KIND from environment, if not set default to potato
+KIND_ID = os.environ.get('KIND', 'potato')
 
 opts = {
     'ip': 'localhost',
     'streamname': 'onyx',
     'port': 6980,
-    'bps': 0,
 }
 
 vban = vban_cmd.api(KIND_ID, **opts)
