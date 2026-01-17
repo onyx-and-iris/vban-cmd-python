@@ -2,10 +2,22 @@ import logging
 import socket
 import threading
 import time
-from typing import Optional
 
+from .enums import NBS
 from .error import VBANCMDConnectionError
-from .packet import HEADER_SIZE, SubscribeHeader, VbanRtPacket, VbanRtPacketHeader
+from .packet import (
+    HEADER_SIZE,
+    VBAN_PROTOCOL_SERVICE,
+    VBAN_SERVICE_RTPACKET,
+    VMPARAMSTRIP_SIZE,
+    SubscribeHeader,
+    VbanRtPacket,
+    VbanRtPacketHeader,
+    VbanRtPacketNBS0,
+    VbanRtPacketNBS1,
+    VbanVMParamStrip,
+)
+from .util import bump_framecounter
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +30,21 @@ class Subscriber(threading.Thread):
         self._remote = remote
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
-        self.packet = SubscribeHeader()
+        self._framecounter = 0
 
     def run(self):
         while not self.stopped():
             try:
-                self._remote.sock.sendto(
-                    self.packet.header,
-                    (socket.gethostbyname(self._remote.ip), self._remote.port),
-                )
-                self.packet.framecounter = (
-                    int.from_bytes(self.packet.framecounter, 'little') + 1
-                ).to_bytes(4, 'little')
+                for nbs in NBS:
+                    sub_packet = SubscribeHeader().to_bytes(nbs, self._framecounter)
+                    self._remote.sock.sendto(
+                        sub_packet, (self._remote.ip, self._remote.port)
+                    )
+                    self._framecounter = bump_framecounter(self._framecounter)
+                    self.logger.debug(
+                        f'sent subscription for NBS {nbs.name} to {self._remote.ip}:{self._remote.port}'
+                    )
+
                 self.wait_until_stopped(10)
             except socket.gaierror as e:
                 self.logger.exception(f'{type(e).__name__}: {e}')
@@ -58,33 +73,47 @@ class Producer(threading.Thread):
         self.queue = queue
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
-        self.packet_expected = VbanRtPacketHeader()
         self._remote.sock.settimeout(self._remote.timeout)
-        self._remote._public_packet = self._get_rt()
+        self._remote._public_packets = [None] * (max(NBS) + 1)
+        _pp = self._get_rt()
+        self._remote._public_packets[_pp.nbs] = _pp
         (
             self._remote.cache['strip_level'],
             self._remote.cache['bus_level'],
-        ) = self._remote._get_levels(self._remote.public_packet)
+        ) = self._remote._get_levels(self._remote.public_packets[NBS.zero])
 
     def _get_rt(self) -> VbanRtPacket:
         """Attempt to fetch data packet until a valid one found"""
 
-        def fget():
-            data = None
-            while not data:
-                data = self._fetch_rt_packet()
-            return data
+        while True:
+            if resp := self._fetch_rt_packet():
+                return resp
 
-        return fget()
-
-    def _fetch_rt_packet(self) -> Optional[VbanRtPacket]:
+    def _fetch_rt_packet(self) -> VbanRtPacket | None:
         try:
             data, _ = self._remote.sock.recvfrom(2048)
-            # do we have packet data?
-            if len(data) > HEADER_SIZE:
-                # is the packet of type VBAN RT response?
-                if self.packet_expected.header == data[:HEADER_SIZE]:
-                    return VbanRtPacket(
+            if len(data) < HEADER_SIZE:
+                return
+
+            response_header = VbanRtPacketHeader.from_bytes(data[:HEADER_SIZE])
+            if (
+                response_header.format_sr != VBAN_PROTOCOL_SERVICE
+                or response_header.format_nbc != VBAN_SERVICE_RTPACKET
+            ):
+                return
+
+            match response_header.format_nbs:
+                case NBS.zero:
+                    """
+                    self.logger.debug(
+                        'Received NB0 RTP Packet from %s, Size: %d bytes',
+                        addr,
+                        len(data),
+                    )
+                    """
+
+                    return VbanRtPacketNBS0(
+                        nbs=NBS.zero,
                         _kind=self._remote.kind,
                         _voicemeeterType=data[28:29],
                         _reserved=data[29:30],
@@ -109,6 +138,36 @@ class Producer(threading.Thread):
                         _stripLabelUTF8c60=data[452:932],
                         _busLabelUTF8c60=data[932:1412],
                     )
+
+                case NBS.one:
+                    """
+                    self.logger.debug(
+                        'Received NB1 RTP Packet from %s, Size: %d bytes',
+                        addr,
+                        len(data),
+                    )
+                    """
+
+                    return VbanRtPacketNBS1(
+                        nbs=NBS.one,
+                        _kind=self._remote.kind,
+                        _voicemeeterType=data[28:29],
+                        _reserved=data[29:30],
+                        _buffersize=data[30:32],
+                        _voicemeeterVersion=data[32:36],
+                        _optionBits=data[36:40],
+                        _samplerate=data[40:44],
+                        strips=tuple(
+                            VbanVMParamStrip.from_bytes(
+                                data[
+                                    44 + i * VMPARAMSTRIP_SIZE : 44
+                                    + (i + 1) * VMPARAMSTRIP_SIZE
+                                ]
+                            )
+                            for i in range(self._remote.kind.num_strip)
+                        ),
+                    )
+            return None
         except TimeoutError as e:
             self.logger.exception(f'{type(e).__name__}: {e}')
             raise VBANCMDConnectionError(
@@ -120,14 +179,20 @@ class Producer(threading.Thread):
 
     def run(self):
         while not self.stopped():
+            pdirty = ldirty = False
             _pp = self._get_rt()
-            pdirty = _pp.pdirty(self._remote.public_packet)
-            ldirty = _pp.ldirty(
-                self._remote.cache['strip_level'], self._remote.cache['bus_level']
-            )
+            match _pp.nbs:
+                case NBS.zero:
+                    ldirty = _pp.ldirty(
+                        self._remote.cache['strip_level'],
+                        self._remote.cache['bus_level'],
+                    )
+                    pdirty = _pp.pdirty(self._remote.public_packets[NBS.zero])
+                case NBS.one:
+                    pdirty = True
 
             if pdirty or ldirty:
-                self._remote._public_packet = _pp
+                self._remote._public_packets[_pp.nbs] = _pp
             self._remote._pdirty = pdirty
             self._remote._ldirty = ldirty
 
@@ -166,15 +231,15 @@ class Updater(threading.Thread):
                 self._remote.subject.notify(event)
             elif event == 'ldirty' and self._remote.ldirty:
                 self._remote._strip_comp, self._remote._bus_comp = (
-                    self._remote._public_packet._strip_comp,
-                    self._remote._public_packet._bus_comp,
+                    self._remote._public_packets[NBS.zero]._strip_comp,
+                    self._remote._public_packets[NBS.zero]._bus_comp,
                 )
                 (
                     self._remote.cache['strip_level'],
                     self._remote.cache['bus_level'],
                 ) = (
-                    self._remote._public_packet.inputlevels,
-                    self._remote._public_packet.outputlevels,
+                    self._remote._public_packets[NBS.zero].inputlevels,
+                    self._remote._public_packets[NBS.zero].outputlevels,
                 )
                 self._remote.subject.notify(event)
         self.logger.debug(f'terminating {self.name} thread')
