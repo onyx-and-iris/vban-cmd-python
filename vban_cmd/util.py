@@ -29,6 +29,20 @@ def cache_string(func, param):
     return wrapper
 
 
+def cache_float(func, param):
+    """Check cache for a float prop"""
+
+    def wrapper(*args, **kwargs):
+        self, *rem = args
+        if self._cmd(param) in self._remote.cache:
+            return round(self._remote.cache.pop(self._cmd(param)), 2)
+        if self._remote.sync:
+            self._remote.clear_dirty()
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def depth(d):
     if isinstance(d, dict):
         return 1 + (max(map(depth, d.values())) if d else 0)

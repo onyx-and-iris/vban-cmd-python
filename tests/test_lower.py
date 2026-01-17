@@ -11,7 +11,7 @@ class TestPublicPacketLower:
 
     def test_it_gets_an_rt0_data_packet(self):
         assert vban.public_packets[0].voicemeetertype in (
-            kind.name for kind in kinds.kinds_all
+            kind.name for kind in kinds.all
         )
 
 

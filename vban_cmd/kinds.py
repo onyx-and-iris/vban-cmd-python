@@ -111,4 +111,4 @@ def request_kind_map(kind_id):
     return KIND_obj
 
 
-kinds_all = list(request_kind_map(kind_id.name.lower()) for kind_id in KindId)
+all = list(request_kind_map(kind_id.name.lower()) for kind_id in KindId)

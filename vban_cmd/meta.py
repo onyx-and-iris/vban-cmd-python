@@ -1,7 +1,7 @@
 from functools import partial
 
 from .enums import NBS
-from .util import cache_bool, cache_string
+from .util import cache_bool, cache_float, cache_string
 
 
 def channel_bool_prop(param):
@@ -97,3 +97,46 @@ def action_fn(param, val=1):
         self.setter(param, val)
 
     return fdo
+
+
+def xy_prop(param):
+    """meta function for XY pad parameters"""
+
+    @partial(cache_float, param=param)
+    def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f'getter: {cmd}')
+        _type, axis = param.split('_')
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        x, y = getattr(
+            self.public_packets[NBS.one].strips[self.index], f'position_{_type.lower()}'
+        )
+        return x if axis == 'x' else y
+
+    def fset(self, val):
+        self.setter(param, val)
+
+    return property(fget, fset)
+
+
+def send_prop(param):
+    """meta function for send parameters"""
+
+    @partial(cache_float, param=param)
+    def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f'getter: {cmd}')
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        val = getattr(self.public_packets[NBS.one].strips[self.index], f'send_{param}')
+        match param:
+            case 'reverb' | 'fx1':
+                return val[0]
+            case 'delay' | 'fx2':
+                return val[1]
+
+    def fset(self, val):
+        self.setter(param, val)
+
+    return property(fget, fset)

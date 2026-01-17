@@ -366,6 +366,45 @@ class VbanVMParamStrip:
         return int.from_bytes(self._mode, 'little')
 
     @property
+    def position_pan(self) -> tuple[int, int]:
+        return (
+            round(int.from_bytes(self._pos3D_x, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._pos3D_y, 'little', signed=True) * 0.01, 2),
+        )
+
+    @property
+    def position_color(self) -> tuple[int, int]:
+        return (
+            round(int.from_bytes(self._posColor_x, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._posColor_y, 'little', signed=True) * 0.01, 2),
+        )
+
+    @property
+    def position_fx(self) -> tuple[int, int]:
+        return (
+            round(int.from_bytes(self._posMod_x, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._posMod_y, 'little', signed=True) * 0.01, 2),
+        )
+
+    @property
+    def send_reverb(self) -> tuple[float, float]:
+        return (
+            round(int.from_bytes(self._send_reverb, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._send_delay, 'little', signed=True) * 0.01, 2),
+        )
+
+    send_delay = send_reverb
+
+    @property
+    def send_fx1(self) -> tuple[float, float]:
+        return (
+            round(int.from_bytes(self._send_fx1, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._send_fx2, 'little', signed=True) * 0.01, 2),
+        )
+
+    send_fx2 = send_fx1
+
+    @property
     def eqgains(self) -> tuple[float, float, float]:
         return tuple(
             round(
