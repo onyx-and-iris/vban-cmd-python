@@ -7,11 +7,12 @@ from pathlib import Path
 from queue import Queue
 from typing import Iterable, Union
 
+from .enums import NBS
 from .error import VBANCMDError
 from .event import Event
 from .packet import RequestHeader
 from .subject import Subject
-from .util import deep_merge, script
+from .util import bump_framecounter, deep_merge, script
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -37,12 +38,9 @@ class VbanCmd(metaclass=ABCMeta):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
 
-        self.packet_request = RequestHeader(
-            name=self.streamname,
-            bps_index=self.BPS_OPTS.index(self.bps),
-            channel=self.channel,
-        )
+        self._framecounter = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.subject = self.observer = Subject()
         self.cache = {}
         self._pdirty = False
@@ -124,37 +122,49 @@ class VbanCmd(metaclass=ABCMeta):
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
+        req_packet = RequestHeader.to_bytes(
+            name=self.streamname,
+            bps_index=self.BPS_OPTS.index(self.bps),
+            channel=self.channel,
+            framecounter=self._framecounter,
+        )
         self.sock.sendto(
-            self.packet_request.header + f'{cmd}={val};'.encode(),
+            req_packet + f'{cmd}={val};'.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
-        self.packet_request.framecounter = (
-            int.from_bytes(self.packet_request.framecounter, 'little') + 1
-        ).to_bytes(4, 'little')
+        self._framecounter = bump_framecounter(self._framecounter)
+
         self.cache[cmd] = val
 
     @script
     def sendtext(self, script):
         """Sends a multiple parameter string over a network."""
+        req_packet = RequestHeader.to_bytes(
+            name=self.streamname,
+            bps_index=self.BPS_OPTS.index(self.bps),
+            channel=self.channel,
+            framecounter=self._framecounter,
+        )
         self.sock.sendto(
-            self.packet_request.header + script.encode(),
+            req_packet + script.encode(),
             (socket.gethostbyname(self.ip), self.port),
         )
-        self.packet_request.framecounter = (
-            int.from_bytes(self.packet_request.framecounter, 'little') + 1
-        ).to_bytes(4, 'little')
+        self._framecounter = bump_framecounter(self._framecounter)
+
         self.logger.debug(f'sendtext: {script}')
         time.sleep(self.DELAY)
 
     @property
     def type(self) -> str:
         """Returns the type of Voicemeeter installation."""
-        return self.public_packet.voicemeetertype
+        return self.public_packets[NBS.zero].voicemeetertype
 
     @property
     def version(self) -> str:
         """Returns Voicemeeter's version as a string"""
-        return '{0}.{1}.{2}.{3}'.format(*self.public_packet.voicemeeterversion)
+        return '{0}.{1}.{2}.{3}'.format(
+            *self.public_packets[NBS.zero].voicemeeterversion
+        )
 
     @property
     def pdirty(self):
@@ -167,8 +177,8 @@ class VbanCmd(metaclass=ABCMeta):
         return self._ldirty
 
     @property
-    def public_packet(self):
-        return self._public_packet
+    def public_packets(self):
+        return self._public_packets
 
     def clear_dirty(self) -> None:
         while self.pdirty:

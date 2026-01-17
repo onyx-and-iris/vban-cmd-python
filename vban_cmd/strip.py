@@ -2,6 +2,7 @@ import time
 from abc import abstractmethod
 from typing import Union
 
+from .enums import NBS, EQGains
 from .iremote import IRemote
 from .kinds import kinds_all
 from .meta import channel_bool_prop, channel_label_prop, strip_output_prop
@@ -34,7 +35,7 @@ class Strip(IRemote):
     def gain(self) -> float:
         val = self.getter('gain')
         if val is None:
-            val = self.gainlayer[0].gain
+            val = max(layer.gain for layer in self.gainlayer)
         return round(val, 1)
 
     @gain.setter
@@ -262,11 +263,47 @@ class VirtualStrip(Strip):
 
     @property
     def k(self) -> int:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0
+        return self.public_packets[NBS.one].strips[self.index].karaoke
 
     @k.setter
     def k(self, val: int):
         self.setter('karaoke', val)
+
+    @property
+    def bass(self) -> float:
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.bass]
+
+    @bass.setter
+    def bass(self, val: float):
+        self.setter('EQGain1', val)
+
+    @property
+    def mid(self) -> float:
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.mid]
+
+    @mid.setter
+    def mid(self, val: float):
+        self.setter('EQGain2', val)
+
+    med = mid
+
+    @property
+    def treble(self) -> float:
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.treble]
+
+    @treble.setter
+    def treble(self, val: float):
+        self.setter('EQGain3', val)
+
+    high = treble
 
     def appgain(self, name: str, gain: float):
         self.setter('AppGain', f'("{name}", {gain})')
@@ -305,7 +342,7 @@ class StripLevel(IRemote):
             )
         return tuple(
             fget(i)
-            for i in self._remote._get_levels(self.public_packet)[0][
+            for i in self._remote._get_levels(self.public_packets[NBS.zero])[0][
                 self.range[0] : self.range[-1]
             ]
         )
@@ -350,9 +387,9 @@ class GainLayer(IRemote):
     @property
     def gain(self) -> float:
         def fget():
-            val = getattr(self.public_packet, f'stripgainlayer{self._i + 1}')[
-                self.index
-            ]
+            val = getattr(
+                self.public_packets[NBS.zero], f'stripgainlayer{self._i + 1}'
+            )[self.index]
             if 0 <= val <= 1200:
                 return val * 0.01
             return (((1 << 16) - 1) - val) * -0.01

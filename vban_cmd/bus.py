@@ -1,16 +1,10 @@
 import time
 from abc import abstractmethod
-from enum import IntEnum
 from typing import Union
 
+from .enums import NBS, BusModes
 from .iremote import IRemote
 from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
-
-BusModes = IntEnum(
-    'BusModes',
-    'normal amix bmix repeat composite tvmix upmix21 upmix41 upmix61 centeronly lfeonly rearonly',
-    start=0,
-)
 
 
 class Bus(IRemote):
@@ -31,7 +25,7 @@ class Bus(IRemote):
     @property
     def gain(self) -> float:
         def fget():
-            val = self.public_packet.busgain[self.index]
+            val = self.public_packets[NBS.zero].busgain[self.index]
             if 0 <= val <= 1200:
                 return val * 0.01
             return (((1 << 16) - 1) - val) * -0.01
@@ -109,7 +103,7 @@ class BusLevel(IRemote):
             )
         return tuple(
             fget(i)
-            for i in self._remote._get_levels(self.public_packet)[1][
+            for i in self._remote._get_levels(self.public_packets[NBS.zero])[1][
                 self.range[0] : self.range[-1]
             ]
         )
@@ -157,7 +151,12 @@ def _make_bus_mode_mixin():
 
     def get(self):
         states = [
-            (int.from_bytes(self.public_packet.busstate[self.index], 'little') & val)
+            (
+                int.from_bytes(
+                    self.public_packets[NBS.zero].busstate[self.index], 'little'
+                )
+                & val
+            )
             >> 4
             for val in self._modes.modevals
         ]

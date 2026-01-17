@@ -82,3 +82,11 @@ def deep_merge(dict1, dict2):
             yield k, dict1[k]
         else:
             yield k, dict2[k]
+
+
+def bump_framecounter(framecounter: int) -> int:
+    """Increment framecounter with rollover at 0xFFFFFFFF."""
+    if framecounter > 0xFFFFFFFF:
+        return 0
+    else:
+        return framecounter + 1

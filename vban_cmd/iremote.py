@@ -116,9 +116,9 @@ class IRemote(metaclass=ABCMeta):
         pass
 
     @property
-    def public_packet(self):
+    def public_packets(self):
         """Returns an RT data packet."""
-        return self._remote.public_packet
+        return self._remote.public_packets
 
     def apply(self, data):
         """Sets all parameters of a dict for the channel."""
