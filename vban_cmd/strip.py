@@ -407,9 +407,6 @@ class GainLayer(IRemote):
 
     @property
     def gain(self) -> float:
-        def fget():
-            return self.public_packets[NBS.zero].gainlayers[self._i][self.index]
-
         val = self.getter(f'GainLayer[{self._i}]')
         if val:
             return round(val, 2)
