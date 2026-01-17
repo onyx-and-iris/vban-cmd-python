@@ -176,6 +176,7 @@ class TestSetAndGetFloatHigher:
 
     """ strip tests, virtual """
 
+    @pytest.mark.skip(reason='Requires RT Packet NBS 1')
     @pytest.mark.parametrize(
         'index, param, value',
         [

@@ -11,9 +11,9 @@ from vban_cmd.kinds import request_kind_map as kindmap
 KIND_ID = os.environ.get('KIND', 'potato')
 
 opts = {
-    'ip': 'localhost',
-    'streamname': 'onyx',
-    'port': 6980,
+    'ip': os.getenv('VBANCMD_IP', 'localhost'),
+    'streamname': os.getenv('VBANCMD_STREAMNAME', 'Command1'),
+    'port': int(os.getenv('VBANCMD_PORT', 6980)),
 }
 
 vban = vban_cmd.api(KIND_ID, **opts)

@@ -9,8 +9,8 @@ class TestPublicPacketLower:
 
     """Tests for a valid rt data packet"""
 
-    def test_it_gets_an_rt_data_packet(self):
-        assert vban.public_packet.voicemeetertype in (
+    def test_it_gets_an_rt0_data_packet(self):
+        assert vban.public_packets[0].voicemeetertype in (
             kind.name for kind in kinds.kinds_all
         )
 
