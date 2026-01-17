@@ -169,66 +169,33 @@ class VbanRtPacketNBS0(VbanRtPacket):
     """
 
     @property
-    def stripgainlayer1(self) -> tuple:
+    def gainlayers(self) -> tuple:
+        """returns tuple of all strip gain layers as tuples"""
         return tuple(
-            int.from_bytes(self._stripGaindB100Layer1[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer2(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer2[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer3(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer3[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer4(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer4[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer5(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer5[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer6(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer6[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer7(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer7[i : i + 2], 'little')
-            for i in range(0, 16, 2)
-        )
-
-    @property
-    def stripgainlayer8(self) -> tuple:
-        return tuple(
-            int.from_bytes(self._stripGaindB100Layer8[i : i + 2], 'little')
-            for i in range(0, 16, 2)
+            tuple(
+                round(
+                    int.from_bytes(
+                        getattr(self, f'_stripGaindB100Layer{layer}')[i : i + 2],
+                        'little',
+                        signed=True,
+                    )
+                    * 0.01,
+                    2,
+                )
+                for i in range(0, 16, 2)
+            )
+            for layer in range(1, 9)
         )
 
     @property
     def busgain(self) -> tuple:
         """returns tuple of bus gains"""
         return tuple(
-            int.from_bytes(self._busGaindB100[i : i + 2], 'little')
+            round(
+                int.from_bytes(self._busGaindB100[i : i + 2], 'little', signed=True)
+                * 0.01,
+                2,
+            )
             for i in range(0, 16, 2)
         )
 

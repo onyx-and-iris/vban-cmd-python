@@ -408,15 +408,13 @@ class GainLayer(IRemote):
     @property
     def gain(self) -> float:
         def fget():
-            val = getattr(
-                self.public_packets[NBS.zero], f'stripgainlayer{self._i + 1}'
-            )[self.index]
-            if 0 <= val <= 1200:
-                return val * 0.01
-            return (((1 << 16) - 1) - val) * -0.01
+            return self.public_packets[NBS.zero].gainlayers[self._i][self.index]
 
         val = self.getter(f'GainLayer[{self._i}]')
-        return round(val if val else fget(), 1)
+        if val:
+            return round(val, 2)
+        else:
+            return self.public_packets[NBS.zero].gainlayers[self._i][self.index]
 
     @gain.setter
     def gain(self, val: float):
