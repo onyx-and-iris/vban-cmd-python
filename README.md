@@ -171,9 +171,7 @@ example:
 print(vban.strip[4].comp.knob)
 ```
 
-Strip Comp properties are defined as write only.
-
-`knob` defined for all versions, all other parameters potato only.
+Strip Comp `knob` is defined for all versions, all other parameters potato only.
 
 ##### Strip.Gate
 
@@ -193,9 +191,7 @@ example:
 vban.strip[2].gate.attack = 300.8
 ```
 
-Strip Gate properties are defined as write only, potato version only.
-
-`knob` defined for all versions, all other parameters potato only.
+Strip Gate `knob` is defined for all versions, all other parameters potato only.
 
 ##### Strip.Denoiser
 
@@ -212,7 +208,32 @@ The following properties are available.
 -   `on`: boolean
 -   `ab`: boolean
 
-Strip EQ properties are defined as write only, potato version only.
+example:
+
+```python
+vban.strip[0].eq.ab = True
+```
+
+##### Strip.EQ.Channel.Cell
+
+The following properties are available.
+
+-   `on`: boolean
+-   `type`: int, from 0 up to 6
+-   `f`: float, from 20.0 up to 20_000.0
+-   `gain`: float, from -36.0 up to 18.0
+-   `q`: float, from 0.3 up to 100
+
+example:
+
+```python
+vban.strip[0].eq.channel[0].cell[2].on = True
+vban.strip[1].eq.channel[0].cell[2].f = 5000
+```
+
+Strip EQ parameters are defined for PhysicalStrips, potato version only.
+
+Only channel[0] properties are readable over VBAN.
 
 ##### Gainlayers
 
