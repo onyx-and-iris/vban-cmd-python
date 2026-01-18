@@ -115,7 +115,7 @@ class StripComp(IRemote):
     def ratio(self) -> float:
         if self.public_packets[NBS.one] is None:
             return 0.0
-        return self.public_packets[NBS.one].strips[self.index].compressor.comprate
+        return self.public_packets[NBS.one].strips[self.index].compressor.ratio
 
     @ratio.setter
     def ratio(self, val: float):
@@ -199,7 +199,9 @@ class StripGate(IRemote):
 
     @property
     def threshold(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].gate.threshold_in
 
     @threshold.setter
     def threshold(self, val: float):
@@ -207,7 +209,9 @@ class StripGate(IRemote):
 
     @property
     def damping(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].gate.damping_max
 
     @damping.setter
     def damping(self, val: float):
@@ -215,7 +219,9 @@ class StripGate(IRemote):
 
     @property
     def bpsidechain(self) -> int:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0
+        return self.public_packets[NBS.one].strips[self.index].gate.bp_sidechain
 
     @bpsidechain.setter
     def bpsidechain(self, val: int):
@@ -223,7 +229,9 @@ class StripGate(IRemote):
 
     @property
     def attack(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].gate.attack_ms
 
     @attack.setter
     def attack(self, val: float):
@@ -231,7 +239,9 @@ class StripGate(IRemote):
 
     @property
     def hold(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].gate.hold_ms
 
     @hold.setter
     def hold(self, val: float):
@@ -239,7 +249,9 @@ class StripGate(IRemote):
 
     @property
     def release(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].gate.release_ms
 
     @release.setter
     def release(self, val: float):

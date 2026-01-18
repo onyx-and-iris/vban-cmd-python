@@ -260,7 +260,7 @@ class CompressorSettings(NamedTuple):
     attack_ms: float
     release_ms: float
     n_knee: float
-    comprate: float
+    ratio: float
     threshold: float
     c_enabled: bool
     makeup: bool
@@ -268,9 +268,9 @@ class CompressorSettings(NamedTuple):
 
 
 class GateSettings(NamedTuple):
-    dBThreshold_in: float
-    dBDamping_max: float
-    BP_Sidechain: bool
+    threshold_in: float
+    damping_max: float
+    bp_sidechain: bool
     attack_ms: float
     hold_ms: float
     release_ms: float
@@ -473,7 +473,7 @@ class VbanVMParamStrip:
             attack_ms=round(int.from_bytes(self._COMP_attack_ms, 'little') * 0.1, 2),
             release_ms=round(int.from_bytes(self._COMP_release_ms, 'little') * 0.1, 2),
             n_knee=round(int.from_bytes(self._COMP_n_knee, 'little') * 0.01, 2),
-            comprate=round(int.from_bytes(self._COMP_comprate, 'little') * 0.01, 2),
+            ratio=round(int.from_bytes(self._COMP_comprate, 'little') * 0.01, 2),
             threshold=round(
                 int.from_bytes(self._COMP_threshold, 'little', signed=True) * 0.01, 2
             ),
@@ -487,15 +487,15 @@ class VbanVMParamStrip:
     @property
     def gate(self) -> GateSettings:
         return GateSettings(
-            dBThreshold_in=round(
+            threshold_in=round(
                 int.from_bytes(self._GATE_dBThreshold_in, 'little', signed=True) * 0.01,
                 2,
             ),
-            dBDamping_max=round(
+            damping_max=round(
                 int.from_bytes(self._GATE_dBDamping_max, 'little', signed=True) * 0.01,
                 2,
             ),
-            BP_Sidechain=round(
+            bp_sidechain=round(
                 int.from_bytes(self._GATE_BP_Sidechain, 'little') * 0.1, 2
             ),
             attack_ms=round(int.from_bytes(self._GATE_attack_ms, 'little') * 0.1, 2),
