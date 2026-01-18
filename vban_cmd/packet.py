@@ -1,3 +1,4 @@
+import struct
 from dataclasses import dataclass
 from typing import NamedTuple
 
@@ -240,11 +241,11 @@ class EqGains(NamedTuple):
 
 
 class ParametricEQSettings(NamedTuple):
-    eq_on: bool
-    eq_type: int
-    eq_gain: float
-    eq_freq: float
-    eq_q: float
+    on: bool
+    type: int
+    gain: float
+    freq: float
+    q: float
 
 
 class Sends(NamedTuple):
@@ -435,6 +436,19 @@ class VbanVMParamStrip:
                 )
                 for i in range(1, 4)
             ]
+        )
+
+    @property
+    def parametric_eq_settings(self) -> tuple[ParametricEQSettings, ...]:
+        return tuple(
+            ParametricEQSettings(
+                on=bool(int.from_bytes(self._PEQ_eqOn[i : i + 1], 'little')),
+                type=int.from_bytes(self._PEQ_eqtype[i : i + 1], 'little'),
+                freq=struct.unpack('<f', self._PEQ_eqfreq[i * 4 : (i + 1) * 4])[0],
+                gain=struct.unpack('<f', self._PEQ_eqgain[i * 4 : (i + 1) * 4])[0],
+                q=struct.unpack('<f', self._PEQ_eqq[i * 4 : (i + 1) * 4])[0],
+            )
+            for i in range(6)
         )
 
     @property

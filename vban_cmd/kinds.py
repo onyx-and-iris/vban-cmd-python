@@ -15,12 +15,15 @@ class SingletonType(type):
         return cls._instances[cls]
 
 
-@dataclass
+@dataclass(frozen=True)
 class KindMapClass(metaclass=SingletonType):
     name: str
     ins: tuple
     outs: tuple
     vban: tuple
+    strip_channels: int
+    bus_channels: int
+    cells: int
 
     @property
     def phys_in(self):
@@ -58,28 +61,37 @@ class KindMapClass(metaclass=SingletonType):
         return self.name.capitalize()
 
 
-@dataclass
+@dataclass(frozen=True)
 class BasicMap(KindMapClass):
     name: str
     ins: tuple = (2, 1)
     outs: tuple = (1, 1)
     vban: tuple = (4, 4, 1, 1)
+    strip_channels: int = 0
+    bus_channels: int = 0
+    cells: int = 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class BananaMap(KindMapClass):
     name: str
     ins: tuple = (3, 2)
     outs: tuple = (3, 2)
     vban: tuple = (8, 8, 1, 1)
+    strip_channels: int = 0
+    bus_channels: int = 8
+    cells: int = 6
 
 
-@dataclass
+@dataclass(frozen=True)
 class PotatoMap(KindMapClass):
     name: str
     ins: tuple = (5, 3)
     outs: tuple = (5, 3)
     vban: tuple = (8, 8, 1, 1)
+    strip_channels: int = 2
+    bus_channels: int = 8
+    cells: int = 6
 
 
 def kind_factory(kind_id):
