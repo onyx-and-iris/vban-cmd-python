@@ -293,60 +293,60 @@ class PitchSettings(NamedTuple):
 class VbanVMParamStrip:
     """Represents the VBAN_VMPARAMSTRIP_PACKET structure"""
 
-    _mode: bytes  # long = 4 bytes data[0:4]
-    _dblevel: bytes  # float = 4 bytes data[4:8]
-    _audibility: bytes  # short = 2 bytes data[8:10]
-    _pos3D_x: bytes  # short = 2 bytes data[10:12]
-    _pos3D_y: bytes  # short = 2 bytes data[12:14]
-    _posColor_x: bytes  # short = 2 bytes data[14:16]
-    _posColor_y: bytes  # short = 2 bytes data[16:18]
-    _EQgain1: bytes  # short = 2 bytes data[18:20]
-    _EQgain2: bytes  # short = 2 bytes data[20:22]
-    _EQgain3: bytes  # short = 2 bytes data[22:24]
+    _mode: bytes
+    _dblevel: bytes
+    _audibility: bytes
+    _pos3D_x: bytes
+    _pos3D_y: bytes
+    _posColor_x: bytes
+    _posColor_y: bytes
+    _EQgain1: bytes
+    _EQgain2: bytes
+    _EQgain3: bytes
 
     # First channel parametric EQ
-    _PEQ_eqOn: bytes  # 6 * char = 6 bytes data[24:30]
-    _PEQ_eqtype: bytes  # 6 * char = 6 bytes data[30:36]
-    _PEQ_eqgain: bytes  # 6 * float = 24 bytes data[36:60]
-    _PEQ_eqfreq: bytes  # 6 * float = 24 bytes data[60:84]
-    _PEQ_eqq: bytes  # 6 * float = 24 bytes data[84:108]
+    _PEQ_eqOn: bytes
+    _PEQ_eqtype: bytes
+    _PEQ_eqgain: bytes
+    _PEQ_eqfreq: bytes
+    _PEQ_eqq: bytes
 
-    _audibility_c: bytes  # short = 2 bytes data[108:110]
-    _audibility_g: bytes  # short = 2 bytes data[110:112]
-    _audibility_d: bytes  # short = 2 bytes data[112:114]
-    _posMod_x: bytes  # short = 2 bytes data[114:116]
-    _posMod_y: bytes  # short = 2 bytes data[116:118]
-    _send_reverb: bytes  # short = 2 bytes data[118:120]
-    _send_delay: bytes  # short = 2 bytes data[120:122]
-    _send_fx1: bytes  # short = 2 bytes data[122:124]
-    _send_fx2: bytes  # short = 2 bytes data[124:126]
-    _dblimit: bytes  # short = 2 bytes data[126:128]
-    _nKaraoke: bytes  # short = 2 bytes data[128:130]
+    _audibility_c: bytes
+    _audibility_g: bytes
+    _audibility_d: bytes
+    _posMod_x: bytes
+    _posMod_y: bytes
+    _send_reverb: bytes
+    _send_delay: bytes
+    _send_fx1: bytes
+    _send_fx2: bytes
+    _dblimit: bytes
+    _nKaraoke: bytes
 
-    _COMP_gain_in: bytes  # short = 2 bytes data[130:132]
-    _COMP_attack_ms: bytes  # short = 2 bytes data[132:134]
-    _COMP_release_ms: bytes  # short = 2 bytes data[134:136]
-    _COMP_n_knee: bytes  # short = 2 bytes data[136:138]
-    _COMP_comprate: bytes  # short = 2 bytes data[138:140]
-    _COMP_threshold: bytes  # short = 2 bytes data[140:142]
-    _COMP_c_enabled: bytes  # short = 2 bytes data[142:144]
-    _COMP_c_auto: bytes  # short = 2 bytes data[144:146]
-    _COMP_gain_out: bytes  # short = 2 bytes data[146:148]
+    _COMP_gain_in: bytes
+    _COMP_attack_ms: bytes
+    _COMP_release_ms: bytes
+    _COMP_n_knee: bytes
+    _COMP_comprate: bytes
+    _COMP_threshold: bytes
+    _COMP_c_enabled: bytes
+    _COMP_c_auto: bytes
+    _COMP_gain_out: bytes
 
-    _GATE_dBThreshold_in: bytes  # short = 2 bytes data[148:150]
-    _GATE_dBDamping_max: bytes  # short = 2 bytes data[150:152]
-    _GATE_BP_Sidechain: bytes  # short = 2 bytes data[152:154]
-    _GATE_attack_ms: bytes  # short = 2 bytes data[154:156]
-    _GATE_hold_ms: bytes  # short = 2 bytes data[156:158]
-    _GATE_release_ms: bytes  # short = 2 bytes data[158:160]
+    _GATE_dBThreshold_in: bytes
+    _GATE_dBDamping_max: bytes
+    _GATE_BP_Sidechain: bytes
+    _GATE_attack_ms: bytes
+    _GATE_hold_ms: bytes
+    _GATE_release_ms: bytes
 
-    _DenoiserThreshold: bytes  # short = 2 bytes data[160:162]
-    _PitchEnabled: bytes  # short = 2 bytes data[162:164]
-    _Pitch_DryWet: bytes  # short = 2 bytes data[164:166]
-    _Pitch_Value: bytes  # short = 2 bytes data[166:168]
-    _Pitch_formant_lo: bytes  # short = 2 bytes data[168:170]
-    _Pitch_formant_med: bytes  # short = 2 bytes data[170:172]
-    _Pitch_formant_high: bytes  # short = 2 bytes data[172:174]
+    _DenoiserThreshold: bytes
+    _PitchEnabled: bytes
+    _Pitch_DryWet: bytes
+    _Pitch_Value: bytes
+    _Pitch_formant_lo: bytes
+    _Pitch_formant_med: bytes
+    _Pitch_formant_high: bytes
 
     @classmethod
     def from_bytes(cls, data: bytes):
