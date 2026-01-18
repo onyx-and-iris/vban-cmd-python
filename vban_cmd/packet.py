@@ -217,10 +217,11 @@ class VbanRtPacketNBS0(VbanRtPacket):
         )
 
 
-class EqGains(NamedTuple):
-    bass: float
-    mid: float
-    treble: float
+class Audibility(NamedTuple):
+    knob: float
+    comp: float
+    gate: float
+    denoiser: float
 
 
 class Positions(NamedTuple):
@@ -232,11 +233,59 @@ class Positions(NamedTuple):
     fx2: float
 
 
+class EqGains(NamedTuple):
+    bass: float
+    mid: float
+    treble: float
+
+
+class ParametricEQSettings(NamedTuple):
+    eq_on: bool
+    eq_type: int
+    eq_gain: float
+    eq_freq: float
+    eq_q: float
+
+
 class Sends(NamedTuple):
     reverb: float
     delay: float
     fx1: float
     fx2: float
+
+
+class CompressorSettings(NamedTuple):
+    gain_in: float
+    attack_ms: float
+    release_ms: float
+    n_knee: float
+    comprate: float
+    threshold: float
+    c_enabled: bool
+    c_auto: bool
+    gain_out: float
+
+
+class GateSettings(NamedTuple):
+    dBThreshold_in: float
+    dBDamping_max: float
+    BP_Sidechain: bool
+    attack_ms: float
+    hold_ms: float
+    release_ms: float
+
+
+class DenoiserSettings(NamedTuple):
+    threshold: float
+
+
+class PitchSettings(NamedTuple):
+    enabled: bool
+    dry_wet: float
+    value: float
+    formant_lo: float
+    formant_med: float
+    formant_high: float
 
 
 @dataclass
@@ -356,16 +405,12 @@ class VbanVMParamStrip:
         return int.from_bytes(self._mode, 'little')
 
     @property
-    def eqgains(self) -> EqGains:
-        return EqGains(
-            *[
-                round(
-                    int.from_bytes(getattr(self, f'_EQgain{i}'), 'little', signed=True)
-                    * 0.01,
-                    2,
-                )
-                for i in range(1, 4)
-            ]
+    def audibility(self) -> Audibility:
+        return Audibility(
+            round(int.from_bytes(self._audibility, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._audibility_c, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._audibility_g, 'little', signed=True) * 0.01, 2),
+            round(int.from_bytes(self._audibility_d, 'little', signed=True) * 0.01, 2),
         )
 
     @property
@@ -377,6 +422,19 @@ class VbanVMParamStrip:
             round(int.from_bytes(self._posColor_y, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._posMod_x, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._posMod_y, 'little', signed=True) * 0.01, 2),
+        )
+
+    @property
+    def eqgains(self) -> EqGains:
+        return EqGains(
+            *[
+                round(
+                    int.from_bytes(getattr(self, f'_EQgain{i}'), 'little', signed=True)
+                    * 0.01,
+                    2,
+                )
+                for i in range(1, 4)
+            ]
         )
 
     @property

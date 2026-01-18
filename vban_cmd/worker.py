@@ -39,9 +39,6 @@ class Subscriber(threading.Thread):
                         sub_packet, (self._remote.ip, self._remote.port)
                     )
                     self._framecounter = bump_framecounter(self._framecounter)
-                    self.logger.debug(
-                        f'sent subscription for NBS {nbs.name} to {self._remote.ip}:{self._remote.port}'
-                    )
 
                 self.wait_until_stopped(10)
             except socket.gaierror as e:
@@ -102,27 +99,11 @@ class Producer(threading.Thread):
 
             match response_header.format_nbs:
                 case NBS.zero:
-                    """
-                    self.logger.debug(
-                        'Received NB0 RTP Packet from %s, Size: %d bytes',
-                        addr,
-                        len(data),
-                    )
-                    """
-
                     return VbanRtPacketNBS0.from_bytes(
                         nbs=NBS.zero, kind=self._remote.kind, data=data
                     )
 
                 case NBS.one:
-                    """
-                    self.logger.debug(
-                        'Received NB1 RTP Packet from %s, Size: %d bytes',
-                        addr,
-                        len(data),
-                    )
-                    """
-
                     return VbanRtPacketNBS1.from_bytes(
                         nbs=NBS.one, kind=self._remote.kind, data=data
                     )

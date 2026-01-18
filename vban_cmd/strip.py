@@ -76,12 +76,14 @@ class PhysicalStrip(Strip):
         return f'{type(self).__name__}{self.index}'
 
     @property
-    def device(self):
-        return
+    def audibility(self) -> float:
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].audibility.knob
 
-    @property
-    def sr(self):
-        return
+    @audibility.setter
+    def audibility(self, val: float):
+        self.setter('audibility', val)
 
 
 class StripComp(IRemote):
@@ -91,7 +93,9 @@ class StripComp(IRemote):
 
     @property
     def knob(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].audibility.comp
 
     @knob.setter
     def knob(self, val: float):
@@ -169,7 +173,9 @@ class StripGate(IRemote):
 
     @property
     def knob(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].audibility.gate
 
     @knob.setter
     def knob(self, val: float):
@@ -231,7 +237,9 @@ class StripDenoiser(IRemote):
 
     @property
     def knob(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].audibility.denoiser
 
     @knob.setter
     def knob(self, val: float):
