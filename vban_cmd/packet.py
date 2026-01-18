@@ -24,34 +24,34 @@ class VbanRtPacket:
 
     nbs: NBS
     _kind: KindMapClass
-    _voicemeeterType: bytes  # data[28:29]
-    _reserved: bytes  # data[29:30]
-    _buffersize: bytes  # data[30:32]
-    _voicemeeterVersion: bytes  # data[32:36]
-    _optionBits: bytes  # data[36:40]
-    _samplerate: bytes  # data[40:44]
+    _voicemeeterType: bytes
+    _reserved: bytes
+    _buffersize: bytes
+    _voicemeeterVersion: bytes
+    _optionBits: bytes
+    _samplerate: bytes
 
 
 @dataclass
 class VbanRtPacketNBS0(VbanRtPacket):
     """Represents the body of a VBAN RT data packet with NBS 0"""
 
-    _inputLeveldB100: bytes  # data[44:112]
-    _outputLeveldB100: bytes  # data[112:240]
-    _TransportBit: bytes  # data[240:244]
-    _stripState: bytes  # data[244:276]
-    _busState: bytes  # data[276:308]
-    _stripGaindB100Layer1: bytes  # data[308:324]
-    _stripGaindB100Layer2: bytes  # data[324:340]
-    _stripGaindB100Layer3: bytes  # data[340:356]
-    _stripGaindB100Layer4: bytes  # data[356:372]
-    _stripGaindB100Layer5: bytes  # data[372:388]
-    _stripGaindB100Layer6: bytes  # data[388:404]
-    _stripGaindB100Layer7: bytes  # data[404:420]
-    _stripGaindB100Layer8: bytes  # data[420:436]
-    _busGaindB100: bytes  # data[436:452]
-    _stripLabelUTF8c60: bytes  # data[452:932]
-    _busLabelUTF8c60: bytes  # data[932:1412]
+    _inputLeveldB100: bytes
+    _outputLeveldB100: bytes
+    _TransportBit: bytes
+    _stripState: bytes
+    _busState: bytes
+    _stripGaindB100Layer1: bytes
+    _stripGaindB100Layer2: bytes
+    _stripGaindB100Layer3: bytes
+    _stripGaindB100Layer4: bytes
+    _stripGaindB100Layer5: bytes
+    _stripGaindB100Layer6: bytes
+    _stripGaindB100Layer7: bytes
+    _stripGaindB100Layer8: bytes
+    _busGaindB100: bytes
+    _stripLabelUTF8c60: bytes
+    _busLabelUTF8c60: bytes
 
     @classmethod
     def from_bytes(cls, nbs: NBS, kind: KindMapClass, data: bytes):
