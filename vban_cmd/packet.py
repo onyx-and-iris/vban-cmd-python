@@ -31,28 +31,6 @@ class VbanRtPacket:
     _samplerate: bytes  # data[40:44]
 
 
-class EqGains(NamedTuple):
-    bass: float
-    mid: float
-    treble: float
-
-
-class Positions(NamedTuple):
-    pan_x: float
-    pan_y: float
-    color_x: float
-    color_y: float
-    fx1: float
-    fx2: float
-
-
-class Sends(NamedTuple):
-    reverb: float
-    delay: float
-    fx1: float
-    fx2: float
-
-
 @dataclass
 class VbanRtPacketNBS0(VbanRtPacket):
     """Represents the body of a VBAN RT data packet with NBS 0"""
@@ -237,6 +215,28 @@ class VbanRtPacketNBS0(VbanRtPacket):
             self._busLabelUTF8c60[i : i + 60].decode().split('\x00')[0]
             for i in range(0, 480, 60)
         )
+
+
+class EqGains(NamedTuple):
+    bass: float
+    mid: float
+    treble: float
+
+
+class Positions(NamedTuple):
+    pan_x: float
+    pan_y: float
+    color_x: float
+    color_y: float
+    fx1: float
+    fx2: float
+
+
+class Sends(NamedTuple):
+    reverb: float
+    delay: float
+    fx1: float
+    fx2: float
 
 
 @dataclass
