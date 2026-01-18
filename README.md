@@ -528,13 +528,15 @@ with vban_cmd.api('banana', **opts) as vban:
     ...
 ```
 
-## Tests
+### Run tests
 
-First make sure you installed the [development dependencies](https://github.com/onyx-and-iris/vban-cmd-python#installation)
+Install [poetry](https://python-poetry.org/docs/#installation) and then:
 
-Then from tests directory:
-
-`pytest -v`
+```powershell
+poetry poe test-basic
+poetry poe test-banana
+poetry poe test-potato
+```
 
 ## Resources
 
