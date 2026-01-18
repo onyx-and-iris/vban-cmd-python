@@ -103,7 +103,9 @@ class StripComp(IRemote):
 
     @property
     def gainin(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.gain_in
 
     @gainin.setter
     def gainin(self, val: float):
@@ -111,7 +113,9 @@ class StripComp(IRemote):
 
     @property
     def ratio(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.comprate
 
     @ratio.setter
     def ratio(self, val: float):
@@ -119,7 +123,9 @@ class StripComp(IRemote):
 
     @property
     def threshold(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.threshold
 
     @threshold.setter
     def threshold(self, val: float):
@@ -127,7 +133,9 @@ class StripComp(IRemote):
 
     @property
     def attack(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.attack_ms
 
     @attack.setter
     def attack(self, val: float):
@@ -135,7 +143,9 @@ class StripComp(IRemote):
 
     @property
     def release(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.release_ms
 
     @release.setter
     def release(self, val: float):
@@ -143,7 +153,9 @@ class StripComp(IRemote):
 
     @property
     def knee(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.n_knee
 
     @knee.setter
     def knee(self, val: float):
@@ -151,7 +163,9 @@ class StripComp(IRemote):
 
     @property
     def gainout(self) -> float:
-        return
+        if self.public_packets[NBS.one] is None:
+            return 0.0
+        return self.public_packets[NBS.one].strips[self.index].compressor.gain_out
 
     @gainout.setter
     def gainout(self, val: float):
@@ -159,7 +173,9 @@ class StripComp(IRemote):
 
     @property
     def makeup(self) -> bool:
-        return
+        if self.public_packets[NBS.one] is None:
+            return False
+        return bool(self.public_packets[NBS.one].strips[self.index].compressor.makeup)
 
     @makeup.setter
     def makeup(self, val: bool):
@@ -336,7 +352,7 @@ class StripEQChCell(IRemote):
         return (
             self.public_packets[NBS.one]
             .strips[self.index]
-            .parametric_eq_settings[self.cell_index]
+            .parametric_eq[self.cell_index]
             .on
         )
 
@@ -355,7 +371,7 @@ class StripEQChCell(IRemote):
         return (
             self.public_packets[NBS.one]
             .strips[self.index]
-            .parametric_eq_settings[self.cell_index]
+            .parametric_eq[self.cell_index]
             .type
         )
 
@@ -374,7 +390,7 @@ class StripEQChCell(IRemote):
         return (
             self.public_packets[NBS.one]
             .strips[self.index]
-            .parametric_eq_settings[self.cell_index]
+            .parametric_eq[self.cell_index]
             .freq
         )
 
@@ -393,7 +409,7 @@ class StripEQChCell(IRemote):
         return (
             self.public_packets[NBS.one]
             .strips[self.index]
-            .parametric_eq_settings[self.cell_index]
+            .parametric_eq[self.cell_index]
             .gain
         )
 
@@ -412,7 +428,7 @@ class StripEQChCell(IRemote):
         return (
             self.public_packets[NBS.one]
             .strips[self.index]
-            .parametric_eq_settings[self.cell_index]
+            .parametric_eq[self.cell_index]
             .q
         )
 

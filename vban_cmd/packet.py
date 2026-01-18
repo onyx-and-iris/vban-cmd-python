@@ -263,7 +263,7 @@ class CompressorSettings(NamedTuple):
     comprate: float
     threshold: float
     c_enabled: bool
-    c_auto: bool
+    makeup: bool
     gain_out: float
 
 
@@ -439,7 +439,7 @@ class VbanVMParamStrip:
         )
 
     @property
-    def parametric_eq_settings(self) -> tuple[ParametricEQSettings, ...]:
+    def parametric_eq(self) -> tuple[ParametricEQSettings, ...]:
         return tuple(
             ParametricEQSettings(
                 on=bool(int.from_bytes(self._PEQ_eqOn[i : i + 1], 'little')),
@@ -463,6 +463,75 @@ class VbanVMParamStrip:
     @property
     def karaoke(self) -> int:
         return int.from_bytes(self._nKaraoke, 'little')
+
+    @property
+    def compressor(self) -> CompressorSettings:
+        return CompressorSettings(
+            gain_in=round(
+                int.from_bytes(self._COMP_gain_in, 'little', signed=True) * 0.01, 2
+            ),
+            attack_ms=round(int.from_bytes(self._COMP_attack_ms, 'little') * 0.1, 2),
+            release_ms=round(int.from_bytes(self._COMP_release_ms, 'little') * 0.1, 2),
+            n_knee=round(int.from_bytes(self._COMP_n_knee, 'little') * 0.01, 2),
+            comprate=round(int.from_bytes(self._COMP_comprate, 'little') * 0.01, 2),
+            threshold=round(
+                int.from_bytes(self._COMP_threshold, 'little', signed=True) * 0.01, 2
+            ),
+            c_enabled=bool(int.from_bytes(self._COMP_c_enabled, 'little')),
+            makeup=bool(int.from_bytes(self._COMP_c_auto, 'little')),
+            gain_out=round(
+                int.from_bytes(self._COMP_gain_out, 'little', signed=True) * 0.01, 2
+            ),
+        )
+
+    @property
+    def gate(self) -> GateSettings:
+        return GateSettings(
+            dBThreshold_in=round(
+                int.from_bytes(self._GATE_dBThreshold_in, 'little', signed=True) * 0.01,
+                2,
+            ),
+            dBDamping_max=round(
+                int.from_bytes(self._GATE_dBDamping_max, 'little', signed=True) * 0.01,
+                2,
+            ),
+            BP_Sidechain=round(
+                int.from_bytes(self._GATE_BP_Sidechain, 'little') * 0.1, 2
+            ),
+            attack_ms=round(int.from_bytes(self._GATE_attack_ms, 'little') * 0.1, 2),
+            hold_ms=round(int.from_bytes(self._GATE_hold_ms, 'little') * 0.1, 2),
+            release_ms=round(int.from_bytes(self._GATE_release_ms, 'little') * 0.1, 2),
+        )
+
+    @property
+    def denoiser(self) -> DenoiserSettings:
+        return DenoiserSettings(
+            threshold=round(
+                int.from_bytes(self._DenoiserThreshold, 'little', signed=True) * 0.01, 2
+            )
+        )
+
+    @property
+    def pitch(self) -> PitchSettings:
+        return PitchSettings(
+            enabled=bool(int.from_bytes(self._PitchEnabled, 'little')),
+            dry_wet=round(
+                int.from_bytes(self._Pitch_DryWet, 'little', signed=True) * 0.01, 2
+            ),
+            value=round(
+                int.from_bytes(self._Pitch_Value, 'little', signed=True) * 0.01, 2
+            ),
+            formant_lo=round(
+                int.from_bytes(self._Pitch_formant_lo, 'little', signed=True) * 0.01, 2
+            ),
+            formant_med=round(
+                int.from_bytes(self._Pitch_formant_med, 'little', signed=True) * 0.01, 2
+            ),
+            formant_high=round(
+                int.from_bytes(self._Pitch_formant_high, 'little', signed=True) * 0.01,
+                2,
+            ),
+        )
 
 
 @dataclass
