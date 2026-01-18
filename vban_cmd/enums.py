@@ -1,4 +1,11 @@
-from enum import IntEnum
+from enum import Enum, IntEnum, unique
+
+
+@unique
+class KindId(Enum):
+    BASIC = 1
+    BANANA = 2
+    POTATO = 3
 
 
 class NBS(IntEnum):
@@ -11,5 +18,3 @@ BusModes = IntEnum(
     'normal amix bmix repeat composite tvmix upmix21 upmix41 upmix61 centeronly lfeonly rearonly',
     start=0,
 )
-
-EQGains = IntEnum('EQGains', 'bass mid treble', start=0)

@@ -106,13 +106,23 @@ def xy_prop(param):
     def fget(self):
         cmd = self._cmd(param)
         self.logger.debug(f'getter: {cmd}')
-        _type, axis = param.split('_')
         if self.public_packets[NBS.one] is None:
             return 0.0
-        x, y = getattr(
-            self.public_packets[NBS.one].strips[self.index], f'position_{_type.lower()}'
-        )
-        return x if axis == 'x' else y
+
+        positions = self.public_packets[NBS.one].strips[self.index].positions
+        match param:
+            case 'pan_x':
+                return positions.pan_x
+            case 'pan_y':
+                return positions.pan_y
+            case 'color_x':
+                return positions.color_x
+            case 'color_y':
+                return positions.color_y
+            case 'fx1':
+                return positions.fx1
+            case 'fx2':
+                return positions.fx2
 
     def fset(self, val):
         self.setter(param, val)
@@ -129,12 +139,17 @@ def send_prop(param):
         self.logger.debug(f'getter: {cmd}')
         if self.public_packets[NBS.one] is None:
             return 0.0
-        val = getattr(self.public_packets[NBS.one].strips[self.index], f'send_{param}')
+
+        sends = self.public_packets[NBS.one].strips[self.index].sends
         match param:
-            case 'reverb' | 'fx1':
-                return val[0]
-            case 'delay' | 'fx2':
-                return val[1]
+            case 'reverb':
+                return sends.reverb
+            case 'delay':
+                return sends.delay
+            case 'fx1':
+                return sends.fx1
+            case 'fx2':
+                return sends.fx2
 
     def fset(self, val):
         self.setter(param, val)

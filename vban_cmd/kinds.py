@@ -1,14 +1,7 @@
 from dataclasses import dataclass
-from enum import Enum, unique
 
+from .enums import KindId
 from .error import VBANCMDError
-
-
-@unique
-class KindId(Enum):
-    BASIC = 1
-    BANANA = 2
-    POTATO = 3
 
 
 class SingletonType(type):

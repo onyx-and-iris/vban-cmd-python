@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import NamedTuple
 
 from .enums import NBS
 from .kinds import KindMapClass
@@ -28,6 +29,28 @@ class VbanRtPacket:
     _voicemeeterVersion: bytes  # data[32:36]
     _optionBits: bytes  # data[36:40]
     _samplerate: bytes  # data[40:44]
+
+
+class EqGains(NamedTuple):
+    bass: float
+    mid: float
+    treble: float
+
+
+class Positions(NamedTuple):
+    pan_x: float
+    pan_y: float
+    color_x: float
+    color_y: float
+    fx1: float
+    fx2: float
+
+
+class Sends(NamedTuple):
+    reverb: float
+    delay: float
+    fx1: float
+    fx2: float
 
 
 @dataclass
@@ -333,53 +356,36 @@ class VbanVMParamStrip:
         return int.from_bytes(self._mode, 'little')
 
     @property
-    def position_pan(self) -> tuple[int, int]:
-        return (
+    def eqgains(self) -> EqGains:
+        return EqGains(
+            *[
+                round(
+                    int.from_bytes(getattr(self, f'_EQgain{i}'), 'little', signed=True)
+                    * 0.01,
+                    2,
+                )
+                for i in range(1, 4)
+            ]
+        )
+
+    @property
+    def positions(self) -> Positions:
+        return Positions(
             round(int.from_bytes(self._pos3D_x, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._pos3D_y, 'little', signed=True) * 0.01, 2),
-        )
-
-    @property
-    def position_color(self) -> tuple[int, int]:
-        return (
             round(int.from_bytes(self._posColor_x, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._posColor_y, 'little', signed=True) * 0.01, 2),
-        )
-
-    @property
-    def position_fx(self) -> tuple[int, int]:
-        return (
             round(int.from_bytes(self._posMod_x, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._posMod_y, 'little', signed=True) * 0.01, 2),
         )
 
     @property
-    def send_reverb(self) -> tuple[float, float]:
-        return (
+    def sends(self) -> Sends:
+        return Sends(
             round(int.from_bytes(self._send_reverb, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._send_delay, 'little', signed=True) * 0.01, 2),
-        )
-
-    send_delay = send_reverb
-
-    @property
-    def send_fx1(self) -> tuple[float, float]:
-        return (
             round(int.from_bytes(self._send_fx1, 'little', signed=True) * 0.01, 2),
             round(int.from_bytes(self._send_fx2, 'little', signed=True) * 0.01, 2),
-        )
-
-    send_fx2 = send_fx1
-
-    @property
-    def eqgains(self) -> tuple[float, float, float]:
-        return tuple(
-            round(
-                int.from_bytes(getattr(self, f'_EQgain{i}'), 'little', signed=True)
-                * 0.01,
-                2,
-            )
-            for i in range(1, 4)
         )
 
     @property

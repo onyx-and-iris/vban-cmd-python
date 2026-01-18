@@ -3,7 +3,7 @@ from abc import abstractmethod
 from typing import Union
 
 from . import kinds
-from .enums import NBS, EQGains
+from .enums import NBS
 from .iremote import IRemote
 from .meta import (
     channel_bool_prop,
@@ -296,7 +296,7 @@ class VirtualStrip(Strip):
     def bass(self) -> float:
         if self.public_packets[NBS.one] is None:
             return 0.0
-        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.bass]
+        return self.public_packets[NBS.one].strips[self.index].eqgains.bass
 
     @bass.setter
     def bass(self, val: float):
@@ -306,7 +306,7 @@ class VirtualStrip(Strip):
     def mid(self) -> float:
         if self.public_packets[NBS.one] is None:
             return 0.0
-        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.mid]
+        return self.public_packets[NBS.one].strips[self.index].eqgains.mid
 
     @mid.setter
     def mid(self, val: float):
@@ -318,7 +318,7 @@ class VirtualStrip(Strip):
     def treble(self) -> float:
         if self.public_packets[NBS.one] is None:
             return 0.0
-        return self.public_packets[NBS.one].strips[self.index].eqgains[EQGains.treble]
+        return self.public_packets[NBS.one].strips[self.index].eqgains.treble
 
     @treble.setter
     def treble(self, val: float):
