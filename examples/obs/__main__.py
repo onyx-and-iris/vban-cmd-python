@@ -1,3 +1,4 @@
+import os
 import threading
 from logging import config
 
@@ -92,8 +93,13 @@ class Observer:
 
 def main():
     KIND_ID = 'potato'
+    conn = {
+        'ip': os.environ.get('VBANCMD_IP', 'localhost'),
+        'port': int(os.environ.get('VBANCMD_PORT', 6980)),
+        'streamname': os.environ.get('VBANCMD_STREAMNAME', 'Command1'),
+    }
 
-    with vban_cmd.api(KIND_ID) as vban:
+    with vban_cmd.api(KIND_ID, **conn) as vban:
         stop_event = threading.Event()
 
         with Observer(vban, stop_event):

@@ -1,4 +1,5 @@
 import logging
+import os
 
 import vban_cmd
 
@@ -23,8 +24,13 @@ class App:
 
 def main():
     KIND_ID = 'banana'
+    conn = {
+        'ip': os.environ.get('VBANCMD_IP', 'localhost'),
+        'port': int(os.environ.get('VBANCMD_PORT', 6980)),
+        'streamname': os.environ.get('VBANCMD_STREAMNAME', 'Command1'),
+    }
 
-    with vban_cmd.api(KIND_ID, pdirty=True, ldirty=True) as vban:
+    with vban_cmd.api(KIND_ID, pdirty=True, ldirty=True, **conn) as vban:
         App(vban)
 
         while _ := input('Press <Enter> to exit\n'):

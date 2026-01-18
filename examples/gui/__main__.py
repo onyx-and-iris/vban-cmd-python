@@ -1,4 +1,5 @@
 import logging
+import os
 import tkinter as tk
 from tkinter import ttk
 
@@ -100,7 +101,14 @@ class App(tk.Tk):
 
 
 def main():
-    with vban_cmd.api('banana', ldirty=True) as vban:
+    KIND_ID = 'banana'
+    conn = {
+        'ip': os.environ.get('VBANCMD_IP', 'localhost'),
+        'port': int(os.environ.get('VBANCMD_PORT', 6980)),
+        'streamname': os.environ.get('VBANCMD_STREAMNAME', 'Command1'),
+    }
+
+    with vban_cmd.api(KIND_ID, ldirty=True, **conn) as vban:
         app = App(vban)
         app.mainloop()
 
