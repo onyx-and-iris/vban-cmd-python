@@ -1,5 +1,5 @@
+import abc
 import logging
-from abc import abstractmethod
 from enum import IntEnum
 from functools import cached_property
 from typing import Iterable
@@ -115,7 +115,7 @@ class FactoryBase(VbanCmd):
         )
 
     @property
-    @abstractmethod
+    @abc.abstractmethod
     def steps(self):
         pass
 

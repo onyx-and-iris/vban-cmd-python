@@ -1,5 +1,5 @@
+import abc
 import time
-from abc import abstractmethod
 from typing import Union
 
 from .enums import NBS, BusModes
@@ -14,7 +14,7 @@ class Bus(IRemote):
     Defines concrete implementation for bus
     """
 
-    @abstractmethod
+    @abc.abstractmethod
     def __str__(self):
         pass
 

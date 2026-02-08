@@ -1,8 +1,8 @@
+import abc
 import logging
 import socket
 import threading
 import time
-from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from queue import Queue
 from typing import Iterable, Union
@@ -18,8 +18,8 @@ from .worker import Producer, Subscriber, Updater
 logger = logging.getLogger(__name__)
 
 
-class VbanCmd(metaclass=ABCMeta):
-    """Base class responsible for communicating with the VBAN RT Packet Service"""
+class VbanCmd(abc.ABC):
+    """Abstract Base Class for Voicemeeter VBAN Command Interfaces"""
 
     DELAY = 0.001
     # fmt: off
@@ -49,7 +49,7 @@ class VbanCmd(metaclass=ABCMeta):
         self.stop_event = None
         self.producer = None
 
-    @abstractmethod
+    @abc.abstractmethod
     def __str__(self):
         """Ensure subclasses override str magic method"""
         pass
@@ -58,7 +58,7 @@ class VbanCmd(metaclass=ABCMeta):
         try:
             import tomllib
         except ModuleNotFoundError:
-            import tomli as tomllib
+            import tomli as tomllib  # type: ignore[import]
 
         def get_filepath():
             for pn in (

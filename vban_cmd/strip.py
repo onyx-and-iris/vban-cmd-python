@@ -1,5 +1,5 @@
+import abc
 import time
-from abc import abstractmethod
 from typing import Union
 
 from . import kinds
@@ -21,7 +21,7 @@ class Strip(IRemote):
     Defines concrete implementation for strip
     """
 
-    @abstractmethod
+    @abc.abstractmethod
     def __str__(self):
         pass
 

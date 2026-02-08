@@ -1,6 +1,6 @@
+import abc
 import logging
 import time
-from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class Modes:
         )
 
 
-class IRemote(metaclass=ABCMeta):
+class IRemote(abc.ABC):
     """
     Common interface between base class and extended (higher) classes
 
@@ -111,7 +111,7 @@ class IRemote(metaclass=ABCMeta):
         return ''.join(cmd)
 
     @property
-    @abstractmethod
+    @abc.abstractmethod
     def identifier(self):
         pass
 
