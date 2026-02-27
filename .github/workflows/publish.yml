@@ -8,32 +8,46 @@ on:
       - 'v*.*.*'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-
-    environment: pypi
-    permissions:
-      # This permission is needed for private repositories.
-      contents: read
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
-
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install Poetry
         run: |
-          python -m pip install --upgrade pip 
-          pip install hatch
+          pip install poetry==2.3.1
+          poetry --version
 
       - name: Build package
-        run: hatch build
+        run: |
+          poetry install --only-root
+          poetry build
 
-      - name: Publish on PyPI
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+
+  pypi-publish:
+    needs: build
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/vban-cmd/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ./dist
+
+      - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ./dist
