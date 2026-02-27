@@ -11,6 +11,13 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.6.0] - 2026-02-26
+
+### Added
+
+-   support for packet with [ident:1](https://github.com/onyx-and-iris/Voicemeeter-SDK/blob/3be2c1c36563afbd6df3da8436406c77d2cc1f10/VoicemeeterRemote.h#L982) in VBAN TEXT subprotocol.
+    -   This includes Strip 3D, PEQ, comp, gate, denoiser and pitch parameters.
+
 ## [2.5.2] - 2025-01-25
 
 ### Changed
