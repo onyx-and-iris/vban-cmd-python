@@ -421,8 +421,8 @@ You just need to define a key `extends` in the config TOML, that names the confi
 Three example 'extender' configs are included with the repo. You may load them with:
 
 ```python
-import voicemeeterlib
-with voicemeeterlib.api('banana') as vm:
+import vban_cmd
+with vban_cmd.api('banana') as vm:
     vm.apply_config('extender')
 ```
 
