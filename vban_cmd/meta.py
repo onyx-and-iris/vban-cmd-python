@@ -1,6 +1,6 @@
 from functools import partial
 
-from .enums import NBS
+from .enums import NBS, BusModes
 from .util import cache_bool, cache_float, cache_int, cache_string
 
 
@@ -11,17 +11,23 @@ def channel_bool_prop(param):
     def fget(self):
         cmd = self._cmd(param)
         self.logger.debug(f'getter: {cmd}')
-        return (
-            not int.from_bytes(
-                getattr(
-                    self.public_packets[NBS.zero],
-                    f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}state',
-                )[self.index],
-                'little',
-            )
-            & getattr(self._modes, f'_{param.lower()}')
-            == 0
+
+        states = self.public_packets[NBS.zero].states
+        channel_states = (
+            states.strip if 'strip' in type(self).__name__.lower() else states.bus
         )
+        channel_state = channel_states[self.index]
+
+        if param.lower() == 'mute':
+            return channel_state.mute
+        elif param.lower() == 'solo':
+            return channel_state.solo
+        elif param.lower() == 'mono':
+            return channel_state.mono
+        elif param.lower() == 'mc':
+            return channel_state.mc
+        else:
+            return channel_state.get_mode(getattr(self._modes, f'_{param.lower()}'))
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)
@@ -36,13 +42,20 @@ def channel_int_prop(param):
     def fget(self):
         cmd = self._cmd(param)
         self.logger.debug(f'getter: {cmd}')
-        return int.from_bytes(
-            getattr(
-                self.public_packets[NBS.zero],
-                f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}state',
-            )[self.index],
-            'little',
-        ) & getattr(self._modes, f'_{param.lower()}')
+
+        states = self.public_packets[NBS.zero].states
+        channel_states = (
+            states.strip if 'strip' in type(self).__name__.lower() else states.bus
+        )
+        channel_state = channel_states[self.index]
+
+        # Special case: bus mono is an integer (0-2) encoded using bits 2 and 9
+        if param.lower() == 'mono' and 'bus' in type(self).__name__.lower():
+            bit_2 = (channel_state._state >> 2) & 1
+            bit_9 = (channel_state._state >> 9) & 1
+            return (bit_9 << 1) | bit_2
+        else:
+            return channel_state.get_mode_int(getattr(self._modes, f'_{param.lower()}'))
 
     def fset(self, val):
         self.setter(param, val)
@@ -73,13 +86,10 @@ def strip_output_prop(param):
     def fget(self):
         cmd = self._cmd(param)
         self.logger.debug(f'getter: {cmd}')
-        return (
-            not int.from_bytes(
-                self.public_packets[NBS.zero].stripstate[self.index], 'little'
-            )
-            & getattr(self._modes, f'_bus{param.lower()}')
-            == 0
-        )
+
+        strip_state = self.public_packets[NBS.zero].states.strip[self.index]
+
+        return strip_state.get_mode(getattr(self._modes, f'_bus{param.lower()}'))
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)
@@ -94,16 +104,15 @@ def bus_mode_prop(param):
     def fget(self):
         cmd = self._cmd(param)
         self.logger.debug(f'getter: {cmd}')
-        return [
-            (
-                int.from_bytes(
-                    self.public_packets[NBS.zero].busstate[self.index], 'little'
-                )
-                & val
-            )
-            >> 4
-            for val in self._modes.modevals
-        ] == self.modestates[param]
+
+        bus_state = self.public_packets[NBS.zero].states.bus[self.index]
+
+        # Extract current bus mode from bits 4-7
+        current_mode = (bus_state._state & 0x000000F0) >> 4
+
+        expected_mode = getattr(BusModes, param.lower())
+
+        return current_mode == expected_mode
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)

@@ -140,7 +140,7 @@ class Producer(threading.Thread):
                 self.queue.put('pdirty')
             if self._remote.event.ldirty:
                 self.queue.put('ldirty')
-            time.sleep(self._remote.ratelimit)
+            # time.sleep(self._remote.ratelimit)
         self.logger.debug(f'terminating {self.name} thread')
         self.queue.put(None)
 

@@ -54,14 +54,85 @@ class Levels(NamedTuple):
     bus: tuple[float, ...]
 
 
-class Labels(NamedTuple):
-    strip: tuple[str, ...]
-    bus: tuple[str, ...]
+class ChannelState:
+    """Represents the processed state of a single strip or bus channel"""
+
+    def __init__(self, state_bytes: bytes):
+        # Convert 4-byte state to integer once for efficient lookups
+        self._state = int.from_bytes(state_bytes, 'little')
+
+    def get_mode(self, mode_value: int) -> bool:
+        """Get boolean state for a specific mode"""
+        return (self._state & mode_value) != 0
+
+    def get_mode_int(self, mode_value: int) -> int:
+        """Get integer state for a specific mode"""
+        return self._state & mode_value
+
+    # Common boolean modes
+    @property
+    def mute(self) -> bool:
+        return (self._state & 0x00000001) != 0
+
+    @property
+    def solo(self) -> bool:
+        return (self._state & 0x00000002) != 0
+
+    @property
+    def mono(self) -> bool:
+        return (self._state & 0x00000004) != 0
+
+    @property
+    def mc(self) -> bool:
+        return (self._state & 0x00000008) != 0
+
+    # EQ modes
+    @property
+    def eq_on(self) -> bool:
+        return (self._state & 0x00000100) != 0
+
+    @property
+    def eq_ab(self) -> bool:
+        return (self._state & 0x00000800) != 0
+
+    # Bus assignments (strip to bus routing)
+    @property
+    def busa1(self) -> bool:
+        return (self._state & 0x00001000) != 0
+
+    @property
+    def busa2(self) -> bool:
+        return (self._state & 0x00002000) != 0
+
+    @property
+    def busa3(self) -> bool:
+        return (self._state & 0x00004000) != 0
+
+    @property
+    def busa4(self) -> bool:
+        return (self._state & 0x00008000) != 0
+
+    @property
+    def busb1(self) -> bool:
+        return (self._state & 0x00010000) != 0
+
+    @property
+    def busb2(self) -> bool:
+        return (self._state & 0x00020000) != 0
+
+    @property
+    def busb3(self) -> bool:
+        return (self._state & 0x00040000) != 0
 
 
 class States(NamedTuple):
-    strip: tuple[bytes, ...]
-    bus: tuple[bytes, ...]
+    strip: tuple[ChannelState, ...]
+    bus: tuple[ChannelState, ...]
+
+
+class Labels(NamedTuple):
+    strip: tuple[str, ...]
+    bus: tuple[str, ...]
 
 
 @dataclass
@@ -117,20 +188,34 @@ class VbanPacketNBS0(VbanPacket):
     def pdirty(self, other) -> bool:
         """True iff any defined parameter has changed"""
 
-        return not (
-            self._stripState == other._stripState
-            and self._busState == other._busState
-            and self._stripGaindB100Layer1 == other._stripGaindB100Layer1
-            and self._stripGaindB100Layer2 == other._stripGaindB100Layer2
-            and self._stripGaindB100Layer3 == other._stripGaindB100Layer3
-            and self._stripGaindB100Layer4 == other._stripGaindB100Layer4
-            and self._stripGaindB100Layer5 == other._stripGaindB100Layer5
-            and self._stripGaindB100Layer6 == other._stripGaindB100Layer6
-            and self._stripGaindB100Layer7 == other._stripGaindB100Layer7
-            and self._stripGaindB100Layer8 == other._stripGaindB100Layer8
-            and self._busGaindB100 == other._busGaindB100
-            and self._stripLabelUTF8c60 == other._stripLabelUTF8c60
-            and self._busLabelUTF8c60 == other._busLabelUTF8c60
+        self_gains = (
+            self._stripGaindB100Layer1
+            + self._stripGaindB100Layer2
+            + self._stripGaindB100Layer3
+            + self._stripGaindB100Layer4
+            + self._stripGaindB100Layer5
+            + self._stripGaindB100Layer6
+            + self._stripGaindB100Layer7
+            + self._stripGaindB100Layer8
+        )
+        other_gains = (
+            other._stripGaindB100Layer1
+            + other._stripGaindB100Layer2
+            + other._stripGaindB100Layer3
+            + other._stripGaindB100Layer4
+            + other._stripGaindB100Layer5
+            + other._stripGaindB100Layer6
+            + other._stripGaindB100Layer7
+            + other._stripGaindB100Layer8
+        )
+
+        return (
+            self._stripState != other._stripState
+            or self._busState != other._busState
+            or self_gains != other_gains
+            or self._busGaindB100 != other._busGaindB100
+            or self._stripLabelUTF8c60 != other._stripLabelUTF8c60
+            or self._busLabelUTF8c60 != other._busLabelUTF8c60
         )
 
     def ldirty(self, strip_cache, bus_cache) -> bool:
@@ -171,19 +256,14 @@ class VbanPacketNBS0(VbanPacket):
         return Levels(strip=self.strip_levels, bus=self.bus_levels)
 
     @property
-    def stripstate(self) -> tuple:
-        """returns tuple of strip states accessable through bit modes"""
-        return tuple(self._stripState[i : i + 4] for i in range(0, 32, 4))
-
-    @property
-    def busstate(self) -> tuple:
-        """returns tuple of bus states accessable through bit modes"""
-        return tuple(self._busState[i : i + 4] for i in range(0, 32, 4))
-
-    """ 
-    these functions return an array of gainlayers[i] across all strips 
-    ie stripgainlayer1 = [strip[0].gainlayer[0], strip[1].gainlayer[0], strip[2].gainlayer[0]...]
-    """
+    def states(self) -> States:
+        """returns States object with processed strip and bus channel states"""
+        return States(
+            strip=tuple(
+                ChannelState(self._stripState[i : i + 4]) for i in range(0, 32, 4)
+            ),
+            bus=tuple(ChannelState(self._busState[i : i + 4]) for i in range(0, 32, 4)),
+        )
 
     @property
     def gainlayers(self) -> tuple:

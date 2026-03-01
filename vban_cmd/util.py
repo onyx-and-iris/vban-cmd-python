@@ -95,7 +95,9 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
     for a, b in zip(t0, t1):
         # If both values are very quiet (below -72dB), ignore small changes
         if a <= -72.0 and b <= -72.0:
-            yield a == b  # At least one has significant level, detect changes
+            yield a == b  # Both quiet, check if they're equal
+        else:
+            yield a != b  # At least one has significant level, detect changes
 
 
 def deep_merge(dict1, dict2):
