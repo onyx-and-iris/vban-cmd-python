@@ -96,7 +96,7 @@ class Producer(threading.Thread):
         try:
             header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
         except ValueError as e:
-            self.logger.warning(f'Error parsing response packet: {e}')
+            self.logger.debug(f'Error parsing response packet: {e}')
             return None
 
         match header.format_nbs:

@@ -154,7 +154,7 @@ class VbanResponseHeader:
         # Validate this is an RTPacket response
         if parsed['format_nbc'] != VBAN_SERVICE_RTPACKET:
             raise ValueError(
-                f'Not a RTPacket response packet: {parsed["format_nbc"]:02x}'
+                f'Not an RTPacket response packet: {parsed["format_nbc"]:02x}'
             )
 
         return cls(**parsed)
