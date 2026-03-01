@@ -7,8 +7,6 @@ from .enums import NBS
 from .error import VBANCMDConnectionError
 from .packet.headers import (
     HEADER_SIZE,
-    VBAN_PROTOCOL_SERVICE,
-    VBAN_SERVICE_RTPACKET,
     VbanPacket,
     VbanResponseHeader,
     VbanSubscribeHeader,
@@ -89,30 +87,30 @@ class Producer(threading.Thread):
             data, _ = self._remote.sock.recvfrom(2048)
             if len(data) < HEADER_SIZE:
                 return
-
-            response_header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
-            if (
-                response_header.format_sr != VBAN_PROTOCOL_SERVICE
-                or response_header.format_nbc != VBAN_SERVICE_RTPACKET
-            ):
-                return
-
-            match response_header.format_nbs:
-                case NBS.zero:
-                    return VbanPacketNBS0.from_bytes(
-                        nbs=NBS.zero, kind=self._remote.kind, data=data
-                    )
-
-                case NBS.one:
-                    return VbanPacketNBS1.from_bytes(
-                        nbs=NBS.one, kind=self._remote.kind, data=data
-                    )
-            return None
         except TimeoutError as e:
             self.logger.exception(f'{type(e).__name__}: {e}')
             raise VBANCMDConnectionError(
-                f'timeout waiting for RtPacket from {self._remote.ip}'
+                f'timeout waiting for response from {self._remote.ip}:{self._remote.port}'
             ) from e
+
+        try:
+            header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
+        except ValueError as e:
+            self.logger.warning(f'Error parsing response packet: {e}')
+            return None
+
+        match header.format_nbs:
+            case NBS.zero:
+                return VbanPacketNBS0.from_bytes(
+                    nbs=NBS.zero, kind=self._remote.kind, data=data
+                )
+
+            case NBS.one:
+                return VbanPacketNBS1.from_bytes(
+                    nbs=NBS.one, kind=self._remote.kind, data=data
+                )
+
+        return None
 
     def stopped(self):
         return self.stop_event.is_set()
