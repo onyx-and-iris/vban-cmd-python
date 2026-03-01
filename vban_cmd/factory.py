@@ -11,6 +11,7 @@ from .error import VBANCMDError
 from .kinds import KindMapClass
 from .kinds import request_kind_map as kindmap
 from .macrobutton import MacroButton
+from .recorder import Recorder
 from .strip import request_strip_obj as strip
 from .vban import request_vban_obj as vban
 from .vbancmd import VbanCmd
@@ -26,7 +27,7 @@ class FactoryBuilder:
     """
 
     BuilderProgress = IntEnum(
-        'BuilderProgress', 'strip bus command macrobutton vban', start=0
+        'BuilderProgress', 'strip bus command macrobutton vban recorder', start=0
     )
 
     def __init__(self, factory, kind: KindMapClass):
@@ -38,6 +39,7 @@ class FactoryBuilder:
             f'Finished building commands for {self._factory}',
             f'Finished building macrobuttons for {self._factory}',
             f'Finished building vban in/out streams for {self._factory}',
+            f'Finished building recorder for {self._factory}',
         )
         self.logger = logger.getChild(self.__class__.__name__)
 
@@ -70,6 +72,10 @@ class FactoryBuilder:
 
     def make_vban(self):
         self._factory.vban = vban(self._factory)
+        return self
+
+    def make_recorder(self):
+        self._factory.recorder = Recorder.make(self._factory)
         return self
 
 
@@ -166,7 +172,7 @@ class BananaFactory(FactoryBase):
     @property
     def steps(self) -> Iterable:
         """steps required to build the interface for a kind"""
-        return self._steps
+        return self._steps + (self.builder.make_recorder,)
 
 
 class PotatoFactory(FactoryBase):
@@ -188,7 +194,7 @@ class PotatoFactory(FactoryBase):
     @property
     def steps(self) -> Iterable:
         """steps required to build the interface for a kind"""
-        return self._steps
+        return self._steps + (self.builder.make_recorder,)
 
 
 def vbancmd_factory(kind_id: str, **kwargs) -> VbanCmd:
