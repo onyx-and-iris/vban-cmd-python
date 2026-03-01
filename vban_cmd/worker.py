@@ -5,16 +5,16 @@ import time
 
 from .enums import NBS
 from .error import VBANCMDConnectionError
-from .packet import (
+from .packet.headers import (
     HEADER_SIZE,
     VBAN_PROTOCOL_SERVICE,
     VBAN_SERVICE_RTPACKET,
-    SubscribeHeader,
     VbanPacket,
-    VbanPacketNBS0,
-    VbanPacketNBS1,
-    VbanRtPacketHeader,
+    VbanResponseHeader,
+    VbanSubscribeHeader,
 )
+from .packet.nbs0 import VbanPacketNBS0
+from .packet.nbs1 import VbanPacketNBS1
 from .util import bump_framecounter
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class Subscriber(threading.Thread):
         while not self.stopped():
             try:
                 for nbs in NBS:
-                    sub_packet = SubscribeHeader().to_bytes(nbs, self._framecounter)
+                    sub_packet = VbanSubscribeHeader().to_bytes(nbs, self._framecounter)
                     self._remote.sock.sendto(
                         sub_packet, (self._remote.ip, self._remote.port)
                     )
@@ -90,7 +90,7 @@ class Producer(threading.Thread):
             if len(data) < HEADER_SIZE:
                 return
 
-            response_header = VbanRtPacketHeader.from_bytes(data[:HEADER_SIZE])
+            response_header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
             if (
                 response_header.format_sr != VBAN_PROTOCOL_SERVICE
                 or response_header.format_nbc != VBAN_SERVICE_RTPACKET
