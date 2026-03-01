@@ -10,7 +10,7 @@ from typing import Union
 from .enums import NBS
 from .error import VBANCMDError
 from .event import Event
-from .packet import RequestHeader
+from .packet.headers import VbanRequestHeader
 from .subject import Subject
 from .util import bump_framecounter, deep_merge, script
 from .worker import Producer, Subscriber, Updater
@@ -120,37 +120,29 @@ class VbanCmd(abc.ABC):
     def stopped(self):
         return self.stop_event is None or self.stop_event.is_set()
 
-    def _set_rt(self, cmd: str, val: Union[str, float]):
-        """Sends a string request command over a network."""
-        req_packet = RequestHeader.to_bytes(
-            name=self.streamname,
-            bps_index=self.BPS_OPTS.index(self.bps),
-            channel=self.channel,
-            framecounter=self._framecounter,
-        )
+    def _send_request(self, payload: str) -> None:
+        """Sends a request packet over the network and bumps the framecounter."""
         self.sock.sendto(
-            req_packet + f'{cmd}={val};'.encode(),
+            VbanRequestHeader.encode_with_payload(
+                name=self.streamname,
+                bps_index=self.BPS_OPTS.index(self.bps),
+                channel=self.channel,
+                framecounter=self._framecounter,
+                payload=payload,
+            ),
             (socket.gethostbyname(self.ip), self.port),
         )
         self._framecounter = bump_framecounter(self._framecounter)
 
+    def _set_rt(self, cmd: str, val: Union[str, float]):
+        """Sends a string request command over a network."""
+        self._send_request(f'{cmd}={val};')
         self.cache[cmd] = val
 
     @script
     def sendtext(self, script):
         """Sends a multiple parameter string over a network."""
-        req_packet = RequestHeader.to_bytes(
-            name=self.streamname,
-            bps_index=self.BPS_OPTS.index(self.bps),
-            channel=self.channel,
-            framecounter=self._framecounter,
-        )
-        self.sock.sendto(
-            req_packet + script.encode(),
-            (socket.gethostbyname(self.ip), self.port),
-        )
-        self._framecounter = bump_framecounter(self._framecounter)
-
+        self._send_request(script)
         self.logger.debug(f'sendtext: {script}')
         time.sleep(self.DELAY)
 
