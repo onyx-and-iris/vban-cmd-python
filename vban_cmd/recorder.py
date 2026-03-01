@@ -102,7 +102,9 @@ class Recorder(IRemote):
 
     def load(self, file: os.PathLike):
         try:
-            self.setter('load', str(file))
+            # Convert to string, use forward slashes, and wrap in quotes for spaces
+            file_path = f'"{os.fspath(file).replace(chr(92), "/")}"'
+            self.setter('load', file_path)
         except UnicodeError:
             raise VBANCMDError('File full directory must be a raw string')
 
