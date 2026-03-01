@@ -10,9 +10,9 @@ from typing import Union
 from .enums import NBS
 from .error import VBANCMDError
 from .event import Event
-from .packet.headers import VbanRequestHeader
+from .packet.headers import VbanMatrixResponseHeader, VbanRequestHeader
 from .subject import Subject
-from .util import bump_framecounter, deep_merge, script
+from .util import bump_framecounter, deep_merge
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -86,8 +86,8 @@ class VbanCmd(abc.ABC):
         self.logout()
 
     def login(self) -> None:
-        """Starts the subscriber and updater threads (unless in outbound mode)"""
-        if not self.outbound:
+        """Starts the subscriber and updater threads (unless disable_rt_listeners is True) and logs into Voicemeeter."""
+        if not self.disable_rt_listeners:
             self.event.info()
 
             self.stop_event = threading.Event()
@@ -139,11 +139,20 @@ class VbanCmd(abc.ABC):
         self._send_request(f'{cmd}={val};')
         self.cache[cmd] = val
 
-    @script
-    def sendtext(self, script):
+    def sendtext(self, script) -> str | None:
         """Sends a multiple parameter string over a network."""
         self._send_request(script)
         self.logger.debug(f'sendtext: {script}')
+
+        if self.disable_rt_listeners and script.endswith(('?', '?;')):
+            try:
+                response = VbanMatrixResponseHeader.extract_payload(
+                    self.sock.recv(1024)
+                )
+                return response
+            except ValueError as e:
+                self.logger.warning(f'Error extracting matrix response: {e}')
+
         time.sleep(self.DELAY)
 
     @property

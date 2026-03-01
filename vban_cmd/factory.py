@@ -85,7 +85,7 @@ class FactoryBase(VbanCmd):
             'channel': 0,
             'ratelimit': 0.01,
             'timeout': 5,
-            'outbound': False,
+            'disable_rt_listeners': False,
             'sync': False,
             'pdirty': False,
             'ldirty': False,
@@ -202,7 +202,13 @@ def vbancmd_factory(kind_id: str, **kwargs) -> VbanCmd:
             _factory = BasicFactory
         case 'banana':
             _factory = BananaFactory
-        case 'potato':
+        case 'potato' | 'matrix':
+            # matrix is a special kind where:
+            # - we don't need to scale the interface with the builder (in other words kind is arbitrary).
+            # - we don't ever need to use real-time listeners, so we disable them to avoid confusion
+            if kind_id == 'matrix':
+                kwargs['disable_rt_listeners'] = True
+                kind_id = 'potato'
             _factory = PotatoFactory
         case _:
             raise ValueError(f"Unknown Voicemeeter kind '{kind_id}'")
