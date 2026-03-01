@@ -5,7 +5,7 @@ import threading
 import time
 from pathlib import Path
 from queue import Queue
-from typing import Iterable, Union
+from typing import Union
 
 from .enums import NBS
 from .error import VBANCMDError
@@ -183,17 +183,6 @@ class VbanCmd(abc.ABC):
     def clear_dirty(self) -> None:
         while self.pdirty:
             time.sleep(self.DELAY)
-
-    def _get_levels(self, packet) -> Iterable:
-        """
-        returns both level arrays (strip_levels, bus_levels) BEFORE math conversion
-
-        strip levels in PREFADER mode.
-        """
-        return (
-            packet.inputlevels,
-            packet.outputlevels,
-        )
 
     def apply(self, data: dict):
         """

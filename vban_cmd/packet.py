@@ -19,8 +19,8 @@ VMPARAMSTRIP_SIZE = 174
 
 
 @dataclass
-class VbanRtPacket:
-    """Represents the body of a VBAN RT data packet"""
+class VbanPacket:
+    """Represents the header of a VBAN data packet"""
 
     nbs: NBS
     _kind: KindMapClass
@@ -31,10 +31,42 @@ class VbanRtPacket:
     _optionBits: bytes
     _samplerate: bytes
 
+    @property
+    def voicemeetertype(self) -> str:
+        """returns voicemeeter type as a string"""
+        return ['', 'basic', 'banana', 'potato'][
+            int.from_bytes(self._voicemeeterType, 'little')
+        ]
+
+    @property
+    def voicemeeterversion(self) -> tuple:
+        """returns voicemeeter version as a tuple"""
+        return tuple(self._voicemeeterVersion[i] for i in range(3, -1, -1))
+
+    @property
+    def samplerate(self) -> int:
+        """returns samplerate as an int"""
+        return int.from_bytes(self._samplerate, 'little')
+
+
+class Levels(NamedTuple):
+    strip: tuple[float, ...]
+    bus: tuple[float, ...]
+
+
+class Labels(NamedTuple):
+    strip: tuple[str, ...]
+    bus: tuple[str, ...]
+
+
+class States(NamedTuple):
+    strip: tuple[bytes, ...]
+    bus: tuple[bytes, ...]
+
 
 @dataclass
-class VbanRtPacketNBS0(VbanRtPacket):
-    """Represents the body of a VBAN RT data packet with NBS 0"""
+class VbanPacketNBS0(VbanPacket):
+    """Represents the body of a VBAN data packet with ident:0"""
 
     _inputLeveldB100: bytes
     _outputLeveldB100: bytes
@@ -82,20 +114,6 @@ class VbanRtPacketNBS0(VbanRtPacket):
             _busLabelUTF8c60=data[932:1412],
         )
 
-    def _generate_levels(self, levelarray) -> tuple:
-        return tuple(
-            int.from_bytes(levelarray[i : i + 2], 'little')
-            for i in range(0, len(levelarray), 2)
-        )
-
-    @property
-    def strip_levels(self):
-        return self._generate_levels(self._inputLeveldB100)
-
-    @property
-    def bus_levels(self):
-        return self._generate_levels(self._outputLeveldB100)
-
     def pdirty(self, other) -> bool:
         """True iff any defined parameter has changed"""
 
@@ -123,37 +141,34 @@ class VbanRtPacketNBS0(VbanRtPacket):
         return any(any(li) for li in (self._strip_comp, self._bus_comp))
 
     @property
-    def voicemeetertype(self) -> str:
-        """returns voicemeeter type as a string"""
-        type_ = ('basic', 'banana', 'potato')
-        return type_[int.from_bytes(self._voicemeeterType, 'little') - 1]
-
-    @property
-    def voicemeeterversion(self) -> tuple:
-        """returns voicemeeter version as a tuple"""
+    def strip_levels(self) -> tuple[int, ...]:
+        """Returns raw integer strip levels"""
         return tuple(
-            reversed(
-                tuple(
-                    int.from_bytes(self._voicemeeterVersion[i : i + 1], 'little')
-                    for i in range(4)
-                )
-            )
+            int.from_bytes(self._inputLeveldB100[i : i + 2], 'little')
+            for i in range(0, len(self._inputLeveldB100), 2)
         )
 
     @property
-    def samplerate(self) -> int:
-        """returns samplerate as an int"""
-        return int.from_bytes(self._samplerate, 'little')
+    def bus_levels(self) -> tuple[int, ...]:
+        """Returns raw integer bus levels"""
+        return tuple(
+            int.from_bytes(self._outputLeveldB100[i : i + 2], 'little')
+            for i in range(0, len(self._outputLeveldB100), 2)
+        )
 
     @property
-    def inputlevels(self) -> tuple:
-        """returns the entire level array across all inputs for a kind"""
-        return self.strip_levels[0 : self._kind.num_strip_levels]
+    def levels(self) -> Levels:
+        """Returns strip and bus levels converted to dB"""
 
-    @property
-    def outputlevels(self) -> tuple:
-        """returns the entire level array across all outputs for a kind"""
-        return self.bus_levels[0 : self._kind.num_bus_levels]
+        def to_db(raw_levels: tuple[int, ...]) -> tuple[float, ...]:
+            return tuple(
+                round((((1 << 16) - 1) - level) * -0.01, 1) for level in raw_levels
+            )
+
+        return Levels(
+            strip=to_db(self.strip_levels)[: self._kind.num_strip_levels],
+            bus=to_db(self.bus_levels)[: self._kind.num_bus_levels],
+        )
 
     @property
     def stripstate(self) -> tuple:
@@ -202,19 +217,35 @@ class VbanRtPacketNBS0(VbanRtPacket):
         )
 
     @property
-    def striplabels(self) -> tuple:
-        """returns tuple of strip labels"""
-        return tuple(
-            self._stripLabelUTF8c60[i : i + 60].decode().split('\x00')[0]
-            for i in range(0, 480, 60)
-        )
+    def labels(self) -> Labels:
+        """returns Labels namedtuple of strip and bus labels"""
 
-    @property
-    def buslabels(self) -> tuple:
-        """returns tuple of bus labels"""
-        return tuple(
-            self._busLabelUTF8c60[i : i + 60].decode().split('\x00')[0]
-            for i in range(0, 480, 60)
+        def _extract_labels_from_bytes(label_bytes: bytes) -> tuple[str, ...]:
+            """Extract null-terminated UTF-8 labels from 60-byte chunks"""
+            labels = []
+            for i in range(0, len(label_bytes), 60):
+                chunk = label_bytes[i : i + 60]
+                null_pos = chunk.find(b'\x00')
+                if null_pos == -1:
+                    try:
+                        label = chunk.decode('utf-8', errors='replace').rstrip('\x00')
+                    except UnicodeDecodeError:
+                        label = ''
+                else:
+                    try:
+                        label = (
+                            chunk[:null_pos].decode('utf-8', errors='replace')
+                            if null_pos > 0
+                            else ''
+                        )
+                    except UnicodeDecodeError:
+                        label = ''
+                labels.append(label)
+            return tuple(labels)
+
+        return Labels(
+            strip=_extract_labels_from_bytes(self._stripLabelUTF8c60),
+            bus=_extract_labels_from_bytes(self._busLabelUTF8c60),
         )
 
 
@@ -535,8 +566,8 @@ class VbanVMParamStrip:
 
 
 @dataclass
-class VbanRtPacketNBS1(VbanRtPacket):
-    """Represents the body of a VBAN RT data packet with NBS 1"""
+class VbanPacketNBS1(VbanPacket):
+    """Represents the body of a VBAN data packet with ident:1"""
 
     strips: tuple[VbanVMParamStrip, ...]
 

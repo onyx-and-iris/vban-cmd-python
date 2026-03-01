@@ -10,10 +10,10 @@ from .packet import (
     VBAN_PROTOCOL_SERVICE,
     VBAN_SERVICE_RTPACKET,
     SubscribeHeader,
-    VbanRtPacket,
+    VbanPacket,
+    VbanPacketNBS0,
+    VbanPacketNBS1,
     VbanRtPacketHeader,
-    VbanRtPacketNBS0,
-    VbanRtPacketNBS1,
 )
 from .util import bump_framecounter
 
@@ -75,16 +75,16 @@ class Producer(threading.Thread):
         (
             self._remote.cache['strip_level'],
             self._remote.cache['bus_level'],
-        ) = self._remote._get_levels(self._remote.public_packets[NBS.zero])
+        ) = self._remote.public_packets[NBS.zero].levels
 
-    def _get_rt(self) -> VbanRtPacket:
+    def _get_rt(self) -> VbanPacket:
         """Attempt to fetch data packet until a valid one found"""
 
         while True:
             if resp := self._fetch_rt_packet():
                 return resp
 
-    def _fetch_rt_packet(self) -> VbanRtPacket | None:
+    def _fetch_rt_packet(self) -> VbanPacket | None:
         try:
             data, _ = self._remote.sock.recvfrom(2048)
             if len(data) < HEADER_SIZE:
@@ -99,12 +99,12 @@ class Producer(threading.Thread):
 
             match response_header.format_nbs:
                 case NBS.zero:
-                    return VbanRtPacketNBS0.from_bytes(
+                    return VbanPacketNBS0.from_bytes(
                         nbs=NBS.zero, kind=self._remote.kind, data=data
                     )
 
                 case NBS.one:
-                    return VbanRtPacketNBS1.from_bytes(
+                    return VbanPacketNBS1.from_bytes(
                         nbs=NBS.one, kind=self._remote.kind, data=data
                     )
             return None
@@ -177,9 +177,6 @@ class Updater(threading.Thread):
                 (
                     self._remote.cache['strip_level'],
                     self._remote.cache['bus_level'],
-                ) = (
-                    self._remote._public_packets[NBS.zero].inputlevels,
-                    self._remote._public_packets[NBS.zero].outputlevels,
-                )
+                ) = self._remote.public_packets[NBS.zero].levels
                 self._remote.subject.notify(event)
         self.logger.debug(f'terminating {self.name} thread')

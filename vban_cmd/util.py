@@ -15,13 +15,27 @@ def cache_bool(func, param):
     return wrapper
 
 
+def cache_int(func, param):
+    """Check cache for an int prop"""
+
+    def wrapper(*args, **kwargs):
+        self, *rem = args
+        if self._cmd(param) in self._remote.cache:
+            return self._remote.cache.pop(self._cmd(param))
+        if self._remote.sync:
+            self._remote.clear_dirty()
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def cache_string(func, param):
     """Check cache for a string prop"""
 
     def wrapper(*args, **kwargs):
         self, *rem = args
         if self._cmd(param) in self._remote.cache:
-            return self._remote.cache.pop(self._cmd(param))
+            return self._remote.cache.pop(self._cmd(param)).strip('"')
         if self._remote.sync:
             self._remote.clear_dirty()
         return func(*args, **kwargs)
@@ -75,13 +89,19 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
     Generator function, accepts two tuples.
 
     Evaluates equality of each member in both tuples.
+    Only ignores changes when levels are very quiet (below noise floor).
     """
 
     for a, b in zip(t0, t1):
-        if ((1 << 16) - 1) - b <= 7200:
-            yield a == b
+        # Convert to dB-equivalent: higher raw values = quieter audio
+        a_db_equiv = ((1 << 16) - 1) - a
+        b_db_equiv = ((1 << 16) - 1) - b
+
+        # If both values are very quiet (> -72dB equivalent), ignore small changes
+        if a_db_equiv > 7200 and b_db_equiv > 7200:
+            yield True  # Both very quiet, ignore changes
         else:
-            yield True
+            yield a == b  # At least one has significant level, detect changes
 
 
 def deep_merge(dict1, dict2):

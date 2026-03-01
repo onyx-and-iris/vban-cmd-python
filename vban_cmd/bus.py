@@ -4,7 +4,7 @@ from typing import Union
 
 from .enums import NBS, BusModes
 from .iremote import IRemote
-from .meta import bus_mode_prop, channel_bool_prop, channel_label_prop
+from .meta import bus_mode_prop, channel_bool_prop, channel_int_prop, channel_label_prop
 
 
 class Bus(IRemote):
@@ -90,20 +90,9 @@ class BusLevel(IRemote):
     def getter(self):
         """Returns a tuple of level values for the channel."""
 
-        def fget(i):
-            return round((((1 << 16) - 1) - i) * -0.01, 1)
-
         if not self._remote.stopped() and self._remote.event.ldirty:
-            return tuple(
-                fget(i)
-                for i in self._remote.cache['bus_level'][self.range[0] : self.range[-1]]
-            )
-        return tuple(
-            fget(i)
-            for i in self._remote._get_levels(self.public_packets[NBS.zero])[1][
-                self.range[0] : self.range[-1]
-            ]
-        )
+            return self._remote.cache['bus_level'][self.range[0] : self.range[-1]]
+        return self.public_packets[NBS.zero].levels.bus[self.range[0] : self.range[-1]]
 
     @property
     def identifier(self) -> str:
@@ -188,7 +177,8 @@ def bus_factory(phys_bus, remote, i) -> Union[PhysicalBus, VirtualBus]:
             'eq': BusEQ.make(remote, i),
             'levels': BusLevel(remote, i),
             'mode': BUSMODEMIXIN_cls(remote, i),
-            **{param: channel_bool_prop(param) for param in ['mute', 'mono']},
+            **{param: channel_bool_prop(param) for param in ('mute',)},
+            **{param: channel_int_prop(param) for param in ('mono',)},
             'label': channel_label_prop(),
         },
     )(remote, i)

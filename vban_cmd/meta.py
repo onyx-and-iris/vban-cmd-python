@@ -1,7 +1,7 @@
 from functools import partial
 
 from .enums import NBS
-from .util import cache_bool, cache_float, cache_string
+from .util import cache_bool, cache_float, cache_int, cache_string
 
 
 def channel_bool_prop(param):
@@ -29,18 +29,39 @@ def channel_bool_prop(param):
     return property(fget, fset)
 
 
+def channel_int_prop(param):
+    """meta function for channel integer parameters"""
+
+    @partial(cache_int, param=param)
+    def fget(self):
+        cmd = self._cmd(param)
+        self.logger.debug(f'getter: {cmd}')
+        return int.from_bytes(
+            getattr(
+                self.public_packets[NBS.zero],
+                f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}state',
+            )[self.index],
+            'little',
+        ) & getattr(self._modes, f'_{param.lower()}')
+
+    def fset(self, val):
+        self.setter(param, val)
+
+    return property(fget, fset)
+
+
 def channel_label_prop():
     """meta function for channel label parameters"""
 
     @partial(cache_string, param='label')
     def fget(self) -> str:
-        return getattr(
-            self.public_packets[NBS.zero],
-            f'{"strip" if "strip" in type(self).__name__.lower() else "bus"}labels',
-        )[self.index]
+        if 'strip' in type(self).__name__.lower():
+            return self.public_packets[NBS.zero].labels.strip[self.index]
+        else:
+            return self.public_packets[NBS.zero].labels.bus[self.index]
 
     def fset(self, val: str):
-        self.setter('label', str(val))
+        self.setter('label', f'"{val}"')
 
     return property(fget, fset)
 
