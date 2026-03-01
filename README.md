@@ -8,19 +8,19 @@
 
 # VBAN CMD
 
-This python interface allows you to transmit Voicemeeter parameters over a network.
+This python interface allows you to send Voicemeeter/Matrix commands over a network.
 
-It may be used standalone or to extend the [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python)
+It offers the same public API as [Voicemeeter Remote Python API](https://github.com/onyx-and-iris/voicemeeter-api-python).
 
-There is no support for audio transfer in this package, only parameters.
+Only the VBAN SERVICE/TEXT subprotocols are supported, there is no support for AUDIO or MIDI in this package.
 
 For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Tested against
 
--   Basic 1.0.8.8
--   Banana 2.0.6.8
--   Potato 3.0.2.8
+-   Basic 1.1.2.2
+-   Banana 2.1.2.2
+-   Potato 3.1.2.2
 
 ## Requirements
 
@@ -29,7 +29,9 @@ For an outline of past/future changes refer to: [CHANGELOG](CHANGELOG.md)
 
 ## Installation
 
-`pip install vban-cmd`
+```console
+pip install vban-cmd
+```
 
 ## `Use`
 
@@ -112,6 +114,8 @@ Pass the kind of Voicemeeter as an argument. KIND_ID may be:
 -   `basic`
 -   `banana`
 -   `potato`
+
+A fourth kind `matrix` has been added, if you pass it as a KIND_ID you are expected to use the [{VbanCmd}.sendtext()](https://github.com/onyx-and-iris/vban-cmd-python?tab=readme-ov-file#vbansendtextscript) method for sending text requests.
 
 ## `Available commands`
 
@@ -511,7 +515,8 @@ You may pass the following optional keyword arguments:
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
 -   `timeout`: int=5, amount of time (seconds) to wait for an incoming RT data packet (parameter states).
--   `outbound`: boolean=False, set `True` if you are only interested in sending commands. (no rt packets will be received)
+-   `disable_rt_listeners`: boolean=False, set `True` if you don't wish to receive RT packets.
+    -   You can still send Matrix string requests ending with `?` and receive a response.
 
 #### `vban.pdirty`
 
@@ -527,6 +532,14 @@ Sends a script block as a string request, for example:
 
 ```python
 vban.sendtext('Strip[0].Mute=1;Bus[0].Mono=1')
+```
+
+You can even use it to send matrix commands:
+
+```python
+vban.sendtext('Point(ASIO128.IN[1..4],ASIO128.OUT[1]).dBGain = -3.0')
+
+vban.sendtext('Command.Version = ?')
 ```
 
 ## Errors

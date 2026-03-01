@@ -11,6 +11,24 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.7.0] - 2026-03-01
+
+### Added
+
+-   new kind `matrix` has been added, it does two things:
+    -   scales the interface according to `potato` kind, in practice this has no affect but it's required by the builder classes.
+    -   disables the rt listener threads since we aren't expecting to receive any from a Matrix VBAN server.
+        -   however, matrix responses may still be received with the {VbanCmd}.sendtext() method.
+
+### Changed
+
+-   `outbound` kwarg has been renamed to `disable_rt_listeners`. Since it's job is to disable the listener threads for incoming RT packets this new name is more descriptive.
+-   dataclasses representing packet headers and packets with ident:0 and ident:1 have been moved into an internal packet module.
+
+### Removed
+
+-   {VbanCmd}.sendtext() @script decorator removed. It's purpose was to attempt to convert a dictionary to a script but it was poorly implemented and there exists the {VbanCmd}.apply() method already.
+
 ## [2.6.0] - 2026-02-26
 
 ### Added
