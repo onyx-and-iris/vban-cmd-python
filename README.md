@@ -349,6 +349,40 @@ vban.strip[0].fadeto(-10.3, 1000)
 vban.bus[3].fadeby(-5.6, 500)
 ```
 
+### Recorder
+
+The following methods are available
+
+-   `play()`
+-   `stop()`
+-   `pause()`
+-   `record()`
+-   `ff()`
+-   `rew()`
+-   `load(filepath)`: raw string
+-   `goto(time_string)`: time string in format `hh:mm:ss`
+
+The following properties are available
+
+-   `samplerate`: int, (22050, 24000, 32000, 44100, 48000, 88200, 96000, 176400, 192000)
+-   `bitresolution`: int, (8, 16, 24, 32)
+-   `channel`: int, from 1 to 8
+-   `kbps`: int, (32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320)
+-   `gain`: float, from -60.0 to 12.0
+
+example:
+
+```python
+vban.recorder.play()
+vban.recorder.stop()
+
+# filepath as raw string
+vban.recorder.load(r'C:\music\mytune.mp3')
+
+# set the goto time to 1m 30s
+vban.recorder.goto('00:01:30')
+```
+
 ### Command
 
 Certain 'special' commands are defined by the API as performing actions rather than setting values. The following methods are available:
