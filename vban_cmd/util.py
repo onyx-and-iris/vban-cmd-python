@@ -86,21 +86,15 @@ def script(func):
 
 def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
     """
-    Generator function, accepts two tuples.
+    Generator function, accepts two tuples of dB values.
 
     Evaluates equality of each member in both tuples.
-    Only ignores changes when levels are very quiet (below noise floor).
+    Only ignores changes when levels are very quiet (below -72 dB).
     """
 
     for a, b in zip(t0, t1):
-        # Convert to dB-equivalent: higher raw values = quieter audio
-        a_db_equiv = ((1 << 16) - 1) - a
-        b_db_equiv = ((1 << 16) - 1) - b
-
-        # If both values are very quiet (> -72dB equivalent), ignore small changes
-        if a_db_equiv > 7200 and b_db_equiv > 7200:
-            yield True  # Both very quiet, ignore changes
-        else:
+        # If both values are very quiet (below -72dB), ignore small changes
+        if a <= -72.0 and b <= -72.0:
             yield a == b  # At least one has significant level, detect changes
 
 

@@ -134,41 +134,41 @@ class VbanPacketNBS0(VbanPacket):
         )
 
     def ldirty(self, strip_cache, bus_cache) -> bool:
+        """True iff any level has changed, ignoring changes when levels are very quiet"""
         self._strip_comp, self._bus_comp = (
             tuple(not val for val in comp(strip_cache, self.strip_levels)),
             tuple(not val for val in comp(bus_cache, self.bus_levels)),
         )
-        return any(any(li) for li in (self._strip_comp, self._bus_comp))
+        return any(self._strip_comp) or any(self._bus_comp)
 
     @property
-    def strip_levels(self) -> tuple[int, ...]:
-        """Returns raw integer strip levels"""
+    def strip_levels(self) -> tuple[float, ...]:
+        """Returns strip levels in dB"""
         return tuple(
-            int.from_bytes(self._inputLeveldB100[i : i + 2], 'little')
+            round(
+                int.from_bytes(self._inputLeveldB100[i : i + 2], 'little', signed=True)
+                * 0.01,
+                1,
+            )
             for i in range(0, len(self._inputLeveldB100), 2)
-        )
+        )[: self._kind.num_strip_levels]
 
     @property
-    def bus_levels(self) -> tuple[int, ...]:
-        """Returns raw integer bus levels"""
+    def bus_levels(self) -> tuple[float, ...]:
+        """Returns bus levels in dB"""
         return tuple(
-            int.from_bytes(self._outputLeveldB100[i : i + 2], 'little')
+            round(
+                int.from_bytes(self._outputLeveldB100[i : i + 2], 'little', signed=True)
+                * 0.01,
+                1,
+            )
             for i in range(0, len(self._outputLeveldB100), 2)
-        )
+        )[: self._kind.num_bus_levels]
 
     @property
     def levels(self) -> Levels:
-        """Returns strip and bus levels converted to dB"""
-
-        def to_db(raw_levels: tuple[int, ...]) -> tuple[float, ...]:
-            return tuple(
-                round((((1 << 16) - 1) - level) * -0.01, 1) for level in raw_levels
-            )
-
-        return Levels(
-            strip=to_db(self.strip_levels)[: self._kind.num_strip_levels],
-            bus=to_db(self.bus_levels)[: self._kind.num_bus_levels],
-        )
+        """Returns strip and bus levels as a namedtuple"""
+        return Levels(strip=self.strip_levels, bus=self.bus_levels)
 
     @property
     def stripstate(self) -> tuple:
