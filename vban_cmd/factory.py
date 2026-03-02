@@ -84,18 +84,20 @@ class FactoryBase(VbanCmd):
 
     def __init__(self, kind_id: str, **kwargs):
         defaultkwargs = {
-            'ip': 'localhost',
+            'host': 'localhost',
             'port': 6980,
             'streamname': 'Command1',
             'bps': 256000,
             'channel': 0,
-            'ratelimit': 0.01,
-            'timeout': 5,
+            'script_ratelimit': 0.05,  # 20 commands per second, to avoid overloading Voicemeeter
+            'timeout': 5,  # timeout on socket operations, in seconds
             'disable_rt_listeners': False,
             'sync': False,
             'pdirty': False,
             'ldirty': False,
         }
+        if 'ip' in kwargs:
+            defaultkwargs['host'] = kwargs.pop('ip')  # for backwards compatibility
         if 'subs' in kwargs:
             defaultkwargs |= kwargs.pop('subs')  # for backwards compatibility
         kwargs = defaultkwargs | kwargs

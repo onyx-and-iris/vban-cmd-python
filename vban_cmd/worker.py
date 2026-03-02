@@ -27,19 +27,13 @@ class Subscriber(threading.Thread):
 
     def run(self):
         while not self.stopped():
-            try:
-                for nbs in NBS:
-                    sub_packet = VbanSubscribeHeader().to_bytes(
-                        nbs, self._remote._get_next_framecounter()
-                    )
-                    self._remote.sock.sendto(
-                        sub_packet, (self._remote.ip, self._remote.port)
-                    )
-            except TimeoutError as e:
-                self.logger.exception(f'{type(e).__name__}: {e}')
-                raise VBANCMDConnectionError(
-                    f'timeout sending subscription to {self._remote.ip}:{self._remote.port}'
-                ) from e
+            for nbs in NBS:
+                sub_packet = VbanSubscribeHeader().to_bytes(
+                    nbs, self._remote._get_next_framecounter()
+                )
+                self._remote.sock.sendto(
+                    sub_packet, (self._remote.ip, self._remote.port)
+                )
 
             self.wait_until_stopped(10)
         self.logger.debug(f'terminating {self.name} thread')
@@ -128,7 +122,6 @@ class Producer(threading.Thread):
                 self.queue.put('pdirty')
             if self._remote.event.ldirty:
                 self.queue.put('ldirty')
-            # time.sleep(self._remote.ratelimit)
         self.logger.debug(f'terminating {self.name} thread')
         self.queue.put(None)
 

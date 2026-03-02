@@ -17,7 +17,7 @@ from .packet.headers import (
 )
 from .packet.ping0 import VbanPing0Payload, VbanServerType
 from .subject import Subject
-from .util import bump_framecounter, deep_merge
+from .util import bump_framecounter, deep_merge, ratelimit
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class VbanCmd(abc.ABC):
     def __init__(self, **kwargs):
         self.logger = logger.getChild(self.__class__.__name__)
         self.event = Event({k: kwargs.pop(k) for k in ('pdirty', 'ldirty')})
-        if not kwargs['ip']:
+        if not kwargs['host']:
             kwargs |= self._conn_from_toml()
         for attr, val in kwargs.items():
             setattr(self, attr, val)
@@ -52,9 +52,9 @@ class VbanCmd(abc.ABC):
         self.cache = {}
         self._pdirty = False
         self._ldirty = False
-        self._script = str()
         self.stop_event = None
         self.producer = None
+        self._last_script_request_time = 0
 
     @abc.abstractmethod
     def __str__(self):
@@ -113,7 +113,7 @@ class VbanCmd(abc.ABC):
             self.producer.start()
 
         self.logger.info(
-            "Successfully logged into VBANCMD {kind} with ip='{ip}', port={port}, streamname='{streamname}'".format(
+            "Successfully logged into VBANCMD {kind} with host='{host}', port={port}, streamname='{streamname}'".format(
                 **self.__dict__
             )
         )
@@ -149,8 +149,8 @@ class VbanCmd(abc.ABC):
         self.sock.settimeout(0.5)
 
         try:
-            self.sock.sendto(ping_packet, (socket.gethostbyname(self.ip), self.port))
-            self.logger.debug(f'PING sent to {self.ip}:{self.port}')
+            self.sock.sendto(ping_packet, (socket.gethostbyname(self.host), self.port))
+            self.logger.debug(f'PING sent to {self.host}:{self.port}')
 
             start_time = time.time()
             response_count = 0
@@ -193,11 +193,13 @@ class VbanCmd(abc.ABC):
                 f'PING timeout after {timeout}s, received {response_count} non-PONG packets'
             )
             raise VBANCMDConnectionError(
-                f'PING timeout: No response from {self.ip}:{self.port} after {timeout}s'
+                f'PING timeout: No response from {self.host}:{self.port} after {timeout}s'
             )
 
         except socket.gaierror as e:
-            raise VBANCMDConnectionError(f'Unable to resolve hostname {self.ip}') from e
+            raise VBANCMDConnectionError(
+                f'Unable to resolve hostname {self.host}'
+            ) from e
         except Exception as e:
             raise VBANCMDConnectionError(f'PING failed: {e}') from e
         finally:
@@ -230,7 +232,7 @@ class VbanCmd(abc.ABC):
                 framecounter=self._get_next_framecounter(),
                 payload=payload,
             ),
-            (socket.gethostbyname(self.ip), self.port),
+            (socket.gethostbyname(self.host), self.port),
         )
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
@@ -238,6 +240,7 @@ class VbanCmd(abc.ABC):
         self._send_request(f'{cmd}={val};')
         self.cache[cmd] = val
 
+    @ratelimit
     def sendtext(self, script) -> str | None:
         """Sends a multiple parameter string over a network."""
         self._send_request(script)
@@ -252,11 +255,9 @@ class VbanCmd(abc.ABC):
             except TimeoutError as e:
                 self.logger.exception(f'Timeout waiting for matrix response: {e}')
                 raise VBANCMDConnectionError(
-                    f'Timeout waiting for response from {self.ip}:{self.port}'
+                    f'Timeout waiting for response from {self.host}:{self.port}'
                 ) from e
             return payload
-
-        time.sleep(self.DELAY)
 
     @property
     def type(self) -> str:

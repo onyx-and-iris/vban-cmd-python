@@ -1,4 +1,21 @@
+import time
 from typing import Iterator
+
+
+def ratelimit(func):
+    """ratelimit decorator for {VbanCmd}.sendtext, to prevent flooding the network with script requests."""
+
+    def wrapper(*args, **kwargs):
+        self, *rem = args
+        if self.script_ratelimit > 0:
+            now = time.time()
+            elapsed = now - self._last_script_request_time
+            if elapsed < self.script_ratelimit:
+                time.sleep(self.script_ratelimit - elapsed)
+            self._last_script_request_time = time.time()
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def cache_bool(func, param):
