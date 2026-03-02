@@ -41,14 +41,14 @@ Load VBAN connection info from toml config. A valid `vban.toml` might look like 
 
 ```toml
 [connection]
-ip = "gamepc.local"
+host = "localhost"
 port = 6980
 streamname = "Command1"
 ```
 
 It should be placed in \<user home directory\> / "Documents" / "Voicemeeter" / "configs"
 
-Alternatively you may pass `ip`, `port`, `streamname` as keyword arguments.
+Alternatively you may pass `host`, `port`, `streamname` as keyword arguments.
 
 #### `__main__.py`
 
@@ -85,7 +85,7 @@ def main():
     KIND_ID = 'banana'
 
     with vban_cmd.api(
-        KIND_ID, ip='gamepc.local', port=6980, streamname='Command1'
+        KIND_ID, host='localhost', port=6980, streamname='Command1'
     ) as vban:
         do = ManyThings(vban)
         do.things()
@@ -541,14 +541,15 @@ print(vban.event.get())
 
 You may pass the following optional keyword arguments:
 
--   `ip`: str='localhost', ip or hostname of remote machine
+-   `host`: str='localhost', ip or hostname of remote machine
 -   `port`: int=6980, vban udp port of remote machine.
 -   `streamname`: str='Command1', name of the stream to connect to.
 -   `bps`: int=256000, bps rate of the stream.
 -   `channel`: int=0, channel on which to send the UDP requests.
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
--   `timeout`: int=5, amount of time (seconds) to wait for an incoming RT data packet (parameter states).
+-   `script_ratelimit`: float=0.05, default to 20 script requests per second. This affects vban.sendtext() specifically.
+-   `timeout`: int=5, timeout for socket operations.
 -   `disable_rt_listeners`: boolean=False, set `True` if you don't wish to receive RT packets.
     -   You can still send Matrix string requests ending with `?` and receive a response.
 
@@ -591,7 +592,7 @@ import vban_cmd
 
 logging.basicConfig(level=logging.DEBUG)
 
-opts = {'ip': 'ip.local', 'port': 6980, 'streamname': 'Command1'}
+opts = {'host': 'localhost', 'port': 6980, 'streamname': 'Command1'}
 with vban_cmd.api('banana', **opts) as vban:
     ...
 ```
