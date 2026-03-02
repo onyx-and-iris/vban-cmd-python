@@ -44,6 +44,7 @@ class VbanCmd(abc.ABC):
             setattr(self, attr, val)
 
         self._framecounter = 0
+        self._framecounter_lock = threading.Lock()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.settimeout(self.timeout)
@@ -130,13 +131,19 @@ class VbanCmd(abc.ABC):
     def stopped(self):
         return self.stop_event is None or self.stop_event.is_set()
 
+    def _get_next_framecounter(self) -> int:
+        """Thread-safe method to get and increment framecounter."""
+        with self._framecounter_lock:
+            current = self._framecounter
+            self._framecounter = bump_framecounter(self._framecounter)
+            return current
+
     def _ping(self, timeout: float = None) -> None:
         """Send a PING packet and wait for PONG response to verify connectivity."""
         if timeout is None:
             timeout = min(self.timeout, 3.0)
 
-        ping_packet = VbanPing0Payload.create_packet(self._framecounter)
-        self._framecounter = bump_framecounter(self._framecounter)
+        ping_packet = VbanPing0Payload.create_packet(self._get_next_framecounter())
 
         original_timeout = self.sock.gettimeout()
         self.sock.settimeout(0.5)
@@ -220,12 +227,11 @@ class VbanCmd(abc.ABC):
                 name=self.streamname,
                 bps_index=self.BPS_OPTS.index(self.bps),
                 channel=self.channel,
-                framecounter=self._framecounter,
+                framecounter=self._get_next_framecounter(),
                 payload=payload,
             ),
             (socket.gethostbyname(self.ip), self.port),
         )
-        self._framecounter = bump_framecounter(self._framecounter)
 
     def _set_rt(self, cmd: str, val: Union[str, float]):
         """Sends a string request command over a network."""
@@ -239,12 +245,16 @@ class VbanCmd(abc.ABC):
 
         if self.disable_rt_listeners and script.endswith(('?', '?;')):
             try:
-                response = VbanMatrixResponseHeader.extract_payload(
-                    self.sock.recv(1024)
-                )
-                return response
+                data, _ = self.sock.recvfrom(2048)
+                payload = VbanMatrixResponseHeader.extract_payload(data)
             except ValueError as e:
                 self.logger.warning(f'Error extracting matrix response: {e}')
+            except TimeoutError as e:
+                self.logger.exception(f'Timeout waiting for matrix response: {e}')
+                raise VBANCMDConnectionError(
+                    f'Timeout waiting for response from {self.ip}:{self.port}'
+                ) from e
+            return payload
 
         time.sleep(self.DELAY)
 

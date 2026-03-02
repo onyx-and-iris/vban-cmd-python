@@ -1,5 +1,4 @@
 import logging
-import socket
 import threading
 import time
 
@@ -13,7 +12,6 @@ from .packet.headers import (
 )
 from .packet.nbs0 import VbanPacketNBS0
 from .packet.nbs1 import VbanPacketNBS1
-from .util import bump_framecounter
 
 logger = logging.getLogger(__name__)
 
@@ -26,24 +24,24 @@ class Subscriber(threading.Thread):
         self._remote = remote
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
-        self._framecounter = 0
 
     def run(self):
         while not self.stopped():
             try:
                 for nbs in NBS:
-                    sub_packet = VbanSubscribeHeader().to_bytes(nbs, self._framecounter)
+                    sub_packet = VbanSubscribeHeader().to_bytes(
+                        nbs, self._remote._get_next_framecounter()
+                    )
                     self._remote.sock.sendto(
                         sub_packet, (self._remote.ip, self._remote.port)
                     )
-                    self._framecounter = bump_framecounter(self._framecounter)
-
-                self.wait_until_stopped(10)
-            except socket.gaierror as e:
+            except TimeoutError as e:
                 self.logger.exception(f'{type(e).__name__}: {e}')
                 raise VBANCMDConnectionError(
-                    f'unable to resolve hostname {self._remote.ip}'
+                    f'timeout sending subscription to {self._remote.ip}:{self._remote.port}'
                 ) from e
+
+            self.wait_until_stopped(10)
         self.logger.debug(f'terminating {self.name} thread')
 
     def stopped(self):
@@ -66,7 +64,6 @@ class Producer(threading.Thread):
         self.queue = queue
         self.stop_event = stop_event
         self.logger = logger.getChild(self.__class__.__name__)
-        self._remote.sock.settimeout(self._remote.timeout)
         self._remote._public_packets = [None] * (max(NBS) + 1)
         _pp = self._get_rt()
         self._remote._public_packets[_pp.nbs] = _pp
@@ -77,40 +74,33 @@ class Producer(threading.Thread):
 
     def _get_rt(self) -> VbanPacket:
         """Attempt to fetch data packet until a valid one found"""
-
         while True:
-            if resp := self._fetch_rt_packet():
-                return resp
+            try:
+                data, _ = self._remote.sock.recvfrom(2048)
+                if len(data) < HEADER_SIZE:
+                    continue
+            except TimeoutError as e:
+                self.logger.exception(f'{type(e).__name__}: {e}')
+                raise VBANCMDConnectionError(
+                    f'timeout waiting for response from {self._remote.ip}:{self._remote.port}'
+                ) from e
 
-    def _fetch_rt_packet(self) -> VbanPacket | None:
-        try:
-            data, _ = self._remote.sock.recvfrom(2048)
-            if len(data) < HEADER_SIZE:
-                return
-        except TimeoutError as e:
-            self.logger.exception(f'{type(e).__name__}: {e}')
-            raise VBANCMDConnectionError(
-                f'timeout waiting for response from {self._remote.ip}:{self._remote.port}'
-            ) from e
+            try:
+                header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
+            except ValueError as e:
+                self.logger.debug(f'Error parsing response packet: {e}')
+                continue
 
-        try:
-            header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
-        except ValueError as e:
-            self.logger.debug(f'Error parsing response packet: {e}')
-            return None
+            match header.format_nbs:
+                case NBS.zero:
+                    return VbanPacketNBS0.from_bytes(
+                        nbs=NBS.zero, kind=self._remote.kind, data=data
+                    )
 
-        match header.format_nbs:
-            case NBS.zero:
-                return VbanPacketNBS0.from_bytes(
-                    nbs=NBS.zero, kind=self._remote.kind, data=data
-                )
-
-            case NBS.one:
-                return VbanPacketNBS1.from_bytes(
-                    nbs=NBS.one, kind=self._remote.kind, data=data
-                )
-
-        return None
+                case NBS.one:
+                    return VbanPacketNBS1.from_bytes(
+                        nbs=NBS.one, kind=self._remote.kind, data=data
+                    )
 
     def stopped(self):
         return self.stop_event.is_set()
