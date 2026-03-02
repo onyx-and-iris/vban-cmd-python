@@ -8,9 +8,14 @@ from queue import Queue
 from typing import Union
 
 from .enums import NBS
-from .error import VBANCMDError
+from .error import VBANCMDConnectionError, VBANCMDError
 from .event import Event
-from .packet.headers import VbanMatrixResponseHeader, VbanRequestHeader
+from .packet.headers import (
+    VbanMatrixResponseHeader,
+    VbanPongHeader,
+    VbanRequestHeader,
+)
+from .packet.ping0 import VbanPing0Payload, VbanServerType
 from .subject import Subject
 from .util import bump_framecounter, deep_merge
 from .worker import Producer, Subscriber, Updater
@@ -41,6 +46,7 @@ class VbanCmd(abc.ABC):
         self._framecounter = 0
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.settimeout(self.timeout)
         self.subject = self.observer = Subject()
         self.cache = {}
         self._pdirty = False
@@ -86,7 +92,11 @@ class VbanCmd(abc.ABC):
         self.logout()
 
     def login(self) -> None:
-        """Starts the subscriber and updater threads (unless disable_rt_listeners is True) and logs into Voicemeeter."""
+        """Sends a PING packet to the VBAN server to verify connectivity and detect server type.
+        If the server is detected as Matrix, RT listeners will be disabled for compatibility.
+        """
+        self._ping()
+
         if not self.disable_rt_listeners:
             self.event.info()
 
@@ -119,6 +129,89 @@ class VbanCmd(abc.ABC):
 
     def stopped(self):
         return self.stop_event is None or self.stop_event.is_set()
+
+    def _ping(self, timeout: float = None) -> None:
+        """Send a PING packet and wait for PONG response to verify connectivity."""
+        if timeout is None:
+            timeout = min(self.timeout, 3.0)
+
+        ping_packet = VbanPing0Payload.create_packet(self._framecounter)
+        self._framecounter = bump_framecounter(self._framecounter)
+
+        original_timeout = self.sock.gettimeout()
+        self.sock.settimeout(0.5)
+
+        try:
+            self.sock.sendto(ping_packet, (socket.gethostbyname(self.ip), self.port))
+            self.logger.debug(f'PING sent to {self.ip}:{self.port}')
+
+            start_time = time.time()
+            response_count = 0
+            while time.time() - start_time < timeout:
+                try:
+                    data, addr = self.sock.recvfrom(2048)
+                    response_count += 1
+
+                    self.logger.debug(
+                        f'Received packet #{response_count} from {addr}: {len(data)} bytes'
+                    )
+                    self.logger.debug(
+                        f'Response header: {data[: min(32, len(data))].hex()}'
+                    )
+
+                    if VbanPongHeader.is_pong_response(data):
+                        self.logger.debug(
+                            f'PONG received from {addr}, connectivity confirmed'
+                        )
+
+                        server_type = VbanPing0Payload.detect_server_type(data)
+                        self._handle_server_type(server_type)
+
+                        return  # Exit after successful PONG response
+                    else:
+                        if len(data) >= 8:
+                            if data[:4] == b'VBAN':
+                                protocol = data[4] & 0xE0
+                                nbc = data[6]
+                                self.logger.debug(
+                                    f'Non-PONG VBAN packet: protocol=0x{protocol:02x}, nbc=0x{nbc:02x}'
+                                )
+                            else:
+                                self.logger.debug('Non-VBAN packet received')
+
+                except socket.timeout:
+                    continue
+
+            self.logger.debug(
+                f'PING timeout after {timeout}s, received {response_count} non-PONG packets'
+            )
+            raise VBANCMDConnectionError(
+                f'PING timeout: No response from {self.ip}:{self.port} after {timeout}s'
+            )
+
+        except socket.gaierror as e:
+            raise VBANCMDConnectionError(f'Unable to resolve hostname {self.ip}') from e
+        except Exception as e:
+            raise VBANCMDConnectionError(f'PING failed: {e}') from e
+        finally:
+            self.sock.settimeout(original_timeout)
+
+    def _handle_server_type(self, server_type: VbanServerType) -> None:
+        """Handle the detected server type by adjusting settings accordingly."""
+        match server_type:
+            case VbanServerType.VOICEMEETER:
+                self.logger.debug(
+                    'Detected Voicemeeter VBAN server - RT listeners supported'
+                )
+            case VbanServerType.MATRIX:
+                self.logger.info(
+                    'Detected Matrix VBAN server - disabling RT listeners for compatibility'
+                )
+                self.disable_rt_listeners = True
+            case _:
+                self.logger.debug(
+                    f'Unknown server type ({server_type}) - using default settings'
+                )
 
     def _send_request(self, payload: str) -> None:
         """Sends a request packet over the network and bumps the framecounter."""
