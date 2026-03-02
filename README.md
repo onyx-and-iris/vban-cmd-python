@@ -474,7 +474,7 @@ example:
 import vban_cmd
 
 opts = {
-    'ip': '<ip address>',
+    'host': '<ip address>',
     'streamname': 'Command1',
     'port': 6980,
 }
