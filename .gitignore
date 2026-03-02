@@ -159,3 +159,5 @@ config.toml
 vban.toml
 
 .vscode/
+
+PING_FEATURE.md
