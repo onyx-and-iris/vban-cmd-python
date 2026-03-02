@@ -11,6 +11,16 @@ Before any major/minor/patch bump all unit tests will be run to verify they pass
 
 -   [x]
 
+## [2.9.0] - 2026-03-02
+
+### Added
+
+-   Recorder class, see [Recorder](https://github.com/onyx-and-iris/vban-cmd-python?tab=readme-ov-file#recorder) in README.
+-   Ping/pong implemented. If a pong is not received {VbanCmd}.login() will fail fast. This prevents the rt listener threads from starting up.
+    -   It has the added benefit of automatically detecting the type of VBAN server (Voicemeeter or Matrix).
+-   A thread lock around the framecounter to improve thread safety since it can be accessed by both the main thread and the Producer thread.
+
+
 ## [2.7.0] - 2026-03-01
 
 ### Added
