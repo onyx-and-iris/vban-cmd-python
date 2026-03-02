@@ -5,7 +5,7 @@ import threading
 import time
 from pathlib import Path
 from queue import Queue
-from typing import Union
+from typing import Mapping, Union
 
 from .enums import NBS
 from .error import VBANCMDConnectionError, VBANCMDError
@@ -289,12 +289,8 @@ class VbanCmd(abc.ABC):
         while self.pdirty:
             time.sleep(self.DELAY)
 
-    def apply(self, data: dict):
-        """
-        Sets all parameters of a dict
-
-        minor delay between each recursion
-        """
+    def apply(self, data: Mapping):
+        """Set all parameters of a dict"""
 
         def target(key):
             match key.split('-'):
@@ -314,7 +310,9 @@ class VbanCmd(abc.ABC):
                     raise ValueError(ERR_MSG)
             return target[int(index)]
 
-        [target(key).apply(di).then_wait() for key, di in data.items()]
+        for key, di in data.items():
+            target(key).apply(di)
+            time.sleep(self.DELAY)
 
     def apply_config(self, name):
         """applies a config from memory"""

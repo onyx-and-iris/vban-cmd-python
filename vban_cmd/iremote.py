@@ -1,6 +1,5 @@
 import abc
 import logging
-import time
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -123,6 +122,8 @@ class IRemote(abc.ABC):
     def apply(self, data):
         """Sets all parameters of a dict for the channel."""
 
+        script = ''
+
         def fget(attr, val):
             if attr == 'mode':
                 return (f'mode.{val}', 1)
@@ -138,14 +139,9 @@ class IRemote(abc.ABC):
                         val = 1 if val else 0
 
                     self._remote.cache[self._cmd(attr)] = val
-                    self._remote._script += f'{self._cmd(attr)}={val};'
+                    script += f'{self._cmd(attr)}={val};'
             else:
                 target = getattr(self, attr)
                 target.apply(val)
 
-        self._remote.sendtext(self._remote._script)
-        return self
-
-    def then_wait(self):
-        self._remote._script = str()
-        time.sleep(self._remote.DELAY)
+        self._remote.sendtext(script)
