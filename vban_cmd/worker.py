@@ -32,7 +32,7 @@ class Subscriber(threading.Thread):
                     nbs, self._remote._get_next_framecounter()
                 )
                 self._remote.sock.sendto(
-                    sub_packet, (self._remote.ip, self._remote.port)
+                    sub_packet, (self._remote.host, self._remote.port)
                 )
 
             self.wait_until_stopped(10)
@@ -76,7 +76,7 @@ class Producer(threading.Thread):
             except TimeoutError as e:
                 self.logger.exception(f'{type(e).__name__}: {e}')
                 raise VBANCMDConnectionError(
-                    f'timeout waiting for response from {self._remote.ip}:{self._remote.port}'
+                    f'timeout waiting for response from {self._remote.host}:{self._remote.port}'
                 ) from e
 
             try:
