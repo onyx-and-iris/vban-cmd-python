@@ -312,7 +312,6 @@ class VbanCmd(abc.ABC):
 
         for key, di in data.items():
             target(key).apply(di)
-            time.sleep(self.DELAY)
 
     def apply_config(self, name):
         """applies a config from memory"""
