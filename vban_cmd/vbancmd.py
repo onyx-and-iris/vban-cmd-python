@@ -17,7 +17,7 @@ from .packet.headers import (
 )
 from .packet.ping0 import VbanPing0Payload, VbanServerType
 from .subject import Subject
-from .util import bump_framecounter, deep_merge, ping_timeout, ratelimit
+from .util import bump_framecounter, deep_merge, pong_timeout, ratelimit
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,6 @@ class VbanCmd(abc.ABC):
     @abc.abstractmethod
     def __str__(self):
         """Ensure subclasses override str magic method"""
-        pass
 
     def _conn_from_toml(self) -> dict:
         try:
@@ -97,6 +96,7 @@ class VbanCmd(abc.ABC):
         If the server is detected as Matrix, RT listeners will be disabled for compatibility.
         """
         self._ping()
+        self._handle_pong()
 
         if not self.disable_rt_listeners:
             self.event.info()
@@ -138,30 +138,27 @@ class VbanCmd(abc.ABC):
             self._framecounter = bump_framecounter(self._framecounter)
             return current
 
-    @ping_timeout
-    def _ping(self, data=None, addr=None) -> bool:
-        """Handles the PING/PONG handshake with the VBAN server, including timeout logic and server type detection.
+    def _ping(self):
+        """Initiates the PING/PONG handshake with the VBAN server."""
+        ping_packet = VbanPing0Payload.create_packet(self._get_next_framecounter())
 
-        If data and addr are None, it sends a PING packet. If a PONG response is received, it returns True.
+        try:
+            self.sock.sendto(ping_packet, (socket.gethostbyname(self.host), self.port))
+            self.logger.debug(f'PING sent to {self.host}:{self.port}')
 
-        If a non-PONG packet is received, it logs the packet details and continues waiting until timeout"""
-        if data is None and addr is None:
-            ping_packet = VbanPing0Payload.create_packet(self._get_next_framecounter())
+        except socket.gaierror as e:
+            raise VBANCMDConnectionError(
+                f'Unable to resolve hostname {self.host}'
+            ) from e
+        except Exception as e:
+            raise VBANCMDConnectionError(f'PING failed: {e}') from e
 
-            try:
-                self.sock.sendto(
-                    ping_packet, (socket.gethostbyname(self.host), self.port)
-                )
-                self.logger.debug(f'PING sent to {self.host}:{self.port}')
+    @pong_timeout
+    def _handle_pong(self) -> bool:
+        """Handles incoming packets during the PING/PONG handshake, looking for a valid PONG response to confirm connectivity and detect server type.
 
-            except socket.gaierror as e:
-                raise VBANCMDConnectionError(
-                    f'Unable to resolve hostname {self.host}'
-                ) from e
-            except Exception as e:
-                raise VBANCMDConnectionError(f'PING failed: {e}') from e
-
-            return False
+        Returns True if a valid PONG is received, False otherwise."""
+        data, addr = self.sock.recvfrom(2048)
 
         if VbanPongHeader.is_pong_response(data):
             self.logger.debug(f'PONG received from {addr}, connectivity confirmed')

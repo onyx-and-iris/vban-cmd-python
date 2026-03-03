@@ -21,8 +21,8 @@ def ratelimit(func):
     return wrapper
 
 
-def ping_timeout(func):
-    """ping_timeout decorator for {VbanCmd}._ping, to handle timeout logic and socket management."""
+def pong_timeout(func):
+    """pong_timeout decorator for {VbanCmd}._handle_pong, to handle timeout logic and socket management."""
 
     def wrapper(self, timeout: float = None):
         if timeout is None:
@@ -32,25 +32,14 @@ def ping_timeout(func):
         self.sock.settimeout(0.5)
 
         try:
-            func(self)
-
             start_time = time.time()
             response_count = 0
 
             while time.time() - start_time < timeout:
                 try:
-                    data, addr = self.sock.recvfrom(2048)
                     response_count += 1
 
-                    self.logger.debug(
-                        f'Received packet #{response_count} from {addr}: {len(data)} bytes'
-                    )
-                    self.logger.debug(
-                        f'Response header: {data[: min(32, len(data))].hex()}'
-                    )
-
-                    result = func(self, data, addr)
-                    if result is True:
+                    if func(self):
                         return
 
                 except socket.timeout:
