@@ -1,6 +1,7 @@
 from functools import partial
 
 from .enums import NBS, BusModes
+from .packet.enums import ChannelModes
 from .util import cache_bool, cache_float, cache_int, cache_string
 
 
@@ -27,7 +28,7 @@ def channel_bool_prop(param):
         elif param.lower() == 'mc':
             return channel_state.mc
         else:
-            return channel_state.get_mode(getattr(self._modes, f'_{param.lower()}'))
+            return channel_state.get_mode(getattr(ChannelModes, param.upper()))
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)
@@ -55,7 +56,7 @@ def channel_int_prop(param):
             bit_9 = (channel_state._state >> 9) & 1
             return (bit_9 << 1) | bit_2
         else:
-            return channel_state.get_mode_int(getattr(self._modes, f'_{param.lower()}'))
+            return channel_state.get_mode_int(getattr(ChannelModes, param.upper()))
 
     def fset(self, val):
         self.setter(param, val)
@@ -89,7 +90,7 @@ def strip_output_prop(param):
 
         strip_state = self.public_packets[NBS.zero].states.strip[self.index]
 
-        return strip_state.get_mode(getattr(self._modes, f'_bus{param.lower()}'))
+        return strip_state.get_mode(getattr(ChannelModes, f'BUS{param.upper()}'))
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)

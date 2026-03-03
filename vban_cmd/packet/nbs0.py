@@ -5,6 +5,7 @@ from vban_cmd.enums import NBS
 from vban_cmd.kinds import KindMapClass
 from vban_cmd.util import comp
 
+from .enums import ChannelModes
 from .headers import VbanPacket
 
 
@@ -31,57 +32,57 @@ class ChannelState:
     # Common boolean modes
     @property
     def mute(self) -> bool:
-        return (self._state & 0x00000001) != 0
+        return (self._state & ChannelModes.MUTE) != 0
 
     @property
     def solo(self) -> bool:
-        return (self._state & 0x00000002) != 0
+        return (self._state & ChannelModes.SOLO) != 0
 
     @property
     def mono(self) -> bool:
-        return (self._state & 0x00000004) != 0
+        return (self._state & ChannelModes.MONO) != 0
 
     @property
     def mc(self) -> bool:
-        return (self._state & 0x00000008) != 0
+        return (self._state & ChannelModes.MC) != 0
 
     # EQ modes
     @property
     def eq_on(self) -> bool:
-        return (self._state & 0x00000100) != 0
+        return (self._state & ChannelModes.ON) != 0
 
     @property
     def eq_ab(self) -> bool:
-        return (self._state & 0x00000800) != 0
+        return (self._state & ChannelModes.AB) != 0
 
     # Bus assignments (strip to bus routing)
     @property
     def busa1(self) -> bool:
-        return (self._state & 0x00001000) != 0
+        return (self._state & ChannelModes.BUSA1) != 0
 
     @property
     def busa2(self) -> bool:
-        return (self._state & 0x00002000) != 0
+        return (self._state & ChannelModes.BUSA2) != 0
 
     @property
     def busa3(self) -> bool:
-        return (self._state & 0x00004000) != 0
+        return (self._state & ChannelModes.BUSA3) != 0
 
     @property
     def busa4(self) -> bool:
-        return (self._state & 0x00008000) != 0
+        return (self._state & ChannelModes.BUSA4) != 0
 
     @property
     def busb1(self) -> bool:
-        return (self._state & 0x00010000) != 0
+        return (self._state & ChannelModes.BUSB1) != 0
 
     @property
     def busb2(self) -> bool:
-        return (self._state & 0x00020000) != 0
+        return (self._state & ChannelModes.BUSB2) != 0
 
     @property
     def busb3(self) -> bool:
-        return (self._state & 0x00040000) != 0
+        return (self._state & ChannelModes.BUSB3) != 0
 
 
 class States(NamedTuple):
