@@ -140,10 +140,11 @@ class VbanCmd(abc.ABC):
 
     def _ping(self):
         """Initiates the PING/PONG handshake with the VBAN server."""
-        ping_packet = VbanPing0Payload.create_packet(self._get_next_framecounter())
-
         try:
-            self.sock.sendto(ping_packet, (socket.gethostbyname(self.host), self.port))
+            self.sock.sendto(
+                VbanPing0Payload.create_packet(self._get_next_framecounter()),
+                (socket.gethostbyname(self.host), self.port),
+            )
             self.logger.debug(f'PING sent to {self.host}:{self.port}')
 
         except socket.gaierror as e:
