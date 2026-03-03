@@ -1,6 +1,6 @@
 [project]
 name = "vban-cmd"
-version = "2.9.3"
+version = "2.9.4"
 description = "Python interface for the VBAN RT Packet Service (Sendtext)"
 authors = [{ name = "Onyx and Iris", email = "code@onyxandiris.online" }]
 license = { text = "MIT" }
