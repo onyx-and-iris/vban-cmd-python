@@ -1,5 +1,8 @@
+import socket
 import time
 from typing import Iterator
+
+from .error import VBANCMDConnectionError
 
 
 def ratelimit(func):
@@ -14,6 +17,54 @@ def ratelimit(func):
                 time.sleep(self.script_ratelimit - elapsed)
             self._last_script_request_time = time.time()
         return func(*args, **kwargs)
+
+    return wrapper
+
+
+def ping_timeout(func):
+    """ping_timeout decorator for {VbanCmd}._ping, to handle timeout logic and socket management."""
+
+    def wrapper(self, timeout: float = None):
+        if timeout is None:
+            timeout = min(self.timeout, 3.0)
+
+        original_timeout = self.sock.gettimeout()
+        self.sock.settimeout(0.5)
+
+        try:
+            func(self)
+
+            start_time = time.time()
+            response_count = 0
+
+            while time.time() - start_time < timeout:
+                try:
+                    data, addr = self.sock.recvfrom(2048)
+                    response_count += 1
+
+                    self.logger.debug(
+                        f'Received packet #{response_count} from {addr}: {len(data)} bytes'
+                    )
+                    self.logger.debug(
+                        f'Response header: {data[: min(32, len(data))].hex()}'
+                    )
+
+                    result = func(self, data, addr)
+                    if result is True:
+                        return
+
+                except socket.timeout:
+                    continue
+
+            self.logger.debug(
+                f'PING timeout after {timeout}s, received {response_count} non-PONG packets'
+            )
+            raise VBANCMDConnectionError(
+                f'PING timeout: No response from {self.host}:{self.port} after {timeout}s'
+            )
+
+        finally:
+            self.sock.settimeout(original_timeout)
 
     return wrapper
 
