@@ -28,7 +28,7 @@ def channel_bool_prop(param):
         elif param.lower() == 'mc':
             return channel_state.mc
         else:
-            return channel_state.get_mode(getattr(ChannelModes, param.upper()))
+            return channel_state.get_mode(getattr(ChannelModes, param.upper()).value)
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)
@@ -56,7 +56,9 @@ def channel_int_prop(param):
             bit_9 = (channel_state._state >> 9) & 1
             return (bit_9 << 1) | bit_2
         else:
-            return channel_state.get_mode_int(getattr(ChannelModes, param.upper()))
+            return channel_state.get_mode_int(
+                getattr(ChannelModes, param.upper()).value
+            )
 
     def fset(self, val):
         self.setter(param, val)
@@ -90,7 +92,7 @@ def strip_output_prop(param):
 
         strip_state = self.public_packets[NBS.zero].states.strip[self.index]
 
-        return strip_state.get_mode(getattr(ChannelModes, f'BUS{param.upper()}'))
+        return strip_state.get_mode(getattr(ChannelModes, f'BUS{param.upper()}').value)
 
     def fset(self, val):
         self.setter(param, 1 if val else 0)

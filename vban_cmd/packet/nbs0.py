@@ -32,57 +32,57 @@ class ChannelState:
     # Common boolean modes
     @property
     def mute(self) -> bool:
-        return (self._state & ChannelModes.MUTE) != 0
+        return (self._state & ChannelModes.MUTE.value) != 0
 
     @property
     def solo(self) -> bool:
-        return (self._state & ChannelModes.SOLO) != 0
+        return (self._state & ChannelModes.SOLO.value) != 0
 
     @property
     def mono(self) -> bool:
-        return (self._state & ChannelModes.MONO) != 0
+        return (self._state & ChannelModes.MONO.value) != 0
 
     @property
     def mc(self) -> bool:
-        return (self._state & ChannelModes.MC) != 0
+        return (self._state & ChannelModes.MC.value) != 0
 
     # EQ modes
     @property
     def eq_on(self) -> bool:
-        return (self._state & ChannelModes.ON) != 0
+        return (self._state & ChannelModes.ON.value) != 0
 
     @property
     def eq_ab(self) -> bool:
-        return (self._state & ChannelModes.AB) != 0
+        return (self._state & ChannelModes.AB.value) != 0
 
     # Bus assignments (strip to bus routing)
     @property
     def busa1(self) -> bool:
-        return (self._state & ChannelModes.BUSA1) != 0
+        return (self._state & ChannelModes.BUSA1.value) != 0
 
     @property
     def busa2(self) -> bool:
-        return (self._state & ChannelModes.BUSA2) != 0
+        return (self._state & ChannelModes.BUSA2.value) != 0
 
     @property
     def busa3(self) -> bool:
-        return (self._state & ChannelModes.BUSA3) != 0
+        return (self._state & ChannelModes.BUSA3.value) != 0
 
     @property
     def busa4(self) -> bool:
-        return (self._state & ChannelModes.BUSA4) != 0
+        return (self._state & ChannelModes.BUSA4.value) != 0
 
     @property
     def busb1(self) -> bool:
-        return (self._state & ChannelModes.BUSB1) != 0
+        return (self._state & ChannelModes.BUSB1.value) != 0
 
     @property
     def busb2(self) -> bool:
-        return (self._state & ChannelModes.BUSB2) != 0
+        return (self._state & ChannelModes.BUSB2.value) != 0
 
     @property
     def busb3(self) -> bool:
-        return (self._state & ChannelModes.BUSB3) != 0
+        return (self._state & ChannelModes.BUSB3.value) != 0
 
 
 class States(NamedTuple):
