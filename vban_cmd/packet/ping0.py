@@ -1,3 +1,4 @@
+import struct
 from dataclasses import dataclass
 from enum import Enum
 
@@ -65,30 +66,31 @@ class VbanPing0Payload:
         """Convert payload to bytes"""
         payload = cls()
 
-        data = bytearray()
-        data.extend(payload.bit_type.to_bytes(4, 'little'))
-        data.extend(payload.bit_feature.to_bytes(4, 'little'))
-        data.extend(payload.bit_feature_ex.to_bytes(4, 'little'))
-        data.extend(payload.preferred_rate.to_bytes(4, 'little'))
-        data.extend(payload.min_rate.to_bytes(4, 'little'))
-        data.extend(payload.max_rate.to_bytes(4, 'little'))
-        data.extend(payload.color_rgb.to_bytes(4, 'little'))
-        data.extend(payload.version)
-        data.extend(payload.gps_position)
-        data.extend(payload.user_position)
-        data.extend(payload.lang_code)
-        data.extend(payload.reserved)
-        data.extend(payload.reserved_ex)
-        data.extend(payload.distant_ip)
-        data.extend(payload.distant_port.to_bytes(2, 'little'))
-        data.extend(payload.distant_reserved.to_bytes(2, 'little'))
-        data.extend(payload.device_name)
-        data.extend(payload.manufacturer_name)
-        data.extend(payload.application_name)
-        data.extend(payload.host_name)
-        data.extend(payload.user_name)
-        data.extend(payload.user_comment)
-        return bytes(data)
+        return struct.pack(
+            '<7I4s8s8s8s8s64s32s2H64s64s64s64s128s128s',
+            payload.bit_type,
+            payload.bit_feature,
+            payload.bit_feature_ex,
+            payload.preferred_rate,
+            payload.min_rate,
+            payload.max_rate,
+            payload.color_rgb,
+            payload.version,
+            payload.gps_position,
+            payload.user_position,
+            payload.lang_code,
+            payload.reserved,
+            payload.reserved_ex,
+            payload.distant_ip,
+            payload.distant_port,
+            payload.distant_reserved,
+            payload.device_name,
+            payload.manufacturer_name,
+            payload.application_name,
+            payload.host_name,
+            payload.user_name,
+            payload.user_comment,
+        )
 
     @classmethod
     def create_packet(cls, framecounter: int) -> bytes:

@@ -1,3 +1,4 @@
+import struct
 from dataclasses import dataclass
 
 from vban_cmd.enums import NBS
@@ -34,15 +35,16 @@ class VbanPingHeader:
         """Creates the PING header bytes only."""
         header = cls(framecounter=framecounter)
 
-        data = bytearray()
-        data.extend(header.vban)
-        data.extend(header.format_sr.to_bytes(1, 'little'))
-        data.extend(header.format_nbs.to_bytes(1, 'little'))
-        data.extend(header.format_nbc.to_bytes(1, 'little'))
-        data.extend(header.format_bit.to_bytes(1, 'little'))
-        data.extend(header.streamname)
-        data.extend(header.framecounter.to_bytes(4, 'little'))
-        return bytes(data)
+        return struct.pack(
+            '<4s4B16sI',
+            header.vban,
+            header.format_sr,
+            header.format_nbs,
+            header.format_nbc,
+            header.format_bit,
+            header.streamname,
+            header.framecounter,
+        )
 
 
 @dataclass
@@ -163,15 +165,16 @@ class VbanRTSubscribeHeader:
     def to_bytes(cls, nbs: NBS, framecounter: int) -> bytes:
         header = cls(nbs=nbs)
 
-        data = bytearray()
-        data.extend(header.vban)
-        data.extend(header.format_sr)
-        data.extend(header.format_nbs)
-        data.extend(header.format_nbc)
-        data.extend(header.format_bit)
-        data.extend(header.streamname)
-        data.extend(framecounter.to_bytes(4, 'little'))
-        return bytes(data)
+        return struct.pack(
+            '<4s4B16sI',
+            header.vban,
+            header.format_sr[0],
+            header.format_nbs[0],
+            header.format_nbc[0],
+            header.format_bit[0],
+            header.streamname,
+            framecounter,
+        )
 
 
 @dataclass
@@ -215,15 +218,16 @@ class VbanRTRequestHeader:
             name=name, bps_index=bps_index, channel=channel, framecounter=framecounter
         )
 
-        data = bytearray()
-        data.extend(header.vban)
-        data.extend(header.sr)
-        data.extend(header.nbs)
-        data.extend(header.nbc)
-        data.extend(header.bit)
-        data.extend(header.streamname)
-        data.extend(header.framecounter.to_bytes(4, 'little'))
-        return bytes(data)
+        return struct.pack(
+            '<4s4B16sI',
+            header.vban,
+            header.sr[0],
+            header.nbs[0],
+            header.nbc[0],
+            header.bit[0],
+            header.streamname,
+            header.framecounter,
+        )
 
     @classmethod
     def encode_with_payload(
