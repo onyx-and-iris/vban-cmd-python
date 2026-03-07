@@ -227,7 +227,7 @@ class VbanRTPacketNBS0(VbanRTPacket):
         bus_gain_raw = struct.unpack('<8h', self._busGaindB100)
         return tuple(round(val * 0.01, 2) for val in bus_gain_raw)
 
-    @property
+    @cached_property
     def labels(self) -> Labels:
         """returns Labels namedtuple of strip and bus labels"""
 
