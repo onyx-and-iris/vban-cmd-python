@@ -124,16 +124,11 @@ def comp(t0: tuple, t1: tuple) -> Iterator[bool]:
     """
     Generator function, accepts two tuples of dB values.
 
-    Evaluates equality of each member in both tuples.
-    Only ignores changes when levels are very quiet (below -72 dB).
+    Returns True when levels are equal (no change), False when different.
     """
 
     for a, b in zip(t0, t1):
-        # If both values are very quiet (below -72dB), ignore small changes
-        if a <= -72.0 and b <= -72.0:
-            yield a == b  # Both quiet, check if they're equal
-        else:
-            yield a != b  # At least one has significant level, detect changes
+        yield a == b
 
 
 def deep_merge(dict1, dict2):
