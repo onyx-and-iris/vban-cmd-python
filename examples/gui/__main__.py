@@ -103,7 +103,7 @@ class App(tk.Tk):
 def main():
     KIND_ID = 'banana'
     conn = {
-        'ip': os.environ.get('VBANCMD_IP', 'localhost'),
+        'host': os.environ.get('VBANCMD_HOST', 'localhost'),
         'port': int(os.environ.get('VBANCMD_PORT', 6980)),
         'streamname': os.environ.get('VBANCMD_STREAMNAME', 'Command1'),
     }
