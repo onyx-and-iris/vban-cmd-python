@@ -1,6 +1,36 @@
 from enum import Flag
 
 
+class SubProtocols(Flag):
+    """Sub Protocols - Bit flags that can be combined"""
+
+    AUDIO = 0x00
+    SERIAL = 0x20
+    TEXT = 0x40
+    SERVICE = 0x60
+    MASK = 0xE0
+
+
+class ServiceTypes(Flag):
+    """Service Types - Bit flags that can be combined"""
+
+    PING = 0
+    PONG = 0
+    CHATUTF8 = 1
+    RTPACKETREGISTER = 32
+    RTPACKET = 33
+    REQUESTREPLY = 0x02  # A Matrix reply
+    FNCT_REPLY = 0x80  # An RTPacket reply
+
+
+class StreamTypes(Flag):
+    """Stream Types - Bit flags that can be combined"""
+
+    ASCII = 0x00
+    UTF8 = 0x10
+    WCHAR = 0x20
+
+
 class ChannelModes(Flag):
     """Channel Modes - Bit flags that can be combined"""
 

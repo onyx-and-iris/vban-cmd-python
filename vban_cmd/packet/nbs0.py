@@ -6,7 +6,7 @@ from vban_cmd.kinds import KindMapClass
 from vban_cmd.util import comp
 
 from .enums import ChannelModes
-from .headers import VbanPacket
+from .headers import VbanRTPacket
 
 
 class Levels(NamedTuple):
@@ -96,8 +96,8 @@ class Labels(NamedTuple):
 
 
 @dataclass
-class VbanPacketNBS0(VbanPacket):
-    """Represents the body of a VBAN data packet with ident:0"""
+class VbanRTPacketNBS0(VbanRTPacket):
+    """Represents the body of a VBAN RTPacket with ident:0"""
 
     _inputLeveldB100: bytes
     _outputLeveldB100: bytes

@@ -6,12 +6,12 @@ from .enums import NBS
 from .error import VBANCMDConnectionError
 from .packet.headers import (
     HEADER_SIZE,
-    VbanPacket,
-    VbanResponseHeader,
-    VbanSubscribeHeader,
+    VbanRTPacket,
+    VbanRTResponseHeader,
+    VbanRTSubscribeHeader,
 )
-from .packet.nbs0 import VbanPacketNBS0
-from .packet.nbs1 import VbanPacketNBS1
+from .packet.nbs0 import VbanRTPacketNBS0
+from .packet.nbs1 import VbanRTPacketNBS1
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Subscriber(threading.Thread):
     def run(self):
         while not self.stopped():
             for nbs in NBS:
-                sub_packet = VbanSubscribeHeader().to_bytes(
+                sub_packet = VbanRTSubscribeHeader().to_bytes(
                     nbs, self._remote._get_next_framecounter()
                 )
                 self._remote.sock.sendto(
@@ -66,7 +66,7 @@ class Producer(threading.Thread):
             self._remote.cache['bus_level'],
         ) = self._remote.public_packets[NBS.zero].levels
 
-    def _get_rt(self) -> VbanPacket:
+    def _get_rt(self) -> VbanRTPacket:
         """Attempt to fetch data packet until a valid one found"""
         while True:
             try:
@@ -80,19 +80,19 @@ class Producer(threading.Thread):
                 ) from e
 
             try:
-                header = VbanResponseHeader.from_bytes(data[:HEADER_SIZE])
+                header = VbanRTResponseHeader.from_bytes(data[:HEADER_SIZE])
             except ValueError as e:
                 self.logger.debug(f'Error parsing response packet: {e}')
                 continue
 
             match header.format_nbs:
                 case NBS.zero:
-                    return VbanPacketNBS0.from_bytes(
+                    return VbanRTPacketNBS0.from_bytes(
                         nbs=NBS.zero, kind=self._remote.kind, data=data
                     )
 
                 case NBS.one:
-                    return VbanPacketNBS1.from_bytes(
+                    return VbanRTPacketNBS1.from_bytes(
                         nbs=NBS.one, kind=self._remote.kind, data=data
                     )
 

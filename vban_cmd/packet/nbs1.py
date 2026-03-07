@@ -5,7 +5,7 @@ from typing import NamedTuple
 from vban_cmd.enums import NBS
 from vban_cmd.kinds import KindMapClass
 
-from .headers import VbanPacket
+from .headers import VbanRTPacket
 
 VMPARAMSTRIP_SIZE = 174
 
@@ -327,8 +327,8 @@ class VbanVMParamStrip:
 
 
 @dataclass
-class VbanPacketNBS1(VbanPacket):
-    """Represents the body of a VBAN data packet with ident:1"""
+class VbanRTPacketNBS1(VbanRTPacket):
+    """Represents the body of a VBAN RTPacket with ident:1"""
 
     strips: tuple[VbanVMParamStrip, ...]
 

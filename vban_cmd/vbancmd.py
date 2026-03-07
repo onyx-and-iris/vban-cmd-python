@@ -13,7 +13,7 @@ from .event import Event
 from .packet.headers import (
     VbanMatrixResponseHeader,
     VbanPongHeader,
-    VbanRequestHeader,
+    VbanRTRequestHeader,
 )
 from .packet.ping0 import VbanPing0Payload, VbanServerType
 from .subject import Subject
@@ -201,7 +201,7 @@ class VbanCmd(abc.ABC):
     def _send_request(self, payload: str) -> None:
         """Sends a request packet over the network and bumps the framecounter."""
         self.sock.sendto(
-            VbanRequestHeader.encode_with_payload(
+            VbanRTRequestHeader.encode_with_payload(
                 name=self.streamname,
                 bps_index=self.BPS_OPTS.index(self.bps),
                 channel=self.channel,
