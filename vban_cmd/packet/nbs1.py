@@ -1,5 +1,6 @@
 import struct
 from dataclasses import dataclass
+from functools import cached_property
 from typing import NamedTuple
 
 from vban_cmd.enums import NBS
@@ -193,11 +194,15 @@ class VbanVMParamStrip:
             _Pitch_formant_high=data[172:174],
         )
 
-    @property
+    @cached_property
     def mode(self) -> int:
         return int.from_bytes(self._mode, 'little')
 
-    @property
+    @cached_property
+    def karaoke(self) -> int:
+        return int.from_bytes(self._nKaraoke, 'little')
+
+    @cached_property
     def audibility(self) -> Audibility:
         return Audibility(
             round(int.from_bytes(self._audibility, 'little', signed=True) * 0.01, 2),
@@ -206,7 +211,7 @@ class VbanVMParamStrip:
             round(int.from_bytes(self._audibility_d, 'little', signed=True) * 0.01, 2),
         )
 
-    @property
+    @cached_property
     def positions(self) -> Positions:
         return Positions(
             round(int.from_bytes(self._pos3D_x, 'little', signed=True) * 0.01, 2),
@@ -217,7 +222,7 @@ class VbanVMParamStrip:
             round(int.from_bytes(self._posMod_y, 'little', signed=True) * 0.01, 2),
         )
 
-    @property
+    @cached_property
     def eqgains(self) -> EqGains:
         return EqGains(
             *[
@@ -230,7 +235,7 @@ class VbanVMParamStrip:
             ]
         )
 
-    @property
+    @cached_property
     def parametric_eq(self) -> tuple[ParametricEQSettings, ...]:
         return tuple(
             ParametricEQSettings(
@@ -243,7 +248,7 @@ class VbanVMParamStrip:
             for i in range(6)
         )
 
-    @property
+    @cached_property
     def sends(self) -> Sends:
         return Sends(
             round(int.from_bytes(self._send_reverb, 'little', signed=True) * 0.01, 2),
@@ -252,11 +257,7 @@ class VbanVMParamStrip:
             round(int.from_bytes(self._send_fx2, 'little', signed=True) * 0.01, 2),
         )
 
-    @property
-    def karaoke(self) -> int:
-        return int.from_bytes(self._nKaraoke, 'little')
-
-    @property
+    @cached_property
     def compressor(self) -> CompressorSettings:
         return CompressorSettings(
             gain_in=round(
@@ -276,7 +277,7 @@ class VbanVMParamStrip:
             ),
         )
 
-    @property
+    @cached_property
     def gate(self) -> GateSettings:
         return GateSettings(
             threshold_in=round(
@@ -295,7 +296,7 @@ class VbanVMParamStrip:
             release_ms=round(int.from_bytes(self._GATE_release_ms, 'little') * 0.1, 2),
         )
 
-    @property
+    @cached_property
     def denoiser(self) -> DenoiserSettings:
         return DenoiserSettings(
             threshold=round(
@@ -303,7 +304,7 @@ class VbanVMParamStrip:
             )
         )
 
-    @property
+    @cached_property
     def pitch(self) -> PitchSettings:
         return PitchSettings(
             enabled=bool(int.from_bytes(self._PitchEnabled, 'little')),

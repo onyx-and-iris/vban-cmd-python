@@ -1,4 +1,6 @@
+import struct
 from dataclasses import dataclass
+from functools import cached_property
 from typing import NamedTuple
 
 from vban_cmd.enums import NBS
@@ -20,6 +22,13 @@ class ChannelState:
     def __init__(self, state_bytes: bytes):
         # Convert 4-byte state to integer once for efficient lookups
         self._state = int.from_bytes(state_bytes, 'little')
+
+    @classmethod
+    def from_int(cls, state_int: int):
+        """Create ChannelState directly from integer for efficiency"""
+        instance = cls.__new__(cls)
+        instance._state = state_int
+        return instance
 
     def get_mode(self, mode_value: int) -> bool:
         """Get boolean state for a specific mode"""
@@ -147,32 +156,17 @@ class VbanRTPacketNBS0(VbanRTPacket):
 
     def pdirty(self, other) -> bool:
         """True iff any defined parameter has changed"""
-
-        self_gains = (
-            self._stripGaindB100Layer1
-            + self._stripGaindB100Layer2
-            + self._stripGaindB100Layer3
-            + self._stripGaindB100Layer4
-            + self._stripGaindB100Layer5
-            + self._stripGaindB100Layer6
-            + self._stripGaindB100Layer7
-            + self._stripGaindB100Layer8
-        )
-        other_gains = (
-            other._stripGaindB100Layer1
-            + other._stripGaindB100Layer2
-            + other._stripGaindB100Layer3
-            + other._stripGaindB100Layer4
-            + other._stripGaindB100Layer5
-            + other._stripGaindB100Layer6
-            + other._stripGaindB100Layer7
-            + other._stripGaindB100Layer8
-        )
-
         return (
             self._stripState != other._stripState
             or self._busState != other._busState
-            or self_gains != other_gains
+            or self._stripGaindB100Layer1 != other._stripGaindB100Layer1
+            or self._stripGaindB100Layer2 != other._stripGaindB100Layer2
+            or self._stripGaindB100Layer3 != other._stripGaindB100Layer3
+            or self._stripGaindB100Layer4 != other._stripGaindB100Layer4
+            or self._stripGaindB100Layer5 != other._stripGaindB100Layer5
+            or self._stripGaindB100Layer6 != other._stripGaindB100Layer6
+            or self._stripGaindB100Layer7 != other._stripGaindB100Layer7
+            or self._stripGaindB100Layer8 != other._stripGaindB100Layer8
             or self._busGaindB100 != other._busGaindB100
             or self._stripLabelUTF8c60 != other._stripLabelUTF8c60
             or self._busLabelUTF8c60 != other._busLabelUTF8c60
@@ -186,75 +180,52 @@ class VbanRTPacketNBS0(VbanRTPacket):
         )
         return any(self._strip_comp) or any(self._bus_comp)
 
-    @property
+    @cached_property
     def strip_levels(self) -> tuple[float, ...]:
         """Returns strip levels in dB"""
-        return tuple(
-            round(
-                int.from_bytes(self._inputLeveldB100[i : i + 2], 'little', signed=True)
-                * 0.01,
-                1,
-            )
-            for i in range(0, len(self._inputLeveldB100), 2)
-        )[: self._kind.num_strip_levels]
+        strip_raw = struct.unpack('<34h', self._inputLeveldB100)
+        return tuple(round(val * 0.01, 1) for val in strip_raw)[
+            : self._kind.num_strip_levels
+        ]
 
-    @property
+    @cached_property
     def bus_levels(self) -> tuple[float, ...]:
         """Returns bus levels in dB"""
-        return tuple(
-            round(
-                int.from_bytes(self._outputLeveldB100[i : i + 2], 'little', signed=True)
-                * 0.01,
-                1,
-            )
-            for i in range(0, len(self._outputLeveldB100), 2)
-        )[: self._kind.num_bus_levels]
+        bus_raw = struct.unpack('<64h', self._outputLeveldB100)
+        return tuple(round(val * 0.01, 1) for val in bus_raw)[
+            : self._kind.num_bus_levels
+        ]
 
     @property
     def levels(self) -> Levels:
         """Returns strip and bus levels as a namedtuple"""
         return Levels(strip=self.strip_levels, bus=self.bus_levels)
 
-    @property
+    @cached_property
     def states(self) -> States:
         """returns States object with processed strip and bus channel states"""
+        strip_states = struct.unpack('<8I', self._stripState)
+        bus_states = struct.unpack('<8I', self._busState)
         return States(
-            strip=tuple(
-                ChannelState(self._stripState[i : i + 4]) for i in range(0, 32, 4)
-            ),
-            bus=tuple(ChannelState(self._busState[i : i + 4]) for i in range(0, 32, 4)),
+            strip=tuple(ChannelState.from_int(state) for state in strip_states),
+            bus=tuple(ChannelState.from_int(state) for state in bus_states),
         )
 
-    @property
+    @cached_property
     def gainlayers(self) -> tuple:
         """returns tuple of all strip gain layers as tuples"""
-        return tuple(
-            tuple(
-                round(
-                    int.from_bytes(
-                        getattr(self, f'_stripGaindB100Layer{layer}')[i : i + 2],
-                        'little',
-                        signed=True,
-                    )
-                    * 0.01,
-                    2,
-                )
-                for i in range(0, 16, 2)
-            )
-            for layer in range(1, 9)
-        )
+        layer_data = []
+        for layer in range(1, 9):
+            layer_bytes = getattr(self, f'_stripGaindB100Layer{layer}')
+            layer_raw = struct.unpack('<8h', layer_bytes)
+            layer_data.append(tuple(round(val * 0.01, 2) for val in layer_raw))
+        return tuple(layer_data)
 
-    @property
+    @cached_property
     def busgain(self) -> tuple:
         """returns tuple of bus gains"""
-        return tuple(
-            round(
-                int.from_bytes(self._busGaindB100[i : i + 2], 'little', signed=True)
-                * 0.01,
-                2,
-            )
-            for i in range(0, 16, 2)
-        )
+        bus_gain_raw = struct.unpack('<8h', self._busGaindB100)
+        return tuple(round(val * 0.01, 2) for val in bus_gain_raw)
 
     @property
     def labels(self) -> Labels:
