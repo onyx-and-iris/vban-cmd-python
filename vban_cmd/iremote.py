@@ -48,26 +48,18 @@ class IRemote(abc.ABC):
     def apply(self, data):
         """Sets all parameters of a dict for the channel."""
 
-        script = ''
-
         def fget(attr, val):
             if attr == 'mode':
-                return (f'mode.{val}', 1)
-            elif attr == 'knob':
-                return ('', val)
-            return (attr, val)
+                return (getattr(self, attr), val, 1)
+            return (self, attr, val)
 
         for attr, val in data.items():
             if not isinstance(val, dict):
                 if attr in dir(self):  # avoid calling getattr (with hasattr)
-                    attr, val = fget(attr, val)
-                    if isinstance(val, bool):
-                        val = 1 if val else 0
-
-                    self._remote.cache[self._cmd(attr)] = val
-                    script += f'{self._cmd(attr)}={val};'
+                    target, attr, val = fget(attr, val)
+                    setattr(target, attr, val)
+                else:
+                    self.logger.error(f'invalid attribute {attr} for {self}')
             else:
                 target = getattr(self, attr)
                 target.apply(val)
-
-        self._remote.sendtext(script)
