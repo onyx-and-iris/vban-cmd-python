@@ -3,7 +3,8 @@ import threading
 import time
 
 from .enums import NBS
-from .error import VBANCMDConnectionError
+from .error import VBANCMDConnectionError, VBANCMDPacketError
+from .packet.enums import SubProtocols
 from .packet.headers import (
     HEADER_SIZE,
     VbanRTPacket,
@@ -81,8 +82,13 @@ class Producer(threading.Thread):
 
             try:
                 header = VbanRTResponseHeader.from_bytes(data[:HEADER_SIZE])
-            except ValueError as e:
-                self.logger.debug(f'Error parsing response packet: {e}')
+            except VBANCMDPacketError as e:
+                match e.protocol:
+                    case SubProtocols.SERVICE:
+                        # Silently ignore periodic SERVICE packets unrelated to vban-cmd
+                        pass
+                    case _:
+                        self.logger.debug(f'Error parsing response packet: {e}')
                 continue
 
             match header.format_nbs:

@@ -17,7 +17,7 @@ from .packet.headers import (
 )
 from .packet.ping0 import VbanPing0Payload, VbanServerType
 from .subject import Subject
-from .util import bump_framecounter, deep_merge, pong_timeout, ratelimit
+from .util import bump_framecounter, deep_merge, pong_timeout, script_ratelimit
 from .worker import Producer, Subscriber, Updater
 
 logger = logging.getLogger(__name__)
@@ -27,13 +27,6 @@ class VbanCmd(abc.ABC):
     """Abstract Base Class for Voicemeeter VBAN Command Interfaces"""
 
     DELAY = 0.001
-    # fmt: off
-    BPS_OPTS = [
-        0, 110, 150, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 31250,
-        38400, 57600, 115200, 128000, 230400, 250000, 256000, 460800, 921600,
-        1000000, 1500000, 2000000, 3000000,
-    ]
-    # fmt: on
 
     def __init__(self, **kwargs):
         self.logger = logger.getChild(self.__class__.__name__)
@@ -203,7 +196,7 @@ class VbanCmd(abc.ABC):
         self.sock.sendto(
             VbanRTRequestHeader.encode_with_payload(
                 name=self.streamname,
-                bps_index=self.BPS_OPTS.index(self.bps),
+                bps=self.bps,
                 channel=self.channel,
                 framecounter=self._get_next_framecounter(),
                 payload=payload,
@@ -216,7 +209,7 @@ class VbanCmd(abc.ABC):
         self._send_request(f'{cmd}={val};')
         self.cache[cmd] = val
 
-    @ratelimit
+    @script_ratelimit
     def sendtext(self, script) -> str | None:
         """Sends a multiple parameter string over a network."""
         self._send_request(script)
