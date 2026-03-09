@@ -548,7 +548,7 @@ You may pass the following optional keyword arguments:
 -   `channel`: int=0, channel on which to send the UDP requests.
 -   `pdirty`: boolean=False, parameter updates
 -   `ldirty`: boolean=False, level updates
--   `script_ratelimit`: float=0.05, default to 20 script requests per second. This affects vban.sendtext() specifically.
+-   `script_ratelimit`: float | None=None, ratelimit for vban.sendtext() specifically.
 -   `timeout`: int=5, timeout for socket operations.
 -   `disable_rt_listeners`: boolean=False, set `True` if you don't wish to receive RT packets.
     -   You can still send Matrix string requests ending with `?` and receive a response.

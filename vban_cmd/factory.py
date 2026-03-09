@@ -89,7 +89,7 @@ class FactoryBase(VbanCmd):
             'streamname': 'Command1',
             'bps': 256000,
             'channel': 0,
-            'script_ratelimit': 0.05,  # 20 commands per second, to avoid overloading Voicemeeter
+            'script_ratelimit': None,  # if None or 0, no rate limit applied to script commands
             'timeout': 5,  # timeout on socket operations, in seconds
             'disable_rt_listeners': False,
             'sync': False,

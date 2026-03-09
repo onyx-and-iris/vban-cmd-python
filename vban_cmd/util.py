@@ -5,12 +5,12 @@ from typing import Iterator
 from .error import VBANCMDConnectionError
 
 
-def ratelimit(func):
-    """ratelimit decorator for {VbanCmd}.sendtext, to prevent flooding the network with script requests."""
+def script_ratelimit(func):
+    """script_ratelimit decorator for {VbanCmd}.sendtext, to prevent flooding the network with script requests."""
 
     def wrapper(*args, **kwargs):
         self, *rem = args
-        if self.script_ratelimit > 0:
+        if self.script_ratelimit:
             now = time.time()
             elapsed = now - self._last_script_request_time
             if elapsed < self.script_ratelimit:
