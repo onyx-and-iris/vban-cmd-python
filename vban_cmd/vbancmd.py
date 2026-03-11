@@ -36,6 +36,13 @@ class VbanCmd(abc.ABC):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
 
+        try:
+            self._host_ip = socket.gethostbyname(self.host)
+        except socket.gaierror as e:
+            raise VBANCMDConnectionError(
+                f'Unable to resolve hostname {self.host}'
+            ) from e
+
         self._framecounter = 0
         self._framecounter_lock = threading.Lock()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -136,14 +143,10 @@ class VbanCmd(abc.ABC):
         try:
             self.sock.sendto(
                 VbanPing0Payload.create_packet(self._get_next_framecounter()),
-                (socket.gethostbyname(self.host), self.port),
+                (self._host_ip, self.port),
             )
             self.logger.debug(f'PING sent to {self.host}:{self.port}')
 
-        except socket.gaierror as e:
-            raise VBANCMDConnectionError(
-                f'Unable to resolve hostname {self.host}'
-            ) from e
         except Exception as e:
             raise VBANCMDConnectionError(f'PING failed: {e}') from e
 
@@ -201,7 +204,7 @@ class VbanCmd(abc.ABC):
                 framecounter=self._get_next_framecounter(),
                 payload=payload,
             ),
-            (socket.gethostbyname(self.host), self.port),
+            (self._host_ip, self.port),
         )
 
     def _set_rt(self, cmd: str, val: Union[str, float]):

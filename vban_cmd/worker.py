@@ -33,7 +33,7 @@ class Subscriber(threading.Thread):
                     nbs, self._remote._get_next_framecounter()
                 )
                 self._remote.sock.sendto(
-                    sub_packet, (self._remote.host, self._remote.port)
+                    sub_packet, (self._remote._host_ip, self._remote.port)
                 )
 
             self.wait_until_stopped(10)
