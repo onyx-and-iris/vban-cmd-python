@@ -56,9 +56,10 @@ class VbanCmd(abc.ABC):
         self.producer = None
         self._last_script_request_time = 0
 
+    @property
     @abc.abstractmethod
-    def __str__(self):
-        """Ensure subclasses override str magic method"""
+    def steps(self):
+        """Steps required to build the interface for this Voicemeeter kind"""
 
     def _conn_from_toml(self) -> dict:
         try:

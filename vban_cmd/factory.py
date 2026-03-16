@@ -1,4 +1,3 @@
-import abc
 import logging
 from enum import IntEnum
 from functools import cached_property
@@ -121,11 +120,6 @@ class FactoryBase(VbanCmd):
             type(self).__name__
             + f"({self.kind}, ip='{self.ip}', port={self.port}, streamname='{self.streamname}')"
         )
-
-    @property
-    @abc.abstractmethod
-    def steps(self):
-        pass
 
     @cached_property
     def configs(self):
