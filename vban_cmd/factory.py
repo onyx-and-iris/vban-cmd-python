@@ -1,11 +1,11 @@
 import logging
-from enum import IntEnum
 from functools import cached_property
 from typing import Iterable
 
 from .bus import request_bus_obj as bus
 from .command import Command
 from .config import request_config as configs
+from .enums import KindId
 from .error import VBANCMDError
 from .kinds import KindMapClass
 from .kinds import request_kind_map as kindmap
@@ -25,27 +25,10 @@ class FactoryBuilder:
     Separates construction from representation.
     """
 
-    BuilderProgress = IntEnum(
-        'BuilderProgress', 'strip bus command macrobutton vban recorder', start=0
-    )
-
     def __init__(self, factory, kind: KindMapClass):
         self._factory = factory
         self.kind = kind
-        self._info = (
-            f'Finished building strips for {self._factory}',
-            f'Finished building buses for {self._factory}',
-            f'Finished building commands for {self._factory}',
-            f'Finished building macrobuttons for {self._factory}',
-            f'Finished building vban in/out streams for {self._factory}',
-            f'Finished building recorder for {self._factory}',
-        )
         self.logger = logger.getChild(self.__class__.__name__)
-
-    def _pinfo(self, name: str) -> None:
-        """prints progress status for each step"""
-        name = name.split('_')[1]
-        self.logger.debug(self._info[int(getattr(self.BuilderProgress, name))])
 
     def make_strip(self):
         self._factory.strip = tuple(
@@ -136,12 +119,14 @@ class BasicFactory(FactoryBase):
 
     def __new__(cls, *args, **kwargs):
         if cls is BasicFactory:
-            raise TypeError(f"'{cls.__name__}' does not support direct instantiation")
+            ERR_MSG = f"'{cls.__name__}' does not support direct instantiation"
+            raise TypeError(ERR_MSG)
         return object.__new__(cls)
 
     def __init__(self, kind_id, **kwargs):
         super().__init__(kind_id, **kwargs)
-        [step()._pinfo(step.__name__) for step in self.steps]
+        for step in self.steps:
+            step()
 
     @property
     def steps(self) -> Iterable:
@@ -158,12 +143,14 @@ class BananaFactory(FactoryBase):
 
     def __new__(cls, *args, **kwargs):
         if cls is BananaFactory:
-            raise TypeError(f"'{cls.__name__}' does not support direct instantiation")
+            ERR_MSG = f"'{cls.__name__}' does not support direct instantiation"
+            raise TypeError(ERR_MSG)
         return object.__new__(cls)
 
     def __init__(self, kind_id, **kwargs):
         super().__init__(kind_id, **kwargs)
-        [step()._pinfo(step.__name__) for step in self.steps]
+        for step in self.steps:
+            step()
 
     @property
     def steps(self) -> Iterable:
@@ -180,12 +167,14 @@ class PotatoFactory(FactoryBase):
 
     def __new__(cls, *args, **kwargs):
         if cls is PotatoFactory:
-            raise TypeError(f"'{cls.__name__}' does not support direct instantiation")
+            ERR_MSG = f"'{cls.__name__}' does not support direct instantiation"
+            raise TypeError(ERR_MSG)
         return object.__new__(cls)
 
     def __init__(self, kind_id: str, **kwargs):
         super().__init__(kind_id, **kwargs)
-        [step()._pinfo(step.__name__) for step in self.steps]
+        for step in self.steps:
+            step()
 
     @property
     def steps(self) -> Iterable:
@@ -213,7 +202,8 @@ def vbancmd_factory(kind_id: str, **kwargs) -> VbanCmd:
                 kind_id = 'potato'
             _factory = PotatoFactory
         case _:
-            raise ValueError(f"Unknown Voicemeeter kind '{kind_id}'")
+            ERR_MSG = f'Unknown Voicemeeter kind {kind_id}, expected one of {[k.name.lower() for k in KindId]}'
+            raise ValueError(ERR_MSG)
     return type(f'VbanCmd{kind_id.capitalize()}', (_factory,), {})(kind_id, **kwargs)
 
 
@@ -229,6 +219,6 @@ def request_vbancmd_obj(kind_id: str, **kwargs) -> VbanCmd:
     try:
         VBANCMD_obj = vbancmd_factory(kind_id, **kwargs)
     except (ValueError, TypeError) as e:
-        logger_entry.exception(f'{type(e).__name__}: {e}')
+        logger_entry.error(f'{type(e).__name__}: {e}')
         raise VBANCMDError(str(e)) from e
     return VBANCMD_obj
